@@ -1,0 +1,4 @@
+interface:
+  display_name: "Minimum Sufficient Work (MSW)"
+  short_description: "Do all necessary work, and nothing beyond it"
+  default_prompt: "Use $msw to complete this task with the smallest sufficient body of work and proof."

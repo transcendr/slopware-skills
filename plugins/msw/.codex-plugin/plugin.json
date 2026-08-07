@@ -1,0 +1,33 @@
+{
+  "name": "msw",
+  "version": "0.1.0",
+  "description": "Minimum Sufficient Work: a lightweight scope, proof, and stopping kernel for AI agents.",
+  "author": {
+    "name": "Slopware Engineer",
+    "url": "https://x.com/aienginerd"
+  },
+  "homepage": "https://github.com/transcendr/slopware-skills",
+  "repository": "https://github.com/transcendr/slopware-skills",
+  "license": "CC-BY-4.0",
+  "keywords": [
+    "msw",
+    "minimum-sufficient-work",
+    "scope-control",
+    "ai-agents"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "MSW",
+    "shortDescription": "Minimum Sufficient Work for agents",
+    "longDescription": "Apply a compact execution kernel that defines the smallest complete contract, admits only necessary work, requires proportional proof, and stops at the fixed point.",
+    "developerName": "Slopware Engineer",
+    "category": "Productivity",
+    "capabilities": [
+      "Instructions"
+    ],
+    "websiteURL": "https://github.com/transcendr/slopware-skills",
+    "defaultPrompt": [
+      "Use MSW to deliver the smallest complete, proven result."
+    ]
+  }
+}

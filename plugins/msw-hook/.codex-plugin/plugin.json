@@ -1,0 +1,32 @@
+{
+  "name": "msw-hook",
+  "version": "0.1.0",
+  "description": "Optional session-boundary reinforcement for the Minimum Sufficient Work kernel.",
+  "author": {
+    "name": "Slopware Engineer",
+    "url": "https://x.com/aienginerd"
+  },
+  "homepage": "https://github.com/transcendr/slopware-skills",
+  "repository": "https://github.com/transcendr/slopware-skills",
+  "license": "CC-BY-4.0",
+  "keywords": [
+    "msw",
+    "minimum-sufficient-work",
+    "hooks",
+    "ai-agents"
+  ],
+  "interface": {
+    "displayName": "MSW Hook",
+    "shortDescription": "Optional MSW session reinforcement",
+    "longDescription": "Inject one compact Minimum Sufficient Work reminder at session context boundaries without per-prompt or per-tool overhead.",
+    "developerName": "Slopware Engineer",
+    "category": "Productivity",
+    "capabilities": [
+      "Lifecycle hooks"
+    ],
+    "websiteURL": "https://github.com/transcendr/slopware-skills",
+    "defaultPrompt": [
+      "Apply the MSW kernel to this session."
+    ]
+  }
+}

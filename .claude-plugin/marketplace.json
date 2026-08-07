@@ -1,0 +1,23 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "slopware-skills",
+  "description": "Lightweight, high-leverage skills and plugins for AI agents. Free forever.",
+  "owner": {
+    "name": "Slopware Engineer",
+    "url": "https://x.com/aienginerd"
+  },
+  "plugins": [
+    {
+      "name": "msw",
+      "description": "Minimum Sufficient Work: do all necessary work and nothing beyond it.",
+      "source": "./plugins/msw",
+      "category": "productivity"
+    },
+    {
+      "name": "msw-hook",
+      "description": "Optional session-boundary reinforcement for the MSW kernel.",
+      "source": "./plugins/msw-hook",
+      "category": "productivity"
+    }
+  ]
+}

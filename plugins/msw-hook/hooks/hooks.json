@@ -1,0 +1,15 @@
+{
+  "description": "Reinforce the MSW kernel once at each session context boundary.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"MSW active: define the requested outcome and the smallest evidence that proves it. Do only work whose removal would leave that contract unmet or unproven. Prove each necessary claim, halt at the fixed point, and report the outcome, proof, and any open or rejected claims.\""
+          }
+        ]
+      }
+    ]
+  }
+}
