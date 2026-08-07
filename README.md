@@ -7,9 +7,24 @@
 Portable, individually installable skills and plugins for AI coding agents by
 [Slopware Engineer](https://x.com/aienginerd).
 
+## Packages
+
+| Package | Type | Purpose |
+| --- | --- | --- |
+| [MSW Kernel](plugins/msw/README.md) | Skill and plugin | Admit only necessary work, require proof, and stop at the fixed point. |
+| [MSW Hook](plugins/msw-hook/README.md) | Optional plugin | Reinforce the MSW Kernel once at session context boundaries. |
+| [Timebox](plugins/timebox/README.md) | Skill and plugin | Converge authorized work inside AWT and a closeout-only CGP. |
+
+Each package has its own documentation and remains independently installable.
+
+---
+
 ## MSW Kernel: Minimum Sufficient Work
 
-**All necessary work. Nothing beyond it.**
+> **All necessary work. Nothing beyond it.**
+
+[Package documentation](plugins/msw/README.md) ·
+[Skill source](plugins/msw/skills/msw/SKILL.md)
 
 Minimum Sufficient Work is the principle. The MSW Kernel is the compact
 instruction set and program that applies the principle to agent work.
@@ -129,6 +144,84 @@ code, artifacts, or process, reinforce it with one line:
 Repeat that line when needed during normal work and discussion. It restates the
 kernel's necessity test without adding persistent machinery.
 
+---
+
+## Timebox: AWT/CGP Execution
+
+> **Required work inside an authorized clock.**
+
+[Package documentation](plugins/timebox/README.md) ·
+[Skill source](plugins/timebox/skills/timebox/SKILL.md)
+
+Timebox is a hook-free execution protocol for work that must converge inside a
+requester-supplied clock. Available Work Time (AWT) contains the substantive
+work and its proof. Closeout Grace Period (CGP) is a shorter buffer reserved for
+an already-converged deliverable, a delayed final check, narrow organization,
+or communicating the result.
+
+For most users, the experience is simple:
+
+```text
+Use $timebox with AWT 45 minutes and CGP 5 minutes.
+<task>
+```
+
+When the AWT/CGP context is already clear, shorthand works too:
+
+```text
+Timebox this 45/5: <task>
+```
+
+The agent validates the pair, records fixed deadlines, states the outcome and
+smallest proof, then works normally. It quietly checks whether the required
+result will finish inside AWT, cuts optional depth when necessary, reserves CGP
+for closeout, and stops with an honest status at the hard stop. If the task is
+complete and proven early, it stops early.
+
+The optional independent-monitor design was created with the Codex app in mind.
+Codex can use a separate monitor task, task reading and messaging, and a
+same-task heartbeat to watch the fixed clock without interrupting the working
+task. The same approach can work in any agent harness with equivalent
+observation, wake, and messaging capabilities. Everyone else gets the
+lightweight self-monitoring workflow with no background process.
+
+The package has no hook. A valid timebox depends on the requester-supplied
+durations, actual start, task contract, and live progress. Session and tool
+hooks do not have that complete context, so an always-on hook would be more
+invasive and less reliable than the skill itself.
+
+## Install Timebox
+
+### Codex
+
+```bash
+codex plugin marketplace add transcendr/slopware-skills
+codex plugin add timebox@slopware-skills
+```
+
+### Claude Code
+
+```bash
+claude plugin marketplace add transcendr/slopware-skills
+claude plugin install timebox@slopware-skills
+```
+
+### skills.sh
+
+```bash
+npx skills add transcendr/slopware-skills --skill timebox -g
+```
+
+### Generic `~/.agents/skills`
+
+```bash
+git clone https://github.com/transcendr/slopware-skills.git
+mkdir -p ~/.agents/skills
+cp -R slopware-skills/plugins/timebox/skills/timebox ~/.agents/skills/timebox
+```
+
+---
+
 ## Repository layout
 
 ```text
@@ -138,11 +231,20 @@ plugins/
   msw/
     .codex-plugin/plugin.json
     .claude-plugin/plugin.json
+    README.md
     skills/msw/SKILL.md
   msw-hook/
     .codex-plugin/plugin.json
     .claude-plugin/plugin.json
+    README.md
     hooks/hooks.json
+  timebox/
+    .codex-plugin/plugin.json
+    .claude-plugin/plugin.json
+    README.md
+    skills/timebox/
+      SKILL.md
+      references/independent-monitor.md
 ```
 
 Each future package gets its own `plugins/<name>/` directory and marketplace

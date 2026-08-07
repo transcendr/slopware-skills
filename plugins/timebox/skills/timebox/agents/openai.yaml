@@ -1,0 +1,4 @@
+interface:
+  display_name: "Timebox"
+  short_description: "AWT and CGP execution for agent work"
+  default_prompt: "Use $timebox with the AWT and CGP I provide to complete this task by the hard stop."

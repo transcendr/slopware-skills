@@ -18,6 +18,12 @@
       "description": "Optional session-boundary reinforcement for the MSW kernel.",
       "source": "./plugins/msw-hook",
       "category": "productivity"
+    },
+    {
+      "name": "timebox",
+      "description": "Bound agent work with Available Work Time, Closeout Grace Period, and a hard stop.",
+      "source": "./plugins/timebox",
+      "category": "productivity"
     }
   ]
 }
