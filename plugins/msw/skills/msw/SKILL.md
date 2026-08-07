@@ -1,14 +1,14 @@
 ---
 name: msw
-description: Apply Minimum Sufficient Work (MSW) to scope, execute, verify, and stop agent work. Define the requested outcome and its smallest proof, admit work only when deleting it would leave the contract unmet or unproven, prove each necessary claim, and halt at the fixed point. Use for implementation, debugging, review, research, planning, documentation, or any task where scope control, proportional evidence, or avoiding overwork matters. Also use when the user says MSW, Minimum Sufficient Work, do only what is necessary, avoid over-engineering, or stop when the result is proven.
+description: Apply the Minimum Sufficient Work (MSW) principle through the MSW Kernel to scope, execute, verify, and stop agent work. State the requested outcome and smallest proof, admit a claim only when deleting it would leave the contract unmet or unproven, do and prove each necessary claim, and halt at the fixed point. Use for implementation, debugging, review, research, planning, documentation, or any task where scope control, proportional evidence, or avoiding overwork matters. Also use when the user says MSW, Minimum Sufficient Work, do only what is necessary, avoid over-engineering, or stop when the result is proven.
 ---
 
-# Minimum Sufficient Work
+# MSW: the Kernel
 
-Do all necessary work, and nothing beyond it. Minimum sufficient work is not a
-shortcut: preserve correctness, safety, completeness, and verification.
+Minimum Sufficient Work is the principle. The MSW Kernel is the instruction set
+and program that applies it.
 
-## Kernel
+## Program: complete
 
 ```text
 contract ← the requested outcome + the smallest criteria that prove it
@@ -19,34 +19,62 @@ while ∃ claim c : deleting c leaves contract unmet ∨ unproven
 halt ; report
 ```
 
-## Meanings
+## Definitions: no behavior lives here, only meaning
 
-**contract**: Bind the requested outcome and the smallest acceptance criteria
-that prove it before acting. Treat it as both the floor and the ceiling. For
-attended ambiguity, ask. For unattended work, bind the smallest reading
-consistent with the stated intent and record the assumption.
+**contract**: the requested outcome and the smallest set of acceptance criteria
+that would prove it, stated before any work. The sole source of necessity; a
+ceiling as much as a floor. If the request is ambiguous: attended → ask;
+unattended → bind the smallest reading consistent with stated intent and record
+the assumption.
 
-**claim**: Treat every proposed step, change, test, finding, improvement, or
-follow-up as a claim petitioning to become work, never as an inherited verdict.
+**claim**: anything petitioning to become work: a plan step, a change, a test, a
+reviewer's P1, a discovered edge case, your own instinct that one more pass
+would help. Everything enters as this type. Nothing enters as a verdict.
 
-**deleting c leaves contract unmet or unproven**: Admit a claim only when
-removing it reproducibly breaks the contract or its proof in the actual task
-environment. Useful, thorough, possible, conventional, and best practice do not
-make work necessary.
+**deleting c leaves contract unmet ∨ unproven**: the only test. A claim passes
+solely by breaking the contract, reproducibly, within the task's actual inputs
+and environment. Severity is derived from the contract, never inherited from
+whoever raised the claim. *Useful*, *thorough*, and *possible* are not aliases
+for *necessary*. A claim that fails receives one line in the report, never a
+fix, an investigation, or a deferred follow-up.
 
-**do; prove**: Take the smallest reliable action that closes the admitted gap,
-then collect evidence proportional to that claim. An unproven action leaves the
-claim open. Re-proving a closed claim is itself inadmissible work.
+**do ; prove**: the smallest reliable act that closes the gap, and evidence
+sized to the claim it settles. An unproven act keeps its claim alive; a proven
+one closes it, and re-proving a closed claim is itself an inadmissible claim.
 
-**halt**: Stop at the fixed point: the contract is proven and no remaining
-claim passes the deletion test. Do not stop early, and do not continue because
-more work can be imagined.
+**halt**: the fixed point: contract proven, no remaining claim passes. Not
+reviewer silence; not exhausted imagination. Halting before the fixed point and
+looping past it are the same bug, mirrored.
 
-**report**: State the outcome against the contract, the proof, and any open or
-rejected claims worth the user's attention. Omit process narration that does not
-help the user assess the result.
+**report**: the outcome against the contract; the proof; rejected claims worth
+the user's attention, one line each. Nothing else.
 
-## Apply the kernel
+## Fuses: outside the program, for when its evaluator fails
+
+```text
+rounds = 3            → halt anyway ; report open items, do not chase them
+claim born in round n+1, visible in round n   → rejected
+```
+
+## No unauthoritative limits
+
+Never invent a limit. A cap, threshold, quota, budget, timeout, retry or round
+count, file or line count, acceptance-criterion count, agent count, or similar
+constraint is admissible only when its exact value is:
+
+- explicitly required by the requester;
+- imposed by an applicable technical or platform contract;
+- defined by authoritative project policy; or
+- derived from measured evidence necessary to meet or prove the task contract.
+
+State the authority or derivation whenever proposing or applying a limit. If no
+authority exists, omit the limit and use the MSW necessity test. Metrics may be
+reported as evidence, but they must not become gates, defaults, targets, or
+recommendations through agent intuition. Examples and representative
+proportions never become defaults. If a necessary limit is an unresolved owner
+choice, ask; do not manufacture a value.
+
+## Apply the Kernel
 
 1. Bind the contract before using tools or proposing work.
 2. Put each candidate action through the deletion test.
@@ -56,13 +84,3 @@ help the user assess the result.
 
 Reject a failed claim with one report line. Do not turn it into an investigation,
 fix, or deferred follow-up.
-
-## Fuses
-
-```text
-rounds = 3            → halt anyway ; report open items, do not chase them
-claim born in round n+1, visible in round n   → rejected
-```
-
-Use the fuses when the evaluator fails to converge. They stop recursive
-scope-making; they never authorize dropping a requirement that remains open.

@@ -1,7 +1,7 @@
 {
   "name": "msw",
-  "version": "0.1.0",
-  "description": "Minimum Sufficient Work: a lightweight scope, proof, and stopping kernel for AI agents.",
+  "version": "0.1.1",
+  "description": "The Minimum Sufficient Work principle and its lightweight execution kernel for AI agents.",
   "author": {
     "name": "Slopware Engineer",
     "url": "https://x.com/aienginerd"
@@ -19,7 +19,7 @@
   "interface": {
     "displayName": "MSW",
     "shortDescription": "Minimum Sufficient Work for agents",
-    "longDescription": "Apply a compact execution kernel that defines the smallest complete contract, admits only necessary work, requires proportional proof, and stops at the fixed point.",
+    "longDescription": "Apply the Minimum Sufficient Work principle through a compact kernel that defines the smallest complete contract, admits only necessary work, requires proportional proof, and stops at the fixed point.",
     "developerName": "Slopware Engineer",
     "category": "Productivity",
     "capabilities": [

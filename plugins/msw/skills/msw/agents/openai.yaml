@@ -1,4 +1,4 @@
 interface:
-  display_name: "Minimum Sufficient Work (MSW)"
-  short_description: "Do all necessary work, and nothing beyond it"
-  default_prompt: "Use $msw to complete this task with the smallest sufficient body of work and proof."
+  display_name: "MSW Kernel"
+  short_description: "Minimum Sufficient Work for agent tasks"
+  default_prompt: "Use $msw to apply the MSW Kernel to this task and stop when the contract is proven."
