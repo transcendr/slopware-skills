@@ -19,12 +19,18 @@ working task.
 
 ## Working task
 
-Before substantive work:
+The canonical skill's hard preflight gate applies before monitor dispatch as
+well as before substantive work. For every new timezone-bearing
+`original_start`, first emit the visible clock, contract, critical path,
+exclusions, and backward schedule required by that gate. Reusing an existing
+monitor does not carry a prior timebox's preflight forward.
+
+After that preflight is visible:
 
 1. Record the timezone-bearing original start, AWT, normal deadline, CGP, and
    hard stop.
-2. Create one separate monitor task only when the requester or host policy
-   authorizes that task.
+2. Create or reuse one separate monitor task only when the requester or host
+   policy authorizes that task.
 3. Send the monitor one complete initial message containing:
    - the working task identity;
    - the original start and fixed deadlines;
@@ -35,6 +41,12 @@ Before substantive work:
    acknowledgment, or a first report.
 5. Do not send later steering to the monitor. It observes the working task and
    reports only when needed.
+
+That message is the working task's only clock-binding prompt for this timebox.
+A requester-authorized new AWT/CGP pair starts a new timebox, requires a fresh
+visible preflight, and permits one new clock-binding prompt to the reused
+monitor. A resume, compaction, wake, or elapsed deadline does not authorize a
+new clock or prompt.
 
 The working task still owns scope, implementation, verification, acceptance,
 and reporting. The monitor never becomes a worker or reviewer.

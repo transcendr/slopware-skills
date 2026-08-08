@@ -51,16 +51,36 @@ tool delay, or other interruption. If timeboxing begins after work has started,
 use the actual start when it is established. Ask if the start is unresolved and
 would materially change the deadlines.
 
-## Bind the delivery
+## Pass the hard preflight gate
 
-Before substantive work:
+Every new timezone-bearing `original_start` requires a fresh, visible backward
+plan. This applies when starting a new task, continuing under a
+requester-authorized new AWT/CGP pair, or reusing an existing monitor. A prior
+timebox's plan never carries forward.
 
-1. State the requested outcome and the smallest evidence that would prove it.
-2. Identify the required work, critical path, and explicit exclusions.
-3. Plan the substantive work, verification, organization, and delivery inside
-   AWT. Plan no ordinary work for CGP.
-4. Record the clock and contract concisely, then start. Do not turn setup into a
-   gate or wait for a monitor acknowledgment.
+After reading applicable instructions and doing only the minimum read-only
+orientation needed to identify the task and monitor, emit one concise
+commentary update containing all of the following:
+
+1. the timezone-bearing `original_start`, calculated `normal_deadline`, and
+   calculated `hard_stop`;
+2. the requested outcome and smallest acceptance evidence;
+3. the critical path, required work, and explicit exclusions; and
+4. a backward schedule from `normal_deadline` through the 11/12, 75%, 50%, and
+   25% convergence points, naming the latest acceptable tangible state at each
+   point.
+
+Emit this update before sending or rebinding an independent monitor and before
+task-specific research, dependency resolution, implementation, builds, tests,
+or mutation. Hidden reasoning, a forward task list, or prose that merely names
+the next action does not satisfy the gate. If any field is absent, complete the
+visible preflight before dispatching the monitor or starting execution.
+
+After the preflight is visible, bind the monitor once for this timebox when one
+is authorized, then execute immediately from the critical path and backward
+schedule. Do not wait for monitor setup or acknowledgment. Plan substantive
+work, verification, organization, and delivery inside AWT, with no ordinary
+work in CGP.
 
 This skill works alone. If the MSW skill is also installed or otherwise
 required, use MSW to decide what work is necessary and this skill to govern how
