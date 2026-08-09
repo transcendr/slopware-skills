@@ -14,6 +14,7 @@ Portable, individually installable skills and plugins for AI coding agents by
 | [MSW Kernel](plugins/msw/README.md) | Skill and plugin | Admit only necessary work, require proof, and stop at the fixed point. |
 | [MSW Hook](plugins/msw-hook/README.md) | Optional plugin | Reinforce the MSW Kernel once at session context boundaries. |
 | [Timebox](plugins/timebox/README.md) | Skill and plugin | Converge authorized work inside AWT and a closeout-only CGP. |
+| [Codex Voice Optimizer](plugins/codex-voice-optimizer/README.md) | Codex skill and plugin | Route a spoken workstream across named Codex work tasks. |
 
 Each package has its own documentation and remains independently installable.
 
@@ -222,6 +223,70 @@ cp -R slopware-skills/plugins/timebox/skills/timebox ~/.agents/skills/timebox
 
 ---
 
+## Codex Voice Optimizer
+
+> **You speak. The coordinator routes. The work tasks do the work.**
+
+[Package documentation](plugins/codex-voice-optimizer/README.md) ·
+[Skill source](plugins/codex-voice-optimizer/skills/codex-voice-optimizer/SKILL.md) ·
+[Original X post](https://x.com/aienginerd/status/2086442654779191575)
+
+Codex Voice Optimizer turns one ChatGPT Voice task into the central hub for
+a technical workstream. It delegates substantive work and questions to named
+Codex tasks, follows their actual progress, and voices material updates,
+blockers, decisions, and results back to you.
+
+The coordinator itself does no project work. It answers directly only when the
+answer is already established and unambiguous, or when you ask it to format a
+known list, link, diagram, or other visible chat artifact. Work tasks can
+communicate directly when their lanes have a real dependency.
+
+A typical topology uses a change task and a parallel research task, but that is
+an example rather than a default or limit. Use only the owning tasks that the
+workstream actually requires.
+
+```text
+Use $codex-voice-optimizer to coordinate this workstream through my existing
+Codex tasks.
+```
+
+The full experience requires ChatGPT Voice in the Codex desktop app and access
+to persistent task listing, reading, messaging, and waiting. The package is
+intentionally absent from the Claude Code marketplace because its contract is
+Codex-specific.
+
+## Install Codex Voice Optimizer
+
+### Codex
+
+```bash
+codex plugin marketplace add transcendr/slopware-skills
+codex plugin add codex-voice-optimizer@slopware-skills
+```
+
+### skills.sh
+
+```bash
+npx skills add https://github.com/transcendr/slopware-skills/tree/main/plugins/codex-voice-optimizer/skills/codex-voice-optimizer -g -a codex
+```
+
+The direct GitHub path keeps this Codex-only skill independently installable
+without adding it to the Claude Code marketplace.
+
+### Generic `~/.agents/skills` for Codex
+
+```bash
+git clone https://github.com/transcendr/slopware-skills.git
+mkdir -p ~/.agents/skills
+cp -R slopware-skills/plugins/codex-voice-optimizer/skills/codex-voice-optimizer ~/.agents/skills/codex-voice-optimizer
+```
+
+The plugin is hook-free. The coordinator role must be bound explicitly to one
+voice task, a current workstream, named owners, and exact authority; a global
+lifecycle hook cannot determine those safely.
+
+---
+
 ## Repository layout
 
 ```text
@@ -245,6 +310,12 @@ plugins/
     skills/timebox/
       SKILL.md
       references/independent-monitor.md
+  codex-voice-optimizer/
+    .codex-plugin/plugin.json
+    README.md
+    skills/codex-voice-optimizer/
+      SKILL.md
+      references/codex-app.md
 ```
 
 Each future package gets its own `plugins/<name>/` directory and marketplace

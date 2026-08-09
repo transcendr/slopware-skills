@@ -1,0 +1,40 @@
+{
+  "name": "codex-voice-optimizer",
+  "version": "0.1.0",
+  "description": "Optimize Codex workstreams through ChatGPT Voice without turning the coordinator into a worker.",
+  "author": {
+    "name": "Slopware Engineer",
+    "url": "https://x.com/aienginerd"
+  },
+  "homepage": "https://github.com/transcendr/slopware-skills",
+  "repository": "https://github.com/transcendr/slopware-skills",
+  "license": "CC-BY-4.0",
+  "keywords": [
+    "codex",
+    "voice-optimizer",
+    "chatgpt-voice",
+    "task-coordination",
+    "workstreams",
+    "delegation",
+    "multi-agent",
+    "ai-agents"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Codex Voice Optimizer",
+    "shortDescription": "Coordinate Codex tasks through realtime voice",
+    "longDescription": "Turn a Codex Voice task into the central routing hub for a workstream. Delegate all substantive work and questions, inspect owning tasks for evidence, relay concise spoken updates, and preserve explicit authority boundaries.",
+    "developerName": "Slopware Engineer",
+    "category": "Productivity",
+    "capabilities": [
+      "Voice Optimization",
+      "Task Delegation",
+      "Progress Routing",
+      "Visible Artifacts"
+    ],
+    "websiteURL": "https://github.com/transcendr/slopware-skills",
+    "defaultPrompt": [
+      "Use $codex-voice-optimizer to coordinate this workstream through my existing Codex tasks."
+    ]
+  }
+}

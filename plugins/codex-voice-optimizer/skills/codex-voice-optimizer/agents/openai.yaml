@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Voice Optimizer"
+  short_description: "Upgrade Codex voice mode into a parallel-work command center"
+  default_prompt: "Use $codex-voice-optimizer to coordinate this workstream through my existing Codex tasks."
