@@ -35,8 +35,15 @@ The skill is layered so each participant gets exactly its own contract:
 | [SKILL.md](skills/codex-voice-optimizer/SKILL.md) | The optimizer core: the always-on base behavior layer (ear-first speech, routing-only discipline, authority, safe speech handling, honest recovery) and the module router. |
 | [voice-coordinator.md](skills/codex-voice-optimizer/references/voice-coordinator.md) | How the coordinator operates: workstream setup, routing every utterance, keeping progress flowing back, going idle. |
 | [work-thread.md](skills/codex-voice-optimizer/references/work-thread.md) | The contract briefed into every work thread: own your lane, report at material boundaries, talk to peers directly, respect authority. |
-| [freeway.md](skills/codex-voice-optimizer/references/freeway.md) | Freeway: the named, opt-in high-throughput mode (below). |
 | [codex-app.md](skills/codex-voice-optimizer/references/codex-app.md) | Codex app mechanics: task tools, name-to-ID mappings, and the realtime inline route for visible chat artifacts. |
+| [workflows/freeway.md](skills/codex-voice-optimizer/references/workflows/freeway.md) | Freeway: the named, opt-in high-throughput topology (below). |
+| [workflows/decision-walkthrough.md](skills/codex-voice-optimizer/references/workflows/decision-walkthrough.md) | Decision Walkthrough: opt-in, read-only pre-implementation convergence — close material authority decisions one at a time, by voice (below). |
+
+The `references/workflows/` folder is the skill's growth surface: named,
+opt-in workflows — topologies and processes — that install on top of
+free-form orchestration. Every workflow inherits the base layer, activates
+only by its anchor phrase or an explicitly permitted offer, and composes with
+the others. New sub-processes land there as they're battle-tested.
 
 ## Freeway
 
@@ -67,6 +74,28 @@ coordinator and gets spoken to you.
 You focus on something else entirely, stay passively current, and steer by
 voice — "authorize that," "merge this," "tell the change thread to request the
 research" — without ever looking back at the transcript.
+
+## Decision Walkthrough
+
+A process workflow for the moment before implementation, when a plan still has
+real forks in it — design, product, API, architecture choices where different
+legitimate picks would change the contract. Say *"start the decision
+walkthrough for this slice"* and the workstream converges them one at a time:
+
+- the owning thread researches everything discoverable itself — you are never
+  asked to choose a fact;
+- each genuine decision arrives as one spoken packet: the question, the
+  evidence, mutually exclusive options with consequences, and an
+  evidence-backed recommendation;
+- everything stays read-only — a decision authorizes a contract, never its
+  implementation;
+- challenge a premise and it reinspects the source, corrects itself
+  explicitly, and stays on the same decision;
+- it stops at implementation readiness with a closure handoff instead of
+  inventing more decisions.
+
+Runs free-form or inside Freeway, where it binds to the lane that owns the
+slice.
 
 ## What using it feels like
 

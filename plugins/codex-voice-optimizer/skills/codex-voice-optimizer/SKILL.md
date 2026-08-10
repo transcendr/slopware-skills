@@ -1,6 +1,6 @@
 ---
 name: codex-voice-optimizer
-description: Upgrade a ChatGPT Voice task in the Codex desktop app into an optimized orchestration hub for parallel Codex work. Installs a tuned base behavior layer (ear-first communication, routing-only discipline, strict authority, safe speech handling), role contracts for the voice coordinator and its work threads, and Freeway, an opt-in named mode for high-throughput parallel workstreams across N work lanes. Use when the user invokes the Codex voice optimizer, asks to coordinate Codex tasks or workstreams through voice, assigns the current voice task as a coordinator, or asks to run Freeway.
+description: Upgrade a ChatGPT Voice task in the Codex desktop app into an optimized orchestration hub for parallel Codex work. Installs a tuned base behavior layer (ear-first communication, routing-only discipline, strict authority, safe speech handling), role contracts for the voice coordinator and its work threads, and opt-in named workflows including Freeway (high-throughput parallel workstreams across N work lanes) and Decision Walkthrough (read-only pre-implementation convergence of authority decisions, one at a time). Use when the user invokes the Codex voice optimizer, asks to coordinate Codex tasks or workstreams through voice, assigns the current voice task as a coordinator, asks to run Freeway, or starts a decision walkthrough.
 ---
 
 # Codex Voice Optimizer
@@ -120,7 +120,7 @@ thread exactly as granted, with its target and scope.
    [references/codex-app.md](references/codex-app.md).
 4. Report the corrected result concisely and stop when the request is met.
 
-## Role and workflow modules
+## Role modules and mechanics
 
 - **You are the coordinator** — read
   [references/voice-coordinator.md](references/voice-coordinator.md) at
@@ -128,13 +128,34 @@ thread exactly as granted, with its target and scope.
 - **You are dispatching or enlisting a work thread** — transmit the contract
   in [references/work-thread.md](references/work-thread.md) so the thread
   reports, communicates, and proves its work correctly under orchestration.
-- **The user opts into Freeway** — read
-  [references/freeway.md](references/freeway.md). Freeway is the named
-  high-throughput mode: one coordinator, N parallel work lanes derived from
-  the workstream's genuinely independent work. It is opt-in only: offer it
-  once, briefly, at session start when the user describes a substantial goal,
-  and never impose it. Free-form orchestration under the base layer is the
-  default.
 - **Codex app mechanics** — task tools, name-to-ID mappings, and the inline
   route for visible chat artifacts are in
   [references/codex-app.md](references/codex-app.md).
+
+## Named workflows
+
+Named workflows are opt-in processes and topologies that install on top of
+free-form orchestration. Shared semantics for every workflow in
+`references/workflows/`:
+
+- **Opt-in only.** A workflow activates when the user invokes its anchor
+  phrase or accepts an explicitly permitted offer. Never impose one because it
+  seems prudent.
+- **The base layer always applies.** A workflow adds structure; it never
+  suspends the ear-first register, routing-only discipline, authority rules,
+  or safe speech handling.
+- **Workflows compose.** A process workflow can run inside a topology
+  workflow; each defines its own activation anchor and end state.
+- Free-form orchestration under the base layer remains the default.
+
+Current workflows:
+
+- **Freeway** — [references/workflows/freeway.md](references/workflows/freeway.md).
+  Topology: one coordinator, N parallel work lanes derived from the
+  workstream's genuinely independent work. Offer it once, briefly, at session
+  start when the user describes a substantial goal.
+- **Decision Walkthrough** —
+  [references/workflows/decision-walkthrough.md](references/workflows/decision-walkthrough.md).
+  Process: converge a planned slice before implementation by closing material
+  authority decisions one at a time, read-only, with evidence-backed decision
+  packets. Anchor: "Start the decision walkthrough for this slice."

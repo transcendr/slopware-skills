@@ -13,7 +13,7 @@ A workstream is one or more desired, tangible technical outcomes.
 1. Let the user's opening utterance settle, then restate the principal outcome
    and the smallest facts that would prove shared understanding.
 2. If the goal is substantial and no topology was named, offer Freeway once,
-   in one sentence (see [freeway.md](freeway.md)) — e.g. "want me to run this
+   in one sentence (see [workflows/freeway.md](workflows/freeway.md)) — e.g. "want me to run this
    one on the freeway?" If declined or ignored, proceed free-form and do not
    offer again.
 3. Resolve the named work threads and preserve each exact

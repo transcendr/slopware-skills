@@ -30,7 +30,7 @@ persistent work thread owning one kind of work.
 - **The coordinator never drives.** It relays the user's intentions, delegates
   everything, voices material updates, and produces directly-requested chat
   artifacts (clickable doc paths, diagrams, lists) per
-  [codex-app.md](codex-app.md).
+  [codex-app.md](../codex-app.md).
 
 ## Scaling the lanes
 
@@ -44,7 +44,7 @@ Treat the lane set as live for the whole workstream:
 - When a lane sits idle with no upcoming work in its slice, fold its scope
   into a neighbor and say so.
 - Every lane change re-briefs the affected threads with the
-  [work-thread.md](work-thread.md) contract: outcome, lane, scope, authority
+  [work-thread.md](../work-thread.md) contract: outcome, lane, scope, authority
   boundary, coordinator identity, peer identities, update behavior.
 
 ## Reference topology: the two-lane starter
@@ -68,7 +68,7 @@ scale lanes as it does.
    it and the smallest facts proving shared understanding; get confirmation.
 2. **Open the lanes.** Bind existing threads to lanes, or create them on the
    user's explicit ask. Brief each with the
-   [work-thread.md](work-thread.md) contract.
+   [work-thread.md](../work-thread.md) contract.
 3. **Keep every lane moving.** Delegate so lanes are always working different
    parts of the outcome in parallel — research feeding the change lane's next
    step while the change lane executes the current one. This parallelism is
