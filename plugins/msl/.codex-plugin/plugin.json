@@ -18,17 +18,20 @@
   ],
   "skills": "./skills/",
   "interface": {
-    "displayName": "MSL",
-    "shortDescription": "Minimum Sufficient Language for agent reports",
+    "displayName": "MSL Kernel",
+    "shortDescription": "Write checkable reports readers can act on",
     "longDescription": "Apply the Minimum Sufficient Language principle through a compact kernel that binds the reader, partitions facts from instrument detail, emits every claim in a checkable form, and stops when the reader can act.",
     "developerName": "Slopware Engineer",
     "category": "Productivity",
     "capabilities": [
-      "Instructions"
+      "Reader-Aware Reporting",
+      "Stakeholder Writing",
+      "Checkable Claims",
+      "Actionable Handoffs"
     ],
     "websiteURL": "https://github.com/transcendr/slopware-skills",
     "defaultPrompt": [
-      "Use MSL to write this so the reader can act on it."
+      "Use $msl to write this update so the reader can act on it."
     ]
   }
 }

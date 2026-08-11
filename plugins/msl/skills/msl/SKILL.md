@@ -25,16 +25,18 @@ close instrument ; draft from theirs alone
 for each f in theirs:
     emit f as one move ∈ {action, verification, judgment, state}
 
-place handoff where the named reader's obligation begins
+if ∃ named reader obligation:
+    place handoff where that obligation begins
+
 halt when every claim is checkable ∧ the ledger reconciles
 ```
 
 ## Definitions: no behavior lives here, only meaning
 
 **reader**: the audience and the boundary of what they already hold. Whatever is
-recorded where this lands — the ticket, the thread, the last update — is theirs
-already. Writing starts at that boundary. Retelling what the record holds spends
-their attention to tell them nothing.
+recorded where this lands, including the ticket, thread, or last update, is
+theirs already. Writing starts at that boundary. Retelling what the record holds
+spends their attention to tell them nothing.
 
 **partition**: performed before drafting, over every fact you hold. *Theirs*
 changes what the reader believes about the state of the world, how tightly a risk
@@ -45,14 +47,14 @@ the order things ran in, designs superseded, attempts abandoned, cases tested,
 branches, files, digests.
 
 Close the instrument column and do not consult it while drafting. It will feel
-load-bearing — a superseded design seems to prove the shipped one is safe, an
-abandoned attempt seems to prove diligence, the stages seem to prove care — and
-none of it reaches the reader as any of those things. What an attempt *taught*
+load-bearing: a superseded design seems to prove the shipped one is safe, an
+abandoned attempt seems to prove diligence, and the stages seem to prove care.
+None of it reaches the reader as any of those things. What an attempt *taught*
 may still be a finding; the attempt itself is instrument. *Interesting*,
 *effortful*, and *true* are not aliases for *theirs*. The work you are proudest
 of lands in the instrument column most often.
 
-**bound**: how an instrument fact reaches the reader, if it reaches them at all —
+**bound**: how an instrument fact reaches the reader, if it reaches them at all:
 the reach of the result in their nouns: what it could touch, what it could not,
 what was confirmed after. A bound is a property of the outcome, never a sequence
 and never a comparison. "It changed only the timestamp, only on the approved
@@ -66,27 +68,27 @@ reader decides in, with its inputs in view. Never invent an input.
 
 **move**: every admitted fact leaves as exactly one of four, and the names never
 appear in the text.
-*Action* — an act with its actor, in the past. "We" is the default actor: it is
+*Action*: an act with its actor, in the past. "We" is the default actor: it is
 honest about joint work and each reader resolves it for themselves. This holds
-for your own work as it happens, not only for finished reports — a note about
+for your own work as it happens, not only for finished reports: a note about
 what you just did takes the same actor as everything else. "I" only when the text
 speaks as the user personally, and only when asked.
-*Verification* — what was observed that settles a prior action, never diligence
+*Verification*: what was observed that settles a prior action, never diligence
 performed. "We confirmed each service served the new revision" is verification;
 "we double-checked the deploy" is not.
-*Judgment* — finding, then reason, then consequence, each its own sentence. A
+*Judgment*: finding, then reason, then consequence, each its own sentence. A
 judgment without its reason reads as preference; a reason without its consequence
 leaves the reader holding an insight and no outcome.
-*State* — what is true now, in the present.
+*State*: what is true now, in the present.
 
 **residual**: what remains, why it remains, and what decision would be needed to
 act on it. All three, or it is not a residual. A residual you found and did not
-report is concealed. A residual that does not exist produces no sentence: never
-announce an absence, because "nothing remains" is a completeness claim, and you
-can only make it about what you actually checked.
+report is concealed. An unscoped absence produces no sentence. Report that
+nothing remains only as a verification of an explicitly bounded set that was
+actually checked.
 
 **handoff**: a mention obligates the reader it names, so it belongs exactly where
-that reader's required knowledge begins — everything above it available,
+that reader's required knowledge begins: everything above it available,
 everything from it forward necessary. Never at the top, which obligates the whole
 document. Never on a sentence that only points at other sentences. A mention is
 added to a sentence, never substituted into one: no actor, quantity, or name is
@@ -95,19 +97,19 @@ is unambiguous; a mention with nothing behind it spends a person's attention.
 
 **theirs, not yours**: the reader's own vocabulary is required and yours is not
 admissible. Probe each term: has this reader met this word where this lands? If
-they have, it stays in their words, and paraphrasing it costs them the referent —
+they have, it stays in their words, and paraphrasing it costs them the referent:
 a reader fluent in the domain is owed its terms, and translating away from them
 patronises rather than clarifies. If they have not met it, it leaves, replaced by
 what it does for them. The same word passes for one reader and fails for another,
 so the probe runs in both directions and the reader decides, never the topic.
 
-**checkable**: a claim a skeptical reader could test. Scope carries it — *only*,
+**checkable**: a claim a skeptical reader could test. Scope carries it: *only*,
 *exact*, *every*, *each*, *all*, *once*. An unscoped claim asks for trust; a
 scoped one offers a way to be wrong.
 
 **halt**: every admitted fact emitted, every claim checkable, the ledger
-reconciled, and the reader holding the decision. Not word count; not completeness
-of the record.
+reconciled, and the reader holding any required decision or next action. Not
+word count; not completeness of the record.
 
 ## Fuses: outside the program, for when its evaluator fails
 
@@ -128,21 +130,21 @@ true. Work in flight: what is known, what is ruled out, what is blocked. A
 request for a decision: the recommendation first, then what decided it, then what
 you need.
 
-Close on the standing state, the residual, and the decision asked for. Each
+Close on the standing state, any residual, and any decision asked for. Each
 belongs there and nowhere else, and a reader who reads only that close must still
 be able to act. Never restate above what the close will carry.
 
-A note written mid-work is the same program at one sentence. It names what was
-established, or what the next step will establish — never which internal
+A note written mid-work uses the same program at note scale. It names what was
+established, or what the next step will establish, never which internal
 mechanism you are about to inspect. "Two of three checks fail; confirming what
 each one returns" is the program at that scale. "Verifying the window math" is
 the instrument, shortened.
 
 ## Emit plainly
 
-One idea per sentence, actor before verb, one term per concept throughout. Causal
-connectives stay — *because*, *so*, *therefore* — they carry the reasoning the
-reader came for. Emit deliberate non-actions as plainly as actions, and adverse
+One idea per sentence, actor before verb, one term per concept throughout. Keep
+causal connectives such as *because*, *so*, and *therefore* because they carry
+the reasoning the reader came for. Emit deliberate non-actions as plainly as actions, and adverse
 facts as plainly as favourable ones. Settled facts take no hedge; genuine
 unknowns stay unknowns, never omitted and never softened into confidence. Every
 actor, quantity, and name is reported as given.
@@ -164,8 +166,8 @@ consequence here, never a target.
 2. Partition every fact; close the instrument column.
 3. Draft from *theirs* alone, each fact as one move.
 4. Scope every claim so it can be checked.
-5. Place the handoff where the obligation begins, displacing nothing.
-6. Halt and ask for the decision.
+5. Place any required handoff where the obligation begins, displacing nothing.
+6. Halt when the reader holds every required decision and next action.
 
 This skill works alone. If the MSW skill is also installed, use MSW to decide
 what work is necessary and this skill to report it.

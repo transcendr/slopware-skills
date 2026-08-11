@@ -15,7 +15,7 @@ Portable, individually installable skills and plugins for AI coding agents by
 | [MSW Hook](plugins/msw-hook/README.md) | Optional plugin | Reinforce the MSW Kernel once at session context boundaries. |
 | [MSL Kernel](plugins/msl/README.md) | Skill and plugin | Report only what the reader must act on, in a form they can check. |
 | [Timebox](plugins/timebox/README.md) | Skill and plugin | Converge authorized work inside AWT and a closeout-only CGP. |
-| [Codex Voice Optimizer](plugins/codex-voice-optimizer/README.md) | Codex skill and plugin | Route a spoken workstream across named Codex work tasks. |
+| [Codex Voice Optimizer](plugins/codex-voice-optimizer/README.md) | Codex skill and plugin | Optimize Codex Voice for hands-free orchestration across owning work threads. |
 
 Each package has its own documentation and remains independently installable.
 
@@ -172,9 +172,9 @@ The kernel binds the reader first, including everything already on their record,
 then partitions every fact before a sentence is written. A fact reaches the
 reader only by changing what they believe about the state of the world, how
 tightly a risk was bound, or what decision remains. Everything describing how
-the work was carried out — tools, stages, superseded designs, abandoned
-attempts, cases tested — is instrument, and the instrument column is closed
-while drafting.
+the work was carried out, including tools, stages, superseded designs,
+abandoned attempts, and cases tested, is instrument. The instrument column is
+closed while drafting.
 
 That partition is the whole trick, and it is a gate rather than a rule. Telling
 an agent to avoid narrating its tooling does not hold, because contrast and
@@ -296,35 +296,43 @@ cp -R slopware-skills/plugins/timebox/skills/timebox ~/.agents/skills/timebox
 
 ## Codex Voice Optimizer
 
-> **You speak. The coordinator routes. The work tasks do the work.**
+> **You speak. The coordinator routes. The work threads own the work.**
 
 [Package documentation](plugins/codex-voice-optimizer/README.md) ·
 [Skill source](plugins/codex-voice-optimizer/skills/codex-voice-optimizer/SKILL.md) ·
 [Original X post](https://x.com/aienginerd/status/2086442654779191575)
 
-Codex Voice Optimizer turns one ChatGPT Voice task into the central hub for
-a technical workstream. It delegates substantive work and questions to named
-Codex tasks, follows their actual progress, and voices material updates,
-blockers, decisions, and results back to you.
+Codex Voice Optimizer upgrades one ChatGPT Voice task into an ear-first control
+surface for engineering work. Its always-active base layer keeps spoken updates
+concise, routes substantive work to owning threads, verifies current task state,
+preserves explicit authority, and lets you interrupt task waiting simply by
+speaking.
 
-The coordinator itself does no project work. It answers directly only when the
-answer is already established and unambiguous, or when you ask it to format a
-known list, link, diagram, or other visible chat artifact. Work tasks can
-communicate directly when their lanes have a real dependency.
+Free-form orchestration is the default. Named workflows install additional
+structure only when invoked: Freeway derives parallel work lanes from genuinely
+independent work, Decision Walkthrough closes material authority choices before
+implementation, and Tutorial teaches the system through hands-on use. Every
+workflow inherits the optimized base behavior and role contracts.
 
-A typical topology uses a change task and a parallel research task, but that is
-an example rather than a default or limit. Use only the owning tasks that the
-workstream actually requires.
+For codebase work, the coordinator can discover the relevant Codex project and
+place every newly authorized owning thread there. Project selection establishes
+placement; it never authorizes task creation.
+
+The change-and-research topology from the original workflow remains a reference
+example, not a default or limit. Work threads can communicate directly when
+their lanes have a real dependency, while material progress returns through the
+voice coordinator.
 
 ```text
 Use $codex-voice-optimizer to coordinate this workstream through my existing
 Codex tasks.
+This work belongs to my <project> Codex project. Keep any new work tasks there.
 ```
 
 The full experience requires ChatGPT Voice in the Codex desktop app and access
-to persistent task listing, reading, messaging, and waiting. The package is
-intentionally absent from the Claude Code marketplace because its contract is
-Codex-specific.
+to project discovery, project-scoped task creation, and persistent task listing,
+reading, messaging, and interruptible waiting. The package is intentionally
+absent from the Claude Code marketplace because its contract is Codex-specific.
 
 ## Install Codex Voice Optimizer
 
@@ -391,7 +399,14 @@ plugins/
     README.md
     skills/codex-voice-optimizer/
       SKILL.md
-      references/codex-app.md
+      references/
+        codex-app.md
+        voice-coordinator.md
+        work-thread.md
+        workflows/
+          decision-walkthrough.md
+          freeway.md
+          tutorial.md
 ```
 
 Each future package gets its own `plugins/<name>/` directory and marketplace

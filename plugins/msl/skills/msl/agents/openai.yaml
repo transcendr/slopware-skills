@@ -1,4 +1,4 @@
 interface:
   display_name: "MSL Kernel"
-  short_description: "Minimum Sufficient Language for reports and drafts"
+  short_description: "Write checkable reports readers can act on"
   default_prompt: "Use $msl to write this update so the reader can act on it."

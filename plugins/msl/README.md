@@ -29,15 +29,17 @@ close instrument ; draft from theirs alone
 for each f in theirs:
     emit f as one move ∈ {action, verification, judgment, state}
 
-place handoff where the named reader's obligation begins
+if ∃ named reader obligation:
+    place handoff where that obligation begins
+
 halt when every claim is checkable ∧ the ledger reconciles
 ```
 
 Every fact is partitioned before a sentence is written. A fact reaches the
 reader only by changing what they believe about the state of the world, how
 tightly a risk was bound, or what decision remains. Everything describing how
-the work was carried out — tools, stages, superseded designs, abandoned
-attempts, cases tested — goes in the instrument column, and the instrument
+the work was carried out, including tools, stages, superseded designs,
+abandoned attempts, and cases tested, goes in the instrument column. That
 column is closed while drafting.
 
 That partition is the whole trick, and it is a gate rather than a rule. Telling
@@ -121,7 +123,7 @@ want it, or put it in your `AGENTS.md` if you want it standing.
 No. A style guide tells you how sentences should look. The kernel tells you
 which facts are admissible and what shape each one takes when it leaves. Length,
 tone, and structure fall out of the partition, which is why the same program
-produces a three-line progress note and a full closeout without switching modes.
+produces both a brief progress note and a full closeout without switching modes.
 
 ### Why not just say "write clearly, avoid jargon"?
 

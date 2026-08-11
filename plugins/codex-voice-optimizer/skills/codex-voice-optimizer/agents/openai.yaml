@@ -1,4 +1,4 @@
 interface:
   display_name: "Codex Voice Optimizer"
-  short_description: "Upgrade Codex voice mode into a parallel-work command center"
-  default_prompt: "Use $codex-voice-optimizer to coordinate this workstream through my Codex tasks. Offer me Freeway if the goal warrants it."
+  short_description: "Optimize Codex Voice for hands-free orchestration"
+  default_prompt: "Use $codex-voice-optimizer to coordinate this work through my Codex tasks with optimized voice orchestration."

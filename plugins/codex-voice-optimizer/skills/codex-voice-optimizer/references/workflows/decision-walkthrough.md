@@ -10,6 +10,18 @@ It is a process workflow, not a topology: it runs inside free-form
 orchestration or Freeway alike. Under Freeway, it binds to whichever lane owns
 the slice being converged.
 
+## Contents
+
+- [Invoke the walkthrough](#invoke-the-walkthrough)
+- [Keep the contract read-only](#keep-the-contract-read-only)
+- [Preserve the interaction model](#preserve-the-interaction-model)
+- [Separate research from decisions](#separate-research-from-decisions)
+- [Run one decision at a time](#run-one-decision-at-a-time)
+- [Correct challenged premises](#correct-challenged-premises)
+- [Record decisions only when authorized](#record-decisions-only-when-authorized)
+- [Stop at implementation readiness](#stop-at-implementation-readiness)
+- [Use these routing prompts](#use-these-routing-prompts)
+
 ## Invoke the walkthrough
 
 Treat this as the canonical anchor:
@@ -50,14 +62,14 @@ unless the user independently invokes them or authorizes implementation.
 The walkthrough uses the optimizer's existing triangle; assign these
 responsibilities when the coordinator and an owning work thread already exist:
 
-- **The user — decision authority:** chooses, rejects, qualifies, or
+- **The user, as decision authority:** chooses, rejects, qualifies, or
   challenges the presented options. Never decide on their behalf.
-- **Voice coordinator — facilitator:** maintains sequence, reads the actual
+- **The voice coordinator, as facilitator:** maintains sequence, reads the actual
   owning thread for status, routes substantive research to it, relays
   evidence-backed checkpoints, and speaks one decision at a time in plain
   language per the base-layer register. Answers directly only when the
   established context already makes the answer unambiguous.
-- **Owning work thread — evidence owner:** inspects the current repository,
+- **The owning work thread, as evidence owner:** inspects the current repository,
   design sources, specifications, decision records, and other authoritative
   sources; separates research from authority; frames the next decision;
   validates corrections; and stops without making unapproved changes.
@@ -128,13 +140,13 @@ State
 No later decision advanced; no state changed unless separately authorized.
 ```
 
-The coordinator presents the packet on both channels at once, without adding
-a second decision: post the full packet inline in the chat pane (via the
-inline route in [codex-app.md](../codex-app.md)) so the user can read it, and
-simultaneously voice the compressed version in the base-layer register with
-the options lettered — "A … B … C" — so the user can choose by ear with a
-single letter. Never make the user ask for the visible packet. Let them
-choose, ask for clarification, or challenge its premise.
+The coordinator voices the compressed packet in the base-layer register with
+the options lettered, for example "A … B … C," so the user can choose by ear
+with a single letter. When visual detail is necessary for a safe choice, or the
+user asks to see the packet, send the full packet through the inline route in
+[codex-app.md](../codex-app.md) as a separate response. Never combine an inline
+payload with spoken narration in the same response. Let the user choose, ask
+for clarification, or challenge the packet's premise.
 
 After a choice, restate the accepted decision precisely. Keep adjacent
 deferrals separate; for example, a display-value decision must not silently
