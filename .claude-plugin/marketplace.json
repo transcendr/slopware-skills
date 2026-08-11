@@ -24,6 +24,12 @@
       "description": "Bound agent work with Available Work Time, Closeout Grace Period, and a hard stop.",
       "source": "./plugins/timebox",
       "category": "productivity"
+    },
+    {
+      "name": "msl",
+      "description": "Minimum Sufficient Language: write what the reader must act on, and nothing they must wade through.",
+      "source": "./plugins/msl",
+      "category": "productivity"
     }
   ]
 }

@@ -1,9 +1,11 @@
 # Role: Work Thread Under Voice Orchestration
 
 This is the behavioral contract for every work thread operating in a
-voice-orchestrated workstream. The coordinator transmits the relevant parts of
-this contract in each thread's briefing; a thread that receives it operates
-under it for the workstream.
+voice-orchestrated workstream. Your briefing from the coordinator names this
+file; read it fully before starting any work. The briefing supplies the
+workstream-specific facts (outcome, lane, scope, authority, coordinator and
+peer identities); this contract supplies the behavior. Together they govern
+you for the workstream.
 
 A work thread owns one lane of substantive work — research, planning,
 implementation, review, testing — and owns the evidence for that work. The

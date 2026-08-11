@@ -9,7 +9,7 @@ work. One voice thread becomes a pure coordinator: it delegates your
 intentions to named work threads, follows their progress, and speaks material
 results back in language tuned for the ear.
 
-Everything in the skill is built around four payoffs:
+Every rule in the skill exists to buy you one of four things:
 
 - **Less listening effort** — updates lead with outcome and impact, in a
   Simplified-Technical-English register: one idea per sentence, plain words,
@@ -38,6 +38,7 @@ The skill is layered so each participant gets exactly its own contract:
 | [codex-app.md](skills/codex-voice-optimizer/references/codex-app.md) | Codex app mechanics: task tools, name-to-ID mappings, and the realtime inline route for visible chat artifacts. |
 | [workflows/freeway.md](skills/codex-voice-optimizer/references/workflows/freeway.md) | Freeway: the named, opt-in high-throughput topology (below). |
 | [workflows/decision-walkthrough.md](skills/codex-voice-optimizer/references/workflows/decision-walkthrough.md) | Decision Walkthrough: opt-in, read-only pre-implementation convergence — close material authority decisions one at a time, by voice (below). |
+| [workflows/tutorial.md](skills/codex-voice-optimizer/references/workflows/tutorial.md) | Tutorial: hands-on onboarding — learn the system by using it, basics in minutes, advanced tour only if you accept. |
 
 The `references/workflows/` folder is the skill's growth surface: named,
 opt-in workflows — topologies and processes — that install on top of
@@ -100,7 +101,8 @@ slice.
 ## What using it feels like
 
 1. Start a new empty Codex task in ChatGPT Voice.
-2. Invoke the skill and describe your goal.
+2. Invoke the skill and describe your goal — or say "start the voice
+   optimizer tutorial" for a hands-on tour first.
 3. Accept the Freeway offer, name existing threads, or just start delegating
    free-form.
 4. Speak requests, questions, corrections, and authorizations naturally.

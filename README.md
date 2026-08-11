@@ -13,6 +13,7 @@ Portable, individually installable skills and plugins for AI coding agents by
 | --- | --- | --- |
 | [MSW Kernel](plugins/msw/README.md) | Skill and plugin | Admit only necessary work, require proof, and stop at the fixed point. |
 | [MSW Hook](plugins/msw-hook/README.md) | Optional plugin | Reinforce the MSW Kernel once at session context boundaries. |
+| [MSL Kernel](plugins/msl/README.md) | Skill and plugin | Report only what the reader must act on, in a form they can check. |
 | [Timebox](plugins/timebox/README.md) | Skill and plugin | Converge authorized work inside AWT and a closeout-only CGP. |
 | [Codex Voice Optimizer](plugins/codex-voice-optimizer/README.md) | Codex skill and plugin | Route a spoken workstream across named Codex work tasks. |
 
@@ -144,6 +145,76 @@ code, artifacts, or process, reinforce it with one line:
 
 Repeat that line when needed during normal work and discussion. It restates the
 kernel's necessity test without adding persistent machinery.
+
+---
+
+## MSL Kernel: Minimum Sufficient Language
+
+> **Everything the reader must act on. Nothing they must wade through.**
+
+[Package documentation](plugins/msl/README.md) ·
+[Skill source](plugins/msl/skills/msl/SKILL.md)
+
+Minimum Sufficient Language is the principle. The MSL Kernel is the compact
+instruction set and program that applies the principle to anything an agent
+writes for a reader.
+
+MSL is the sibling of MSW. MSW decides what work is necessary; MSL decides what
+language is necessary to report it. Both are kernels rather than workflows, and
+neither imposes a template.
+
+```text
+Use $msl to write this update:
+<facts>
+```
+
+The kernel binds the reader first, including everything already on their record,
+then partitions every fact before a sentence is written. A fact reaches the
+reader only by changing what they believe about the state of the world, how
+tightly a risk was bound, or what decision remains. Everything describing how
+the work was carried out — tools, stages, superseded designs, abandoned
+attempts, cases tested — is instrument, and the instrument column is closed
+while drafting.
+
+That partition is the whole trick, and it is a gate rather than a rule. Telling
+an agent to avoid narrating its tooling does not hold, because contrast and
+step-by-step feel like proof that the work was careful. Removing those facts
+from view before drafting does hold.
+
+The same program serves a progress note to your own user and a closeout comment,
+a pull request write-up, an incident note, or an email to someone outside the
+company. Only the reader changes. Length is never imposed; it falls out of the
+partition.
+
+## Install the MSL Kernel
+
+### Codex
+
+```bash
+codex plugin marketplace add transcendr/slopware-skills
+codex plugin add msl@slopware-skills
+```
+
+### Claude Code
+
+```bash
+claude plugin marketplace add transcendr/slopware-skills
+claude plugin install msl@slopware-skills
+```
+
+### skills.sh
+
+```bash
+npx skills add transcendr/slopware-skills --skill msl -g
+```
+
+### Generic `~/.agents/skills`
+
+```bash
+git clone https://github.com/transcendr/slopware-skills.git
+mkdir -p ~/.agents/skills
+cp -R slopware-skills/plugins/msl/skills/msl ~/.agents/skills/msl
+```
 
 ---
 
@@ -303,6 +374,11 @@ plugins/
     .claude-plugin/plugin.json
     README.md
     hooks/hooks.json
+  msl/
+    .codex-plugin/plugin.json
+    .claude-plugin/plugin.json
+    README.md
+    skills/msl/SKILL.md
   timebox/
     .codex-plugin/plugin.json
     .claude-plugin/plugin.json

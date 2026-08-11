@@ -1,0 +1,34 @@
+{
+  "name": "msl",
+  "version": "0.1.0",
+  "description": "The Minimum Sufficient Language principle and its lightweight reporting kernel for AI agents.",
+  "author": {
+    "name": "Slopware Engineer",
+    "url": "https://x.com/aienginerd"
+  },
+  "homepage": "https://github.com/transcendr/slopware-skills",
+  "repository": "https://github.com/transcendr/slopware-skills",
+  "license": "CC-BY-4.0",
+  "keywords": [
+    "msl",
+    "minimum-sufficient-language",
+    "status-updates",
+    "technical-writing",
+    "ai-agents"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "MSL",
+    "shortDescription": "Minimum Sufficient Language for agent reports",
+    "longDescription": "Apply the Minimum Sufficient Language principle through a compact kernel that binds the reader, partitions facts from instrument detail, emits every claim in a checkable form, and stops when the reader can act.",
+    "developerName": "Slopware Engineer",
+    "category": "Productivity",
+    "capabilities": [
+      "Instructions"
+    ],
+    "websiteURL": "https://github.com/transcendr/slopware-skills",
+    "defaultPrompt": [
+      "Use MSL to write this so the reader can act on it."
+    ]
+  }
+}

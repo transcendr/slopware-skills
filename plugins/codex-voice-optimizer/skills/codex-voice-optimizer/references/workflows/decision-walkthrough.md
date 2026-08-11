@@ -128,9 +128,13 @@ State
 No later decision advanced; no state changed unless separately authorized.
 ```
 
-The coordinator presents the packet — spoken in the base-layer register, or as
-an inline chat artifact on request — without adding a second decision. Let the
-user choose, ask for clarification, or challenge its premise.
+The coordinator presents the packet on both channels at once, without adding
+a second decision: post the full packet inline in the chat pane (via the
+inline route in [codex-app.md](../codex-app.md)) so the user can read it, and
+simultaneously voice the compressed version in the base-layer register with
+the options lettered — "A … B … C" — so the user can choose by ear with a
+single letter. Never make the user ask for the visible packet. Let them
+choose, ask for clarification, or challenge its premise.
 
 After a choice, restate the accepted decision precisely. Keep adjacent
 deferrals separate; for example, a display-value decision must not silently

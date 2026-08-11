@@ -6,18 +6,23 @@ Use this reference only inside the Codex desktop app.
 
 ChatGPT Voice must run in a Codex task that began as a voice task or is resuming
 an earlier voice task. The full orchestration pattern also requires access to
-persistent Codex task discovery, reading, messaging, and waiting.
+persistent Codex task discovery, reading, and messaging, plus a same-thread
+heartbeat wakeup.
 
 Use the current Codex task tools instead of guessing their state:
 
 - list tasks to resolve names and IDs;
-- create a task only after the requester explicitly asks;
+- create a task only after the user explicitly asks;
 - read a task for current evidence and status;
 - send instructions or corrections to a named work task; and
-- wait on active work tasks for material progress without repeatedly rereading
-  unchanged state.
+- set a heartbeat wakeup on the coordinator's own thread ID for stall
+  detection while idle with dispatched work in flight.
 
-Treat task, thread, chat, and conversation as synonyms when the requester is
+Do not use the built-in wait tool on work tasks unless the user explicitly
+asks for it — it invites unnecessary churn. The heartbeat-on-self is the
+sanctioned stall detector.
+
+Treat task, thread, chat, and conversation as synonyms when the user is
 clearly referring to Codex work. Preserve task-name-to-ID mappings exactly for
 the voice session. Keep the mapping in session context; do not create a state
 file or tracking ledger.
@@ -30,7 +35,7 @@ independent work.
 
 ## Render requested content in the voice chat
 
-When the requester asks for text, Markdown, code, a list, a link, a diagram, or
+When the user asks for text, Markdown, code, a list, a link, a diagram, or
 an artifact to appear directly in the chat pane, use the native realtime inline
 route.
 

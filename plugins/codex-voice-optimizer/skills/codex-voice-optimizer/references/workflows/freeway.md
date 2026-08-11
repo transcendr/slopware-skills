@@ -1,5 +1,8 @@
 # Workflow: Freeway
 
+One coordinator, N lanes, every lane moving — and the coordinator never
+drives.
+
 Freeway is a named, opt-in mode for pushing a large block of work through one
 voice session at maximum throughput: one voice coordinator, N parallel work
 lanes, every lane moving at once. It installs on top of the base layer and the
