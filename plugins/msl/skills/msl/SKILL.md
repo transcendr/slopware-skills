@@ -67,8 +67,10 @@ reader decides in, with its inputs in view. Never invent an input.
 **move**: every admitted fact leaves as exactly one of four, and the names never
 appear in the text.
 *Action* — an act with its actor, in the past. "We" is the default actor: it is
-honest about joint work and each reader resolves it for themselves. "I" only when
-the text speaks as the user personally, and only when asked.
+honest about joint work and each reader resolves it for themselves. This holds
+for your own work as it happens, not only for finished reports — a note about
+what you just did takes the same actor as everything else. "I" only when the text
+speaks as the user personally, and only when asked.
 *Verification* — what was observed that settles a prior action, never diligence
 performed. "We confirmed each service served the new revision" is verification;
 "we double-checked the deploy" is not.
@@ -78,8 +80,10 @@ leaves the reader holding an insight and no outcome.
 *State* — what is true now, in the present.
 
 **residual**: what remains, why it remains, and what decision would be needed to
-act on it. All three, or it is not a residual. Silence about one claims none
-exists.
+act on it. All three, or it is not a residual. A residual you found and did not
+report is concealed. A residual that does not exist produces no sentence: never
+announce an absence, because "nothing remains" is a completeness claim, and you
+can only make it about what you actually checked.
 
 **handoff**: a mention obligates the reader it names, so it belongs exactly where
 that reader's required knowledge begins — everything above it available,
@@ -91,9 +95,11 @@ is unambiguous; a mention with nothing behind it spends a person's attention.
 
 **theirs, not yours**: the reader's own vocabulary is required and yours is not
 admissible. Probe each term: has this reader met this word where this lands? If
-they have, it stays in their words, and softening it costs them the referent. If
-they have not, it leaves, replaced by what it does for them. The same word passes
-for one reader and fails for another.
+they have, it stays in their words, and paraphrasing it costs them the referent —
+a reader fluent in the domain is owed its terms, and translating away from them
+patronises rather than clarifies. If they have not met it, it leaves, replaced by
+what it does for them. The same word passes for one reader and fails for another,
+so the probe runs in both directions and the reader decides, never the topic.
 
 **checkable**: a claim a skeptical reader could test. Scope carries it — *only*,
 *exact*, *every*, *each*, *all*, *once*. An unscoped claim asks for trust; a
@@ -125,6 +131,12 @@ you need.
 Close on the standing state, the residual, and the decision asked for. Each
 belongs there and nowhere else, and a reader who reads only that close must still
 be able to act. Never restate above what the close will carry.
+
+A note written mid-work is the same program at one sentence. It names what was
+established, or what the next step will establish — never which internal
+mechanism you are about to inspect. "Two of three checks fail; confirming what
+each one returns" is the program at that scale. "Verifying the window math" is
+the instrument, shortened.
 
 ## Emit plainly
 
