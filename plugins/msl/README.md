@@ -65,6 +65,18 @@ When a draft drifts back toward machinery, one line restores it:
 
 > Re-partition: what here is the instrument, not the reader's?
 
+## Works with Codex Voice Optimizer
+
+[Codex Voice Optimizer](../codex-voice-optimizer/README.md) can apply MSL
+automatically at its coordinator-to-user boundary. Owning work threads return
+their full evidence, MSL admits the facts the user needs, and CVO turns those
+facts into ear-first speech or a requested chat artifact. CVO keeps control of
+spoken interaction, workflow structure, lettered choices, and realtime
+delivery.
+
+Neither package depends on the other. When both are available in a new Codex
+task, CVO connects them automatically.
+
 ## What it does to a draft
 
 A safeguard stops arriving as a walkthrough and starts arriving as a bound:

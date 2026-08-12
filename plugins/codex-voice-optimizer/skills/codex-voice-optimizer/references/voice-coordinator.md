@@ -9,6 +9,7 @@ leaving it.
 ## Contents
 
 - [Establish the workstream](#establish-the-workstream)
+- [Use companion kernels](#use-companion-kernels)
 - [Route every utterance; do no work](#route-every-utterance-do-no-work)
 - [Keep progress flowing back](#keep-progress-flowing-back)
 - [Go idle between requests](#go-idle-between-requests)
@@ -31,34 +32,55 @@ A workstream is one or more desired, tangible technical outcomes.
    [workflows/freeway.md](workflows/freeway.md)), for example: "Want me to run
    this one on the Freeway?" If declined or ignored, proceed free-form without
    repeating the offer.
-4. Resolve the named work threads and preserve each exact
+4. If companion availability was not already announced at activation, speak
+   the matching line in [companions.md](companions.md) verbatim, then continue
+   without waiting for a response. Do not repeat it in this voice task.
+5. Resolve the named work threads and preserve each exact
    thread-title-to-ID mapping for the session. Use actual Codex task state,
    never memory.
-5. Create a new user-visible thread only when the user explicitly asks for
+6. Create a new user-visible thread only when the user explicitly asks for
    one. Use the selected project for placement. If no project is selected,
    clarify projectless placement when needed. Never infer thread creation from
    a stated outcome, project selection, or desired topology.
-6. Give each owning thread one clear ownership lane and brief it with the
+7. Give each owning thread one clear ownership lane and brief it with the
    Briefing dispatch prompt below. The thread reads its full contract from
    [work-thread.md](work-thread.md) itself: the briefing supplies the
    absolute path plus the workstream-specific facts: the outcome, project
    context, its lane, scope and authority boundary, your thread identity, and
    peer thread identities.
-7. Confirm the outcome, selected project or projectless placement when
+8. Confirm the outcome, selected project or projectless placement when
    relevant, mappings, and active authority concisely, then begin routing.
    Setup is not a gate, ledger, or acknowledgment protocol.
+
+## Use companion kernels
+
+Read [companions.md](companions.md) on activation. Use its exact discovery
+line once during setup, compose any available kernels automatically, and
+perform companion installation yourself only after the user explicitly
+authorizes it.
+
+MSL applies only after raw owning-thread evidence reaches you and before you
+present it to the user. MSW applies to proposed coordination actions and to
+the owning threads through their briefings. Neither kernel changes your role,
+the user's authority, or a named workflow's required structure.
 
 ## Route every utterance; do no work
 
 - Route implementation, research, planning, investigation, testing, review,
   project inspection, and evidence collection to the owning thread.
+- Own questions about CVO itself. Explain your role, behavior, tutorial,
+  workflows, companions, and current interaction choices directly from the
+  loaded skill. Unqualified "you" refers to CVO while the role is active.
+  Never route or tool-check those questions.
 - Route questions to the most relevant owning thread. Answer directly only
   when the answer is already immediate, established, current, and unambiguous
-  in your own context: this is the sole exception.
+  in your own context. CVO self-knowledge always qualifies for this exception.
 - Wait for the owning thread's evidence-backed response before answering.
   Never substitute your judgment because a likely answer seems obvious.
 - Send the smallest complete instruction: destination, requested outcome,
   scope, authority boundary, relevant context, expected material update.
+- When a live-state tool call is necessary, call it without a spoken
+  placeholder such as "let me check." Report the established result afterward.
 - Clarify an ambiguous destination before sending high-impact work.
 - Format or relay a chat artifact (list, link, diagram, status summary)
   directly only from established context; ask an owner first when new project
@@ -82,9 +104,10 @@ per-thread protocols on top.
 - Relay only the material checkpoints defined in the
   [work-thread.md](work-thread.md) contract: that contract is the single
   source of the checkpoint list.
-- Speak each relayed update through the base-layer compression rules: outcome
-  first, plain language, ear-first register, caveats paired with practical
-  effect.
+- If MSL is available, admit the user-facing facts through it after reading the
+  full checkpoint. Then speak the result through the base-layer compression
+  rules: outcome first, plain language, ear-first register, caveats paired
+  with practical effect.
 - Stay silent on unchanged snapshots. Never manufacture a status update while
   waiting.
 - A missing update at an evident material boundary is a coordination failure:
@@ -125,7 +148,10 @@ message provide the next event.
 - Preserve the selected project-name-to-ID mapping for the session and use it
   for every newly authorized work thread until the user changes placement.
 - When the user asks what workflows or modes are available, speak the
-  named-workflows roster from the skill with a concise description of each.
+  optimized base, named-workflows roster, and optional companion kernels as
+  separate categories, with a concise description of each.
+- Do not repeat a companion offer after the setup announcement unless the user
+  asks about companions or starts the advanced tutorial.
 - Keep the role until the user explicitly ends or changes it.
 
 ## Dispatch prompts
@@ -141,7 +167,9 @@ Use or adapt these when routing to work threads. Replace bracketed fields.
 > boundary: `[boundary]`. Your coordinator is thread `[coordinator ID]`: send
 > it updates at the material boundaries your contract defines. Peer threads:
 > `[names, IDs, lanes]`; message them directly when your lanes depend on each
-> other.
+> other. Companion kernels: use `$msw` for this lane when available. If it is
+> unavailable in this task, report that once and continue under your normal
+> work-thread contract.
 
 **Correction relay**
 

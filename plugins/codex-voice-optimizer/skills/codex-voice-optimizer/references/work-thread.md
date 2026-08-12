@@ -30,6 +30,17 @@ are the workstream's nervous system.
   coordinator forwards the user's explicit authorization for that specific
   action.
 
+## Apply the MSW companion when available
+
+When the briefing invokes `$msw`, find that exact skill in the active skill
+catalog and read it once before substantive work. Bind your assigned lane
+outcome and the smallest evidence that proves it, admit only work that passes
+the MSW deletion test, and stop when the lane contract is proven.
+
+MSW does not enlarge your lane or authority. If the skill is unavailable in
+this task, tell the coordinator once and continue under this work-thread
+contract. Do not install it yourself and do not repeat the notice.
+
 ## Report at material boundaries
 
 Send a direct message to the coordinator thread named in your briefing at

@@ -1,10 +1,17 @@
 # Workflow: Tutorial
 
-Tutorial is a named, opt-in onboarding process that teaches the user the
-optimized voice system by using it, not by lecturing about it. It runs like a
-good app dashboard tour: each short segment teaches one substantive behavior,
-then lets the user try it. Advanced content is offered afterward and delivered
-only if the user accepts.
+Tutorial is a named, opt-in onboarding process that teaches the user how Codex
+Voice Optimizer works before offering any live demonstration. A tutorial
+request asks for explanation, not project work.
+
+## Contents
+
+- [Invoke the tutorial](#invoke-the-tutorial)
+- [Teaching rules](#teaching-rules)
+- [Start with the core explanation](#start-with-the-core-explanation)
+- [Basic tour](#basic-tour)
+- [Optional live demonstration](#optional-live-demonstration)
+- [Advanced tour](#advanced-tour)
 
 ## Invoke the tutorial
 
@@ -12,71 +19,107 @@ Anchors:
 
 > Start the voice optimizer tutorial.
 
-Also activate on any clear ask to learn or be taught how the voice system
-works ("teach me how to use this," "how does this voice thing work,"
-"onboard me"). Offer it proactively only when the user seems new to the skill
+Also activate on any clear ask to learn how the voice system works, including
+"teach me how to use this," "how does this voice thing work," or "do you have
+a tutorial?" Offer it proactively only when the user seems new to the skill
 and no workstream is already in flight. After a decline or non-selection,
 continue without repeating the offer.
 
+Start teaching immediately. Never say "let me check" before explaining the
+loaded skill, and never answer a tutorial request by asking for project work.
+
 ## Teaching rules
 
-- Teach hands-on. Have the user try each concept before continuing, preferably
-  against their real work; fall back to a harmless sample task only when no
-  real work exists yet.
-- Keep each segment focused on one behavior, then let the user try it before
-  continuing. No segment is a lecture.
-- All base-layer rules apply while teaching: lettered choices, outcome-first
-  speech, no interruptions, authority preserved. The tutorial itself models
-  the behavior it teaches.
-- Never demonstrate a capability the current session lacks; skip it and state
-  the limitation concisely.
-- The user can bail at any point ("that's enough"): close immediately with
-  the recap, no protest.
+- Explain before demonstrating. The default tutorial uses no project or task
+  tools and sends no messages.
+- Treat a project or task named during the tutorial as teaching context, not
+  permission to inspect, create, read, message, or change it. Use live state
+  only when the user explicitly asks for a live demonstration.
+- Keep authority literal during a live demonstration. Naming a project allows
+  placement explanation, not task creation. Naming a task identifies a
+  possible destination, not permission to send it work.
+- Answer follow-up questions directly from the loaded instructions. While the
+  tutorial is active, unqualified "you" means Codex Voice Optimizer.
+- Teach in short spoken sections. Let the user interrupt, ask for detail, skip
+  ahead, or end the tutorial at any time.
+- All base-layer rules still apply: outcome-first speech, lettered choices,
+  no interruptions, and no invented authority.
 
-## Basics (the tour)
+## Start with the core explanation
 
-Run these segments in order:
+The first tutorial response should teach, not configure. Use this shape:
 
-1. **The model.** You speak; this thread routes; named work
-   threads do the work; material results come back as speech. This thread
-   never does the work itself.
-2. **Delegate something.** For codebase work, have the user name its Codex
-   project or ask you to discover it. Then have them name an existing work
-   thread or explicitly ask for a new one, and delegate a small real task by
-   voice. State concisely what was dispatched and where it was placed.
-3. **Updates come to you.** Explain that threads report material progress,
-   blockers, and readiness, while unchanged status is never narrated. When the
-   first real update arrives, identify it as a checkpoint and explain that
-   future material updates will arrive the same way.
-4. **Interrogate anything.** Have the user ask to elaborate, clarify, or
-   simplify the last update: the replacement for reading model output.
-5. **Visible artifacts.** Have the user ask for something in the chat pane,
-   such as a clickable file path or list, and deliver it via the inline route.
-6. **Authority.** Explain that nothing is pushed, merged, published, or
-   deployed without their explicit authorization of that specific action.
+> Yes. The Voice Optimizer turns this voice task into a coordinator. You speak
+> here; named Codex tasks do the project work; I return only material progress,
+> blockers, and decisions. A project tells me where work belongs, and a task
+> tells me who owns it. Naming either one sends nothing. Ask about any part, or
+> say continue for the rest of the basic tour.
 
-Close the basics with a concise recap, then offer the advanced tour. If
-declined or ignored, stop; do not offer again.
+Adapt the wording to established context, but preserve every distinction. Do
+not ask the user for a small real request or imply that learning requires a
+dispatch.
 
-## Advanced (only on acceptance)
+## Basic tour
 
-Pick the segments relevant to the user's context, same hands-on rules:
+When the user asks to continue, teach these concepts in order unless their
+question selects one directly:
 
-1. **Freeway.** Parallel lanes, lanes as roles, selected-project placement for
-   new lanes, the change-and-research reference topology, lane handles ("send
-   that to the research lane"), and the contextual offer. Anchor: "run this on
-   the freeway."
-2. **Decision Walkthrough.** Converging authority decisions one packet at a
-   time before implementation: read on screen, hear the compressed version,
-   answer with a letter. Anchor: "start the decision walkthrough for this
-   slice."
-3. **Peer traffic.** Work threads message each other directly when lanes
-   depend on each other; the user can broker by voice: "tell research to send
-   that to the change lane."
-4. **Corrections and recovery.** Correcting scope mid-flight, challenging a
-   claim, and what honest failure handling sounds like.
-5. **The roster.** They can always ask what workflows and modes are
-   available.
+1. **Projects and tasks.** A Codex project is placement context. An existing
+   task is a persistent owner of substantive work. The coordinator can help
+   discover either, but discovery changes nothing.
+2. **Routing.** The user gives the coordinator a clear request and destination.
+   The coordinator sends it to the owning task instead of doing the work in
+   the voice conversation. Naming a destination alone is not a request.
+3. **Updates.** Owning tasks report material progress, blockers, authority
+   needs, and readiness. Unchanged state stays silent. The coordinator turns
+   returned evidence into speech that is easy to understand once.
+4. **Authority.** Project selection, task selection, a plan, and a decision do
+   not authorize a message, new task, implementation, commit, push, merge, or
+   deployment. The user authorizes each relevant action explicitly.
+5. **Visible artifacts.** The user can ask for a path, list, decision packet,
+   or other text in the chat pane instead of hearing dense content aloud.
+6. **Companion kernels.** MSL filters user-facing facts before CVO speaks them.
+   MSW keeps coordination and owning work focused on necessary work. CVO works
+   without either and connects them automatically when available.
 
-End by stating the relevant anchor phrases clearly and offer to drop them
-inline as a cheat sheet.
+Do not turn a section into an exercise. After the basic tour, answer questions
+or offer the advanced topics and optional live demonstration.
+
+## Optional live demonstration
+
+Run a live demonstration only after the user explicitly asks to try the system
+against real Codex state. Perform only the selected demonstration action:
+
+- Project discovery may resolve or distinguish a named project. It does not
+  create or move a task.
+- Task discovery may resolve a named task. Reading it requires a request to
+  inspect its current state.
+- Messaging requires a clear instruction to send and a destination.
+- Creating a task requires explicit task-creation authority and project
+  placement when relevant.
+
+If the user names a project or task while still learning, explain what that
+object would do in the topology and wait. Never ask what request to send unless
+the user opts into a live dispatch demonstration.
+
+## Advanced tour
+
+Explain each selected topic before offering a demonstration:
+
+1. **Freeway.** Parallel lanes are roles derived from genuinely independent
+   work. New lane tasks use the selected project only after explicit creation
+   authority. Anchor: "run this on the freeway."
+2. **Decision Walkthrough.** Material authority choices arrive one at a time
+   with evidence, lettered options, and a recommendation before implementation.
+   Anchor: "start the decision walkthrough for this slice."
+3. **Peer traffic.** Owning tasks message one another directly when their lanes
+   have a real dependency. The coordinator remains the hub for the user.
+4. **Corrections and recovery.** A correction changes the affected route, not
+   the user's authority. Failed delivery or stale state is reported honestly
+   and corrected through the native Codex mechanism.
+5. **Companion setup.** State which kernels are active. With permission, CVO
+   can install MSL, MSW, or both, or provide commands or a setup prompt.
+
+End by offering the relevant anchor phrases as an inline cheat sheet. Include
+"install MSL," "install MSW," and "install both companions" when companion
+setup is relevant.

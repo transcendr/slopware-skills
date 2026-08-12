@@ -84,3 +84,8 @@ choice, ask; do not manufacture a value.
 
 Reject a failed claim with one report line. Do not turn it into an investigation,
 fix, or deferred follow-up.
+
+This skill works alone. If MSL is also installed, use this skill to decide what
+work is necessary and MSL to report it. If Codex Voice Optimizer is active,
+apply this kernel to its coordination claims and owning work threads while CVO
+owns routing, project placement, roles, authority, and speech.

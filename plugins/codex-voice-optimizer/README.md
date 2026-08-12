@@ -37,15 +37,58 @@ The skill is layered so each participant gets exactly its own contract:
 | [voice-coordinator.md](skills/codex-voice-optimizer/references/voice-coordinator.md) | How the coordinator operates: workstream setup, routing every utterance, keeping progress flowing back, going idle. |
 | [work-thread.md](skills/codex-voice-optimizer/references/work-thread.md) | The contract briefed into every work thread: own your lane, report at material boundaries, talk to peers directly, respect authority. |
 | [codex-app.md](skills/codex-voice-optimizer/references/codex-app.md) | Codex app mechanics: project discovery and placement, task tools, name-to-ID mappings, and the realtime inline route for visible chat artifacts. |
+| [companions.md](skills/codex-voice-optimizer/references/companions.md) | Optional kernel composition: MSL at the speaking boundary, MSW at the work boundary, and permission-based setup. |
 | [workflows/freeway.md](skills/codex-voice-optimizer/references/workflows/freeway.md) | Freeway: the named, opt-in high-throughput topology (below). |
 | [workflows/decision-walkthrough.md](skills/codex-voice-optimizer/references/workflows/decision-walkthrough.md) | Decision Walkthrough: opt-in, read-only pre-implementation convergence that closes material authority decisions one at a time by voice. |
-| [workflows/tutorial.md](skills/codex-voice-optimizer/references/workflows/tutorial.md) | Tutorial: hands-on onboarding that teaches the system through use, with advanced material only when accepted. |
+| [workflows/tutorial.md](skills/codex-voice-optimizer/references/workflows/tutorial.md) | Tutorial: teaching-first onboarding that explains the system before any optional live demonstration. |
 
 The `references/workflows/` folder is the skill's growth surface. It contains
 named, opt-in topologies and processes that install on top of free-form
 orchestration. Every workflow inherits the base layer, activates only by its
 anchor phrase or an explicitly permitted offer, and composes with the others.
 New processes land there as they are battle-tested.
+
+## Companion kernels
+
+Codex Voice Optimizer works alone. MSL improves what you hear. MSW improves
+how the work threads work. Install any combination, and CVO connects the
+available pieces automatically.
+
+```text
+You speak
+    -> CVO routes to owning work threads
+    -> MSW admits necessary work when available
+    -> work-thread evidence returns
+    -> MSL admits user-facing facts when available
+    -> CVO speaks the result
+```
+
+- [MSL Kernel](../msl/README.md) filters the evidence at the
+  coordinator-to-user boundary. CVO still owns spoken interaction, lettered
+  choices, workflow structure, and visible chat delivery.
+- [MSW Kernel](../msw/README.md) applies its deletion test to new coordination
+  actions and to each owning thread's lane contract. CVO still owns routing,
+  project placement, roles, and authority.
+
+During activation or the first workstream setup, the coordinator says once
+which companions are active and continues immediately. When a companion is
+missing, it makes the option visible without repeatedly asking. Say "install
+MSL," "install MSW," or "install both companions" to authorize direct setup.
+If direct setup is not available, CVO can put the exact commands in the chat
+or generate a ready-to-send prompt for another Codex task.
+
+Install either companion yourself at any time:
+
+```bash
+codex plugin marketplace add transcendr/slopware-skills
+codex plugin add msl@slopware-skills
+codex plugin add msw@slopware-skills
+```
+
+Install only the companions you want. Start a new Codex task afterward so its
+skill catalog includes the newly installed plugin. See the
+[official plugin documentation](https://learn.chatgpt.com/docs/plugins#install-and-use-a-plugin)
+for the new-task activation behavior.
 
 ## Freeway
 
@@ -103,17 +146,32 @@ walkthrough for this slice"* and the workstream converges them one at a time:
 Runs free-form or inside Freeway, where it binds to the lane that owns the
 slice.
 
+## Tutorial
+
+Say *"start the voice optimizer tutorial"* or ask how the Voice Optimizer
+works. It begins with a spoken explanation of the coordinator, projects,
+owning tasks, routing, updates, and authority. It does not ask you for a real
+work request, inspect a project, or send anything merely to make the lesson
+feel interactive.
+
+Naming a project or task during the tutorial gives the explanation useful
+context. It still sends nothing. A live demonstration begins only when you
+explicitly ask to try the system against real Codex state, and each normal
+authority boundary continues to apply.
+
 ## What using it feels like
 
 1. Start a new empty Codex task in ChatGPT Voice.
 2. Invoke the skill and describe your goal, or say "start the voice optimizer
-   tutorial" for a hands-on tour first.
-3. If the work belongs to a codebase, name its Codex project or ask the
+   tutorial" for a teaching-first tour with optional live demonstrations.
+3. Hear one concise companion update, then keep talking. It never blocks setup
+   or repeats after you ignore or decline it.
+4. If the work belongs to a codebase, name its Codex project or ask the
    coordinator to help discover it.
-4. Accept the Freeway offer, name existing threads, or explicitly ask for new
+5. Accept the Freeway offer, name existing threads, or explicitly ask for new
    ones. Newly created work threads stay in the selected project.
-5. Speak requests, questions, corrections, and authorizations naturally.
-6. Do something else while material progress, blockers, and readiness arrive
+6. Speak requests, questions, corrections, and authorizations naturally.
+7. Do something else while material progress, blockers, and readiness arrive
    as concise spoken updates. Ask it to elaborate, clarify, simplify, or drop
    a clickable artifact in the chat whenever you want.
 

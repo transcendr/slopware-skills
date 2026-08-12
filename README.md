@@ -311,8 +311,9 @@ speaking.
 Free-form orchestration is the default. Named workflows install additional
 structure only when invoked: Freeway derives parallel work lanes from genuinely
 independent work, Decision Walkthrough closes material authority choices before
-implementation, and Tutorial teaches the system through hands-on use. Every
-workflow inherits the optimized base behavior and role contracts.
+implementation, and Tutorial explains the system before any optional live
+demonstration. Every workflow inherits the optimized base behavior and role
+contracts.
 
 For codebase work, the coordinator can discover the relevant Codex project and
 place every newly authorized owning thread there. Project selection establishes
@@ -322,6 +323,27 @@ The change-and-research topology from the original workflow remains a reference
 example, not a default or limit. Work threads can communicate directly when
 their lanes have a real dependency, while material progress returns through the
 voice coordinator.
+
+### Companion kernels
+
+Codex Voice Optimizer works alone, then connects whichever optional kernels are
+available. MSL improves what you hear. MSW improves how the work threads work.
+
+```text
+You -> CVO routing -> MSW work admission -> work-thread evidence
+    -> MSL fact admission -> CVO speech
+```
+
+On activation or first workstream setup, CVO announces the active combination
+once and continues. If a companion is missing, you can say "install MSL,"
+"install MSW," or "install both companions." With permission, the coordinator
+can install the exact requested plugin, verify it, and tell you to start a new
+Codex task. There is no hard dependency, hook, background installer, or
+repeated prompt.
+
+[Companion contract](plugins/codex-voice-optimizer/skills/codex-voice-optimizer/references/companions.md) ·
+[MSL Kernel](plugins/msl/README.md) ·
+[MSW Kernel](plugins/msw/README.md)
 
 ```text
 Use $codex-voice-optimizer to coordinate this workstream through my existing
@@ -401,6 +423,7 @@ plugins/
       SKILL.md
       references/
         codex-app.md
+        companions.md
         voice-coordinator.md
         work-thread.md
         workflows/

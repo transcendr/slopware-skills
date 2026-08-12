@@ -17,6 +17,11 @@ an earlier voice task. The full orchestration pattern also requires access to
 project discovery plus persistent Codex task discovery, authorized creation,
 reading, messaging, and interruptible waiting.
 
+The optimized base, CVO self-explanation, and teaching-only Tutorial do not
+require those live task capabilities. Check only the capability needed for the
+requested live action. A missing capability stops that action, not the
+instruction-only parts of CVO.
+
 Use the current Codex project and task tools instead of guessing their state:
 
 - `codex_app__list_projects` to resolve project names, IDs, and Git status;
@@ -42,8 +47,15 @@ project selection a prerequisite for routing to existing tasks.
 
 Use project discovery for resolution, not as a spoken catalog dump. Ask for an
 identifying word when the user does not remember the name. When multiple
-matches remain, present the matching projects as lettered choices. Put the full
-project list in the chat only when the user asks to see it.
+matches remain, present the matching projects as lettered choices with one
+meaningful distinction each, such as primary folder, Git state, or a short
+project-ID suffix when no friendlier distinction exists. Never offer only "the
+first saved entry" and "the second saved entry." If entries point to the same
+repository and appear operationally equivalent, say that plainly instead of
+pretending their order is meaningful. Collapse equivalent entries to one
+logical choice and retain one exact ID; do not make the user choose between
+indistinguishable entries. Put the full project list in the chat only when the
+user asks to see it.
 
 Preserve the exact project-name-to-ID mapping in session context. Selecting a
 project, accepting Freeway, or naming lane roles never authorizes task creation.
@@ -132,4 +144,6 @@ the realtime interface rendered it. State that distinction exactly.
 
 Do not use browser control, Computer Use, shell polling, sleeps, daemons, or a
 lifecycle hook to simulate missing Codex task or realtime-inline capabilities.
-Report the unavailable capability and keep existing task state unchanged.
+Report the specific live action that is unavailable and keep existing task
+state unchanged. Continue any CVO explanation or no-tools Tutorial the user
+requests.

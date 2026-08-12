@@ -171,3 +171,8 @@ consequence here, never a target.
 
 This skill works alone. If the MSW skill is also installed, use MSW to decide
 what work is necessary and this skill to report it.
+
+If Codex Voice Optimizer is active, use this kernel to admit the facts at its
+coordinator-to-user boundary. Let CVO own spoken interaction, ordering,
+lettered choices, workflow-required structure, realtime directives, and
+transport markers.
