@@ -1,0 +1,4 @@
+interface:
+  display_name: "CODER Loop"
+  short_description: "Optimized Codex development with fresh review"
+  default_prompt: "Use $coder-loop to run this change through the CODER Loop."

@@ -15,6 +15,7 @@ Portable, individually installable skills and plugins for AI coding agents by
 | [MSW Hook](plugins/msw-hook/README.md) | Optional plugin | Reinforce the MSW Kernel once at session context boundaries. |
 | [MSL Kernel](plugins/msl/README.md) | Skill and plugin | Report only what the reader must act on, in a form they can check. |
 | [Timebox](plugins/timebox/README.md) | Skill and plugin | Converge authorized work inside AWT and a closeout-only CGP. |
+| [CODER Loop](plugins/coder-loop/README.md) | Codex skill and plugin | Optimize Codex development through bounded work, fresh evaluation, and evidence-scoped remediation. |
 | [Codex Voice Optimizer](plugins/codex-voice-optimizer/README.md) | Codex skill and plugin | Optimize Codex Voice for hands-free orchestration across owning work threads. |
 
 Each package has its own documentation and remains independently installable.
@@ -294,6 +295,59 @@ cp -R slopware-skills/plugins/timebox/skills/timebox ~/.agents/skills/timebox
 
 ---
 
+## CODER Loop
+
+> **Codex Optimized Development, Evaluation, and Remediation.**
+
+[Package documentation](plugins/coder-loop/README.md) ·
+[Skill source](plugins/coder-loop/skills/coder-loop/SKILL.md)
+
+The CODER Loop turns complex implementation into coherent task families with one owner
+each, then sends every completed candidate through a fresh independent review.
+Only observations that leave an acceptance claim unmet or unsupported become
+repair work. After a repair, the CODER Loop rechecks the claims that could have changed
+instead of discarding unrelated evidence or repeating the entire review for
+show.
+
+The parent remains orchestration-only and owns final acceptance. Workers own
+implementation, reviewers stay read-only, and delegation never expands commit,
+publication, deployment, or other external-write authority.
+
+Temporary top-level Codex tasks created or forked for CODER Loop roles are archived
+after their terminal result and evidence have been captured. A postmortem then
+uses the completed loop evidence to calibrate future model routing without
+weakening independent review or changing a default from one success.
+
+The CODER Loop uses Codex collaboration without a fixed agent count or hard-coded model
+roster. If the task is one coherent family, it uses one worker and one fresh
+reviewer. If Codex cannot supply a fresh review context, the skill stops and
+does not pretend that self-review is independent.
+
+## Install the CODER Loop
+
+### Codex
+
+```bash
+codex plugin marketplace add transcendr/slopware-skills
+codex plugin add coder-loop@slopware-skills
+```
+
+### skills.sh
+
+```bash
+npx skills add https://github.com/transcendr/slopware-skills/tree/main/plugins/coder-loop/skills/coder-loop -g -a codex
+```
+
+### Generic `~/.agents/skills` for Codex
+
+```bash
+git clone https://github.com/transcendr/slopware-skills.git
+mkdir -p ~/.agents/skills
+cp -R slopware-skills/plugins/coder-loop/skills/coder-loop ~/.agents/skills/coder-loop
+```
+
+---
+
 ## Codex Voice Optimizer
 
 > **You speak. The coordinator routes. The work threads own the work.**
@@ -416,6 +470,16 @@ plugins/
     skills/timebox/
       SKILL.md
       references/independent-monitor.md
+  coder-loop/
+    .codex-plugin/plugin.json
+    README.md
+    skills/coder-loop/
+      SKILL.md
+      references/
+        codex.md
+        postmortem.md
+        review-kernel.md
+        role-contracts.md
   codex-voice-optimizer/
     .codex-plugin/plugin.json
     README.md

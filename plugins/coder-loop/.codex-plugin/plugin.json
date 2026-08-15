@@ -1,0 +1,39 @@
+{
+  "name": "coder-loop",
+  "version": "0.1.0",
+  "description": "Run the Codex Optimized Development, Evaluation, and Remediation Loop through bounded task families and fresh independent review.",
+  "author": {
+    "name": "Slopware Engineer",
+    "url": "https://x.com/aienginerd"
+  },
+  "homepage": "https://github.com/transcendr/slopware-skills",
+  "repository": "https://github.com/transcendr/slopware-skills",
+  "license": "CC-BY-4.0",
+  "keywords": [
+    "coder-loop",
+    "codex-optimized-development",
+    "bounded-task-family-review",
+    "codex",
+    "multi-agent",
+    "independent-review",
+    "orchestration"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "CODER Loop",
+    "shortDescription": "Optimized Codex development with fresh review",
+    "longDescription": "Run the CODER Loop to split complex Codex development into non-overlapping task families, evaluate each candidate in a fresh independent context, and remediate only acceptance-blocking gaps before coordinator acceptance.",
+    "developerName": "Slopware Engineer",
+    "category": "Productivity",
+    "capabilities": [
+      "Codex Workflow Optimization",
+      "Bounded Development",
+      "Independent Evaluation",
+      "Evidence-Scoped Remediation"
+    ],
+    "websiteURL": "https://github.com/transcendr/slopware-skills",
+    "defaultPrompt": [
+      "Use $coder-loop to run this change through the CODER Loop."
+    ]
+  }
+}
