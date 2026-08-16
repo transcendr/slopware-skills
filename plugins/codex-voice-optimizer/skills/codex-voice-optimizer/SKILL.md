@@ -1,20 +1,18 @@
 ---
 name: codex-voice-optimizer
 description: >-
-  Optimize ChatGPT Voice in the Codex desktop app into an ear-first
-  orchestration layer for free-form task coordination and opt-in workflows.
-  Apply concise spoken synthesis, routing-only coordinator behavior, role
-  contracts for owning work threads, project-aware task placement, explicit
-  authority boundaries, safe speech handling, current-state verification,
-  honest recovery, and automatic composition with optional MSL and MSW
-  companion kernels. Load named workflows only when invoked: Freeway for
-  genuinely parallel work lanes, Decision Walkthrough for read-only authority
-  convergence, and Tutorial for teaching-first onboarding with optional live
-  demonstrations. Use when the user invokes the Codex voice optimizer, asks to
-  coordinate Codex tasks or workstreams through voice, assigns the current
-  voice task as a coordinator, asks to run Freeway, starts a decision
-  walkthrough, asks to learn voice orchestration, or wants CVO to install or
-  use its MSL and MSW companions.
+  Optimize ChatGPT Voice in the Codex desktop app into an ear-first control
+  plane for free-form task coordination and opt-in workflows. Apply spoken
+  synthesis, routing-only coordination, owning-task role contracts, project
+  placement, explicit authority, safe speech, current-state verification,
+  honest recovery, and the optional Slopware Dev Stack: MSL, MSW, CODER Loop,
+  and Timebox. Load named workflows only when invoked: Freeway for parallel
+  lanes, Decision Walkthrough for read-only authority convergence, and Tutorial
+  for teaching-first onboarding. Use when the user invokes the voice optimizer,
+  coordinates Codex work through voice, assigns the current voice task as
+  coordinator, runs Freeway, starts a decision walkthrough, learns voice
+  orchestration, routes development through CODER, authorizes Timebox, or asks
+  CVO to install or use Slopware companions.
 ---
 
 # Codex Voice Optimizer
@@ -63,7 +61,7 @@ compose any available companion kernels.
 For bare activation with no workstream yet, orient the user instead of asking
 the vague question "what's first?" State that CVO is active, explain in one
 sentence that this voice task coordinates while named Codex tasks own project
-work, speak the applicable companion line verbatim, then offer these natural
+work, speak the applicable stack lines verbatim, then offer these natural
 starting points: the tutorial, an existing task, or a desired outcome. Do not
 open with a generic acknowledgment or claim that a requested live coordination
 action is ready before its required Codex capabilities are available.
@@ -203,19 +201,24 @@ thread exactly as granted, with its target and scope.
   name-to-ID mappings, and the inline route for visible chat artifacts are in
   [references/codex-app.md](references/codex-app.md).
 
-## Companion kernels
+## Slopware Dev Stack companions
 
-Codex Voice Optimizer works alone. When MSL or MSW is available in the active
-skill catalog, compose it automatically without turning it into a dependency:
+Codex Voice Optimizer works alone. Use
+[references/companions.md](references/companions.md) as the single contract for
+once-per-task discovery, activation state, boundary ownership, authorized
+installation, and tutorial or capability-roster presentation.
 
-- **MSL** filters owning-thread evidence at the coordinator-to-user boundary,
-  then CVO renders the admitted facts for speech or the chat pane.
-- **MSW** applies the necessity test to coordination claims and owning work
-  while CVO preserves routing, role, project, and authority boundaries.
+- **MSL** filters evidence at the final coordinator-to-user boundary.
+- **MSW** applies necessity to coordination and owning-task work.
+- **CODER Loop** runs inside one owning work task as the optional development
+  engine. CVO never becomes its coordinator, worker, reviewer, or acceptance
+  owner.
+- **Timebox** wraps an owning task or CODER Loop only after explicit authority.
+  CVO relays established state but never calculates or monitors the clock.
 
-Use [references/companions.md](references/companions.md) as the single contract
-for once-per-task discovery, composition order, authorized installation, and
-tutorial or capability-roster presentation.
+Catalog presence never activates CODER or Timebox. Route each only after the
+user invokes it or accepts the exact contextual offer permitted by the
+companion contract.
 
 ## Named workflows
 

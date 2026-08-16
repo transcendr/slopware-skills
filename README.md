@@ -15,9 +15,29 @@ Portable, individually installable skills and plugins for AI coding agents by
 | [MSW Hook](plugins/msw-hook/README.md) | Optional plugin | Reinforce the MSW Kernel once at session context boundaries. |
 | [MSL Kernel](plugins/msl/README.md) | Skill and plugin | Report only what the reader must act on, in a form they can check. |
 | [Timebox](plugins/timebox/README.md) | Skill and plugin | Converge authorized work inside AWT and a closeout-only CGP. |
+| [CODER Loop](plugins/coder-loop/README.md) | Codex skill and plugin | Optimize Codex development through bounded work, fresh evaluation, and evidence-scoped remediation. |
 | [Codex Voice Optimizer](plugins/codex-voice-optimizer/README.md) | Codex skill and plugin | Optimize Codex Voice for hands-free orchestration across owning work threads. |
 
 Each package has its own documentation and remains independently installable.
+
+## The Slopware Dev Stack
+
+> **A modular Codex-native stack that removes waste at every development
+> boundary. Install one layer or compose the stack. Free forever.**
+
+| Component | Stack role | Contribution |
+| --- | --- | --- |
+| [Codex Voice Optimizer](plugins/codex-voice-optimizer/README.md) | Control plane | Hands-free intent, routing, authority, and material progress |
+| [CODER Loop](plugins/coder-loop/README.md) | Development engine | Bounded implementation, independent evaluation, remediation, acceptance, and evolving model routing |
+| [MSW Kernel](plugins/msw/README.md) | Scope kernel | Necessary coordination, work, findings, repairs, and proof |
+| [Timebox](plugins/timebox/README.md) | Convergence envelope | One explicitly authorized AWT/CGP clock around the work |
+| [MSL Kernel](plugins/msl/README.md) | Communication kernel | The final facts the user must understand or act on |
+
+The product story is simple: CVO controls it. CODER builds it. MSW keeps it
+necessary. Timebox makes an authorized run converge. MSL makes the result
+clear. Every package works alone; together they form an evidence-evolving,
+high-efficiency agentic development system without a hard dependency or shared
+runtime.
 
 ---
 
@@ -294,6 +314,73 @@ cp -R slopware-skills/plugins/timebox/skills/timebox ~/.agents/skills/timebox
 
 ---
 
+## CODER Loop
+
+> **Codex Optimized Development, Evaluation, and Remediation.**
+
+[Package documentation](plugins/coder-loop/README.md) ·
+[Skill source](plugins/coder-loop/skills/coder-loop/SKILL.md)
+
+The CODER Loop turns complex implementation into coherent task families with one owner
+each, then sends every completed candidate through a fresh independent review.
+Only observations that leave an acceptance claim unmet or unsupported become
+repair work. After a repair, the CODER Loop rechecks the claims that could have changed
+instead of discarding unrelated evidence or repeating the entire review for
+show.
+
+The parent remains orchestration-only and owns final acceptance. Workers own
+implementation, reviewers stay read-only, and delegation never expands commit,
+publication, deployment, or other external-write authority.
+
+The CODER Loop uses collaboration subagents for its normal worker, repair,
+integration, and review roles. It can pair inherited working context with a
+selected model and reasoning effort through the `fork_turns: "99"` Subagents
+V2 route, while fresh independent reviewers start without inherited reasoning.
+
+With separate user permission, top-level Codex tasks remain available for
+genuine lifecycle or placement needs. Temporary fallback tasks are archived
+after their terminal result and evidence have been captured. A postmortem then
+uses the completed loop evidence to calibrate future model routing without
+weakening independent review or changing a default from one success.
+
+The CODER Loop has no fixed agent count or hard-coded model roster. If the task
+is one coherent family, it uses one worker and one fresh reviewer. If Codex
+cannot supply a fresh review context, the skill stops and does not pretend that
+self-review is independent.
+
+Start with `Start the CODER Loop tutorial` for a teaching-only walkthrough, or
+say `Show me the Slopware Dev Stack` to see how MSW, Timebox, MSL, and CVO
+compose around the loop. CODER announces available companions once and can
+install exact requested layers with permission.
+
+## Install the CODER Loop
+
+### Codex
+
+This installs from the repository's free-form Git marketplace. It does not
+require submission to the official plugin directory.
+
+```bash
+codex plugin marketplace add transcendr/slopware-skills
+codex plugin add coder-loop@slopware-skills
+```
+
+### skills.sh
+
+```bash
+npx skills add https://github.com/transcendr/slopware-skills/tree/main/plugins/coder-loop/skills/coder-loop -g -a codex
+```
+
+### Generic `~/.agents/skills` for Codex
+
+```bash
+git clone https://github.com/transcendr/slopware-skills.git
+mkdir -p ~/.agents/skills
+cp -R slopware-skills/plugins/coder-loop/skills/coder-loop ~/.agents/skills/coder-loop
+```
+
+---
+
 ## Codex Voice Optimizer
 
 > **You speak. The coordinator routes. The work threads own the work.**
@@ -324,26 +411,29 @@ example, not a default or limit. Work threads can communicate directly when
 their lanes have a real dependency, while material progress returns through the
 voice coordinator.
 
-### Companion kernels
+### Slopware Dev Stack
 
-Codex Voice Optimizer works alone, then connects whichever optional kernels are
-available. MSL improves what you hear. MSW improves how the work threads work.
+Codex Voice Optimizer works alone as the voice control plane. It automatically
+composes available MSL and MSW kernels, exposes CODER as the opt-in development
+engine, and exposes Timebox as the opt-in convergence envelope.
 
 ```text
-You -> CVO routing -> MSW work admission -> work-thread evidence
-    -> MSL fact admission -> CVO speech
+You -> CVO routing -> CODER development when invoked
+    -> MSW work admission -> Timebox convergence when authorized
+    -> task evidence -> MSL fact admission -> CVO speech
 ```
 
-On activation or first workstream setup, CVO announces the active combination
-once and continues. If a companion is missing, you can say "install MSL,"
-"install MSW," or "install both companions." With permission, the coordinator
-can install the exact requested plugin, verify it, and tell you to start a new
-Codex task. There is no hard dependency, hook, background installer, or
-repeated prompt.
+On activation or first workstream setup, CVO announces active kernels and
+available development layers once and continues. With permission, it can
+install MSL, MSW, CODER, Timebox, or the full Slopware Dev Stack, verify the
+requested state, and tell you to start a new Codex task. There is no hard
+dependency, hook, background installer, or repeated prompt.
 
 [Companion contract](plugins/codex-voice-optimizer/skills/codex-voice-optimizer/references/companions.md) ·
 [MSL Kernel](plugins/msl/README.md) ·
-[MSW Kernel](plugins/msw/README.md)
+[MSW Kernel](plugins/msw/README.md) ·
+[CODER Loop](plugins/coder-loop/README.md) ·
+[Timebox](plugins/timebox/README.md)
 
 ```text
 Use $codex-voice-optimizer to coordinate this workstream through my existing
@@ -416,6 +506,19 @@ plugins/
     skills/timebox/
       SKILL.md
       references/independent-monitor.md
+  coder-loop/
+    .codex-plugin/plugin.json
+    README.md
+    skills/coder-loop/
+      SKILL.md
+      references/
+        companions.md
+        codex.md
+        postmortem.md
+        review-kernel.md
+        role-contracts.md
+        workflows/
+          tutorial.md
   codex-voice-optimizer/
     .codex-plugin/plugin.json
     README.md

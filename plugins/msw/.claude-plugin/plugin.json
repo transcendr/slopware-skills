@@ -1,6 +1,6 @@
 {
   "name": "msw",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "The Minimum Sufficient Work principle and its lightweight execution kernel for AI agents.",
   "author": {
     "name": "Slopware Engineer",

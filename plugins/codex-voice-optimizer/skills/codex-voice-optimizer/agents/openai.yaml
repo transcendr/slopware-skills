@@ -1,4 +1,4 @@
 interface:
   display_name: "Codex Voice Optimizer"
   short_description: "Optimize Codex Voice for hands-free orchestration"
-  default_prompt: "Use $codex-voice-optimizer with any available MSL and MSW companion kernels to coordinate this work through my Codex tasks."
+  default_prompt: "Use $codex-voice-optimizer to coordinate this work and report the applicable Slopware Dev Stack layers."

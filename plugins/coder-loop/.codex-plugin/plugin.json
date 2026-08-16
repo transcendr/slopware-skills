@@ -1,0 +1,46 @@
+{
+  "name": "coder-loop",
+  "version": "0.3.1",
+  "description": "Optimize complex Codex development through bounded task-family ownership, fresh independent review, targeted remediation, and optional Slopware Dev Stack composition.",
+  "author": {
+    "name": "Slopware Engineer",
+    "url": "https://x.com/aienginerd"
+  },
+  "homepage": "https://github.com/transcendr/slopware-skills",
+  "repository": "https://github.com/transcendr/slopware-skills",
+  "license": "CC-BY-4.0",
+  "keywords": [
+    "coder-loop",
+    "codex-optimized-development",
+    "bounded-task-family-review",
+    "codex",
+    "multi-agent",
+    "independent-review",
+    "orchestration",
+    "model-routing",
+    "agentic-development",
+    "slopware-dev-stack"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "CODER Loop",
+    "shortDescription": "Optimized Codex development and companion stack",
+    "longDescription": "Run the CODER Loop to split complex Codex development into non-overlapping task families, evaluate each candidate in a fresh independent context, remediate only acceptance-blocking gaps, and compose optional MSW, Timebox, MSL, and CVO layers.",
+    "developerName": "Slopware Engineer",
+    "category": "Productivity",
+    "capabilities": [
+      "Codex Workflow Optimization",
+      "Bounded Development",
+      "Independent Evaluation",
+      "Evidence-Scoped Remediation",
+      "Companion Stack Composition",
+      "Tutorial Onboarding"
+    ],
+    "websiteURL": "https://github.com/transcendr/slopware-skills",
+    "defaultPrompt": [
+      "Use $coder-loop to coordinate this implementation with bounded ownership, independent review, and targeted remediation.",
+      "Use $coder-loop to teach me the CODER Loop.",
+      "Use $coder-loop to show me the Slopware Dev Stack."
+    ]
+  }
+}

@@ -41,6 +41,25 @@ MSW does not enlarge your lane or authority. If the skill is unavailable in
 this task, tell the coordinator once and continue under this work-thread
 contract. Do not install it yourself and do not repeat the notice.
 
+## Apply selected CODER and Timebox layers
+
+When the briefing invokes `$coder-loop`, find that exact skill in the active
+catalog and read it before implementation. This task becomes the CODER
+coordinator and owns its internal decomposition, workers, independent
+reviewers, remediation, acceptance, cleanup, and postmortem. The voice
+coordinator remains the user-facing control plane and never manages those
+internal roles.
+
+When the briefing invokes `$timebox`, find that exact skill and bind only the
+forwarded requester or project authority. Own the original clock, deadline
+calculations, forecast checks, and hard-stop behavior in this task. Never ask
+the voice coordinator to calculate elapsed time, decide whether a boundary was
+crossed, reset the clock, or activate an extension.
+
+If a selected skill is unavailable, report that once. Do not silently emulate
+the requested CODER topology or Timebox protocol. Continue only when the
+missing layer is optional to the user's requested outcome.
+
 ## Report at material boundaries
 
 Send a direct message to the coordinator thread named in your briefing at
@@ -51,6 +70,10 @@ every natural material boundary:
   the user's next decision;
 - an issue, blocker, or decision that needs the user's authority; and
 - final readiness.
+
+When Timebox is active, report only established material clock state that
+changes execution or the user's decision. The voice coordinator relays it; it
+does not independently validate the clock.
 
 Rules of the wire:
 

@@ -176,3 +176,13 @@ If Codex Voice Optimizer is active, use this kernel to admit the facts at its
 coordinator-to-user boundary. Let CVO own spoken interaction, ordering,
 lettered choices, workflow-required structure, realtime directives, and
 transport markers.
+
+If the CODER Loop reports directly to the user, apply this kernel only after
+raw worker and reviewer evidence has settled coordinator acceptance. Never
+compress candidate or belonging evidence before independent review. When CVO
+controls the CODER task, let CVO own this final user-facing MSL boundary so the
+same evidence is not compressed twice.
+
+If Timebox is active, admit only clock facts that change the reader's model,
+risk, or required decision. The working task owns clock calculation; MSL owns
+only the user-facing language.

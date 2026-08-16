@@ -77,6 +77,21 @@ reliable than explicit skill invocation.
 The package has no hook, daemon, timer process, MCP server, runtime dependency,
 or persistent state.
 
+## In the Slopware Dev Stack
+
+Timebox is the convergence envelope. Around the [CODER
+Loop](../coder-loop/README.md), one authorized AWT/CGP clock belongs to the
+CODER coordinator and wraps implementation, evaluation, and remediation.
+Workers and reviewers never reset it. At the hard stop, open acceptance claims
+remain open.
+
+Under [Codex Voice Optimizer](../codex-voice-optimizer/README.md), the owning
+task calculates the clock while CVO only relays established material state.
+[MSW](../msw/README.md) decides what work is necessary inside the clock, and
+[MSL](../msl/README.md) can shape user-facing clock updates.
+
+Every layer works alone and remains independently installable. Free forever.
+
 ## Install
 
 ### Codex

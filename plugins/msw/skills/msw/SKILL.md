@@ -89,3 +89,14 @@ This skill works alone. If MSL is also installed, use this skill to decide what
 work is necessary and MSL to report it. If Codex Voice Optimizer is active,
 apply this kernel to its coordination claims and owning work threads while CVO
 owns routing, project placement, roles, authority, and speech.
+
+If the CODER Loop is active, apply this kernel to task-family,
+acceptance-claim, finding, repair, and proof admission while CODER owns
+decomposition, independent review, remediation, and acceptance. The
+three-round fuse applies only when this kernel's evaluator fails; it is not a
+default CODER review-round limit.
+
+If Timebox is active, use this kernel to decide what work remains necessary and
+Timebox to govern how that work converges inside the authorized clock. A hard
+stop reports open claims honestly; it never changes the necessity or proof
+test.

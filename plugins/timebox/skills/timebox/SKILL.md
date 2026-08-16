@@ -86,6 +86,20 @@ This skill works alone. If the MSW skill is also installed or otherwise
 required, use MSW to decide what work is necessary and this skill to govern how
 that necessary work converges inside the authorized clock.
 
+If the CODER Loop is active, place one fixed clock around the complete loop and
+keep the CODER coordinator as clock owner. Workers and reviewers receive
+relevant fixed boundaries but never start replacement clocks. At the hard
+stop, CODER withholds acceptance for every unsettled claim and reports the
+strongest proven candidate.
+
+If Codex Voice Optimizer controls the work, send it established material clock
+state for relay. CVO never calculates elapsed time, decides that a boundary was
+crossed, resets the clock, activates an extension, or becomes the independent
+monitor.
+
+If MSL is active, apply it only to user-facing Timebox updates after the working
+task has calculated the clock state.
+
 ## Work and converge
 
 Check the completion forecast before every major phase and at least every
