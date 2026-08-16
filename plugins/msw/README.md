@@ -47,17 +47,20 @@ test with one line:
 
 > Remember to follow the MSW deletion rule for all claims: no exceptions.
 
-## Works with Codex Voice Optimizer
+## In the Slopware Dev Stack
 
-[Codex Voice Optimizer](../codex-voice-optimizer/README.md) can apply MSW to
-proposed coordination actions and brief each owning work thread to use the
-kernel for its lane. MSW decides which work is necessary and when the lane is
-proven; CVO keeps control of routing, project placement, roles, authority, and
-speech.
+MSW is the scope kernel. Inside the [CODER Loop](../coder-loop/README.md), it
+admits necessary task families, acceptance claims, reviewer findings, repairs,
+and proof. Under [Timebox](../timebox/README.md), MSW decides what work remains
+necessary while the authorized clock governs convergence.
 
-Neither package depends on the other. When both are available in a new Codex
-task, CVO connects them automatically. Add MSL too when you want the resulting
-evidence filtered for the listener before CVO speaks it.
+[Codex Voice Optimizer](../codex-voice-optimizer/README.md) applies MSW to
+coordination and owning work while retaining voice routing, project placement,
+roles, authority, and speech. Add [MSL](../msl/README.md) when the final
+evidence should be filtered for the reader or listener.
+
+Every layer works alone and remains independently installable. Compose only
+the layers you want. Free forever.
 
 ## Install
 

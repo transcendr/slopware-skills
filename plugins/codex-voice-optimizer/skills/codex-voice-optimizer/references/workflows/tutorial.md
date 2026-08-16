@@ -78,9 +78,10 @@ question selects one directly:
    deployment. The user authorizes each relevant action explicitly.
 5. **Visible artifacts.** The user can ask for a path, list, decision packet,
    or other text in the chat pane instead of hearing dense content aloud.
-6. **Companion kernels.** MSL filters user-facing facts before CVO speaks them.
-   MSW keeps coordination and owning work focused on necessary work. CVO works
-   without either and connects them automatically when available.
+6. **Slopware Dev Stack.** MSL filters user-facing facts before CVO speaks,
+   MSW keeps work necessary, CODER adds independently reviewed development in
+   an owning task, and Timebox adds an explicitly authorized convergence clock.
+   CVO works alone and every layer remains independently installable.
 
 Do not turn a section into an exercise. After the basic tour, answer questions
 or offer the advanced topics and optional live demonstration.
@@ -112,14 +113,22 @@ Explain each selected topic before offering a demonstration:
 2. **Decision Walkthrough.** Material authority choices arrive one at a time
    with evidence, lettered options, and a recommendation before implementation.
    Anchor: "start the decision walkthrough for this slice."
-3. **Peer traffic.** Owning tasks message one another directly when their lanes
+3. **CODER Loop.** One owning task becomes the development coordinator for
+   bounded implementation, fresh evaluation, targeted remediation, acceptance,
+   cleanup, and postmortem routing. CVO routes committed intent and speaks
+   material state without entering CODER's internal loop.
+4. **Timebox.** An owning task or CODER coordinator can own one authorized
+   AWT/CGP clock. CVO may relay established deadlines but never calculates,
+   resets, extends, or monitors the clock.
+5. **Peer traffic.** Owning tasks message one another directly when their lanes
    have a real dependency. The coordinator remains the hub for the user.
-4. **Corrections and recovery.** A correction changes the affected route, not
+6. **Corrections and recovery.** A correction changes the affected route, not
    the user's authority. Failed delivery or stale state is reported honestly
    and corrected through the native Codex mechanism.
-5. **Companion setup.** State which kernels are active. With permission, CVO
-   can install MSL, MSW, or both, or provide commands or a setup prompt.
+7. **Stack setup.** State which layers are active, available, and optional.
+   With permission, CVO can install MSL, MSW, CODER, Timebox, or the full
+   Slopware Dev Stack, or provide commands or a setup prompt.
 
 End by offering the relevant anchor phrases as an inline cheat sheet. Include
-"install MSL," "install MSW," and "install both companions" when companion
-setup is relevant.
+"run this through the CODER Loop," "Timebox this with AWT and CGP," and exact
+companion installation phrases when stack setup is relevant.

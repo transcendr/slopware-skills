@@ -65,17 +65,21 @@ When a draft drifts back toward machinery, one line restores it:
 
 > Re-partition: what here is the instrument, not the reader's?
 
-## Works with Codex Voice Optimizer
+## In the Slopware Dev Stack
 
-[Codex Voice Optimizer](../codex-voice-optimizer/README.md) can apply MSL
-automatically at its coordinator-to-user boundary. Owning work threads return
-their full evidence, MSL admits the facts the user needs, and CVO turns those
-facts into ear-first speech or a requested chat artifact. CVO keeps control of
-spoken interaction, workflow structure, lettered choices, and realtime
-delivery.
+MSL is the communication kernel. A direct [CODER
+Loop](../coder-loop/README.md) applies it after raw implementation and review
+evidence settles acceptance. When [Codex Voice
+Optimizer](../codex-voice-optimizer/README.md) controls CODER, CVO owns the
+single final MSL boundary before speech.
 
-Neither package depends on the other. When both are available in a new Codex
-task, CVO connects them automatically.
+With [Timebox](../timebox/README.md), MSL reports only clock facts that change
+the reader's state or decision; the working task still owns the clock. Pair it
+with [MSW](../msw/README.md) when work admission should be as disciplined as
+the resulting language.
+
+Every layer works alone and remains independently installable. Compose only
+the layers you want. Free forever.
 
 ## What it does to a draft
 

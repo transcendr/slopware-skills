@@ -1,9 +1,9 @@
 # Review a completed CODER Loop
 
 Use this companion reference after the CODER Loop reaches acceptance or a
-genuine terminal block. The implementation and review loop owns the candidate decision.
-This postmortem calibrates future routing and does not reopen acceptance by
-ceremony.
+genuine terminal block. The implementation and review loop owns the candidate
+decision. This postmortem calibrates future routing and does not reopen
+acceptance by ceremony.
 
 ## Gather belonging evidence
 

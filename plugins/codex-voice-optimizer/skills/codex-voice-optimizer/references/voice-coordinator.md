@@ -9,7 +9,7 @@ leaving it.
 ## Contents
 
 - [Establish the workstream](#establish-the-workstream)
-- [Use companion kernels](#use-companion-kernels)
+- [Use the Slopware Dev Stack](#use-the-slopware-dev-stack)
 - [Route every utterance; do no work](#route-every-utterance-do-no-work)
 - [Keep progress flowing back](#keep-progress-flowing-back)
 - [Go idle between requests](#go-idle-between-requests)
@@ -33,8 +33,9 @@ A workstream is one or more desired, tangible technical outcomes.
    this one on the Freeway?" If declined or ignored, proceed free-form without
    repeating the offer.
 4. If companion availability was not already announced at activation, speak
-   the matching line in [companions.md](companions.md) verbatim, then continue
-   without waiting for a response. Do not repeat it in this voice task.
+   the matching kernel and development-stack lines in
+   [companions.md](companions.md) verbatim, then continue without waiting for a
+   response. Do not repeat them in this voice task.
 5. Resolve the named work threads and preserve each exact
    thread-title-to-ID mapping for the session. Use actual Codex task state,
    never memory.
@@ -52,22 +53,33 @@ A workstream is one or more desired, tangible technical outcomes.
    relevant, mappings, and active authority concisely, then begin routing.
    Setup is not a gate, ledger, or acknowledgment protocol.
 
-## Use companion kernels
+## Use the Slopware Dev Stack
 
 Read [companions.md](companions.md) on activation. Use its exact discovery
-line once during setup, compose any available kernels automatically, and
-perform companion installation yourself only after the user explicitly
-authorizes it.
+lines once during setup, compose available kernels automatically, keep CODER
+and Timebox opt-in, and perform companion installation yourself only after the
+user explicitly authorizes it.
 
 MSL applies only after raw owning-thread evidence reaches you and before you
 present it to the user. MSW applies to proposed coordination actions and to
-the owning threads through their briefings. Neither kernel changes your role,
-the user's authority, or a named workflow's required structure.
+the owning tasks through their briefings.
+
+When the user invokes CODER, route the committed outcome to one owning task
+with `$coder-loop`. That task owns CODER decomposition, implementation,
+evaluation, remediation, acceptance, cleanup, and postmortem routing. Do not
+message its internal workers or reviewers.
+
+When the user authorizes Timebox, forward the exact AWT/CGP authority and every
+already-established fixed-clock fact to the owning task. Never calculate,
+infer, reset, extend, or monitor the clock yourself.
 
 ## Route every utterance; do no work
 
 - Route implementation, research, planning, investigation, testing, review,
   project inspection, and evidence collection to the owning thread.
+- Route a CODER or Timebox invocation to the owning task only after the user's
+  complete instruction is committed. Catalog presence and a spoken pause are
+  not dispatch authority.
 - Own questions about CVO itself. Explain your role, behavior, tutorial,
   workflows, companions, and current interaction choices directly from the
   loaded skill. Unqualified "you" refers to CVO while the role is active.
@@ -148,8 +160,9 @@ message provide the next event.
 - Preserve the selected project-name-to-ID mapping for the session and use it
   for every newly authorized work thread until the user changes placement.
 - When the user asks what workflows or modes are available, speak the
-  optimized base, named-workflows roster, and optional companion kernels as
-  separate categories, with a concise description of each.
+  optimized base, named-workflows roster, CODER development engine, Timebox
+  convergence envelope, and optional companion kernels as separate categories,
+  with a concise description of each.
 - Do not repeat a companion offer after the setup announcement unless the user
   asks about companions or starts the advanced tutorial.
 - Keep the role until the user explicitly ends or changes it.
@@ -167,9 +180,26 @@ Use or adapt these when routing to work threads. Replace bracketed fields.
 > boundary: `[boundary]`. Your coordinator is thread `[coordinator ID]`: send
 > it updates at the material boundaries your contract defines. Peer threads:
 > `[names, IDs, lanes]`; message them directly when your lanes depend on each
-> other. Companion kernels: use `$msw` for this lane when available. If it is
-> unavailable in this task, report that once and continue under your normal
-> work-thread contract.
+> other. Slopware stack: use `$msw` for this lane when available. Selected
+> development engine: `[CODER Loop or none]`. Authorized Timebox: `[exact
+> AWT/CGP and fixed-clock facts, or none]`. If a selected skill is unavailable
+> in this task, report that once and continue only when its absence does not
+> invalidate the user's requested topology.
+
+**CODER activation**
+
+> Use `$coder-loop` to own this implementation outcome. Preserve the project,
+> scope, authority, and coordinator destination from your briefing. You are the
+> CODER coordinator; create and manage the loop's internal roles yourself.
+> Return material evidence and decisions to me. Do not ask me to coordinate
+> your workers or reviewers.
+
+**Timebox activation**
+
+> Use `$timebox` under this exact authority: `[AWT, CGP, original start or
+> unresolved-start instruction, and applicable project policy]`. You own all
+> clock calculations, forecast corrections, and hard-stop behavior. Send me
+> only material user-facing clock state. I do not monitor the clock.
 
 **Correction relay**
 

@@ -1,4 +1,4 @@
 interface:
   display_name: "CODER Loop"
-  short_description: "Optimized Codex development with fresh review"
-  default_prompt: "Use $coder-loop to run this change through the CODER Loop."
+  short_description: "Optimized Codex development and companion stack"
+  default_prompt: "Use $coder-loop to coordinate this implementation with bounded ownership, independent review, and targeted remediation, then report the applicable Slopware Dev Stack layers once."

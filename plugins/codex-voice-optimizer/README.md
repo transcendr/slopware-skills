@@ -37,7 +37,7 @@ The skill is layered so each participant gets exactly its own contract:
 | [voice-coordinator.md](skills/codex-voice-optimizer/references/voice-coordinator.md) | How the coordinator operates: workstream setup, routing every utterance, keeping progress flowing back, going idle. |
 | [work-thread.md](skills/codex-voice-optimizer/references/work-thread.md) | The contract briefed into every work thread: own your lane, report at material boundaries, talk to peers directly, respect authority. |
 | [codex-app.md](skills/codex-voice-optimizer/references/codex-app.md) | Codex app mechanics: project discovery and placement, task tools, name-to-ID mappings, and the realtime inline route for visible chat artifacts. |
-| [companions.md](skills/codex-voice-optimizer/references/companions.md) | Optional kernel composition: MSL at the speaking boundary, MSW at the work boundary, and permission-based setup. |
+| [companions.md](skills/codex-voice-optimizer/references/companions.md) | Slopware Dev Stack composition: MSL communication, MSW scope, CODER development, Timebox convergence, and permission-based setup. |
 | [workflows/freeway.md](skills/codex-voice-optimizer/references/workflows/freeway.md) | Freeway: the named, opt-in high-throughput topology (below). |
 | [workflows/decision-walkthrough.md](skills/codex-voice-optimizer/references/workflows/decision-walkthrough.md) | Decision Walkthrough: opt-in, read-only pre-implementation convergence that closes material authority decisions one at a time by voice. |
 | [workflows/tutorial.md](skills/codex-voice-optimizer/references/workflows/tutorial.md) | Tutorial: teaching-first onboarding that explains the system before any optional live demonstration. |
@@ -48,45 +48,55 @@ orchestration. Every workflow inherits the base layer, activates only by its
 anchor phrase or an explicitly permitted offer, and composes with the others.
 New processes land there as they are battle-tested.
 
-## Companion kernels
+## The Slopware Dev Stack
 
-Codex Voice Optimizer works alone. MSL improves what you hear. MSW improves
-how the work threads work. Install any combination, and CVO connects the
-available pieces automatically.
+Codex Voice Optimizer is the stack's voice control plane. It works alone and
+can discover four independently installable companion layers:
+
+| Component | Stack role | Contribution |
+| --- | --- | --- |
+| **Codex Voice Optimizer** | Control plane | Hands-free intent, routing, authority, and material progress |
+| [CODER Loop](../coder-loop/README.md) | Development engine | Bounded implementation, independent evaluation, remediation, acceptance, and evolving model routing |
+| [MSW Kernel](../msw/README.md) | Scope kernel | Necessary coordination, task families, findings, repairs, and proof |
+| [Timebox](../timebox/README.md) | Convergence envelope | One explicitly authorized AWT/CGP clock owned by the work task |
+| [MSL Kernel](../msl/README.md) | Communication kernel | The final facts the user must understand or act on |
 
 ```text
 You speak
-    -> CVO routes to owning work threads
+    -> CVO routes committed intent to an owning task
+    -> CODER owns implementation and independent evaluation when invoked
     -> MSW admits necessary work when available
-    -> work-thread evidence returns
-    -> MSL admits user-facing facts when available
+    -> Timebox governs convergence when explicitly authorized
+    -> evidence returns to CVO
+    -> MSL admits the final user-facing facts when available
     -> CVO speaks the result
 ```
 
-- [MSL Kernel](../msl/README.md) filters the evidence at the
-  coordinator-to-user boundary. CVO still owns spoken interaction, lettered
-  choices, workflow structure, and visible chat delivery.
-- [MSW Kernel](../msw/README.md) applies its deletion test to new coordination
-  actions and to each owning thread's lane contract. CVO still owns routing,
-  project placement, roles, and authority.
+MSL and MSW compose automatically when available. CODER and Timebox remain
+opt-in. CVO routes a committed CODER request to one owning task and never enters
+its internal worker and reviewer loop. CVO forwards exact Timebox authority to
+the owning task and never calculates, resets, extends, or monitors the clock.
 
 During activation or the first workstream setup, the coordinator says once
-which companions are active and continues immediately. When a companion is
-missing, it makes the option visible without repeatedly asking. Say "install
-MSL," "install MSW," or "install both companions" to authorize direct setup.
-If direct setup is not available, CVO can put the exact commands in the chat
-or generate a ready-to-send prompt for another Codex task.
+which kernels are active and which development layers are available, then
+continues immediately. Missing layers stay visible without repeated offers.
+Say "install MSL," "install MSW," "install CODER," "set up Timebox," or
+"install the full Slopware Dev Stack" to authorize exact setup. If direct
+setup is unavailable, CVO can put the commands in chat or generate a
+ready-to-send prompt for another Codex task.
 
-Install either companion yourself at any time:
+Install any desired combination yourself:
 
 ```bash
 codex plugin marketplace add transcendr/slopware-skills
 codex plugin add msl@slopware-skills
 codex plugin add msw@slopware-skills
+codex plugin add coder-loop@slopware-skills
+codex plugin add timebox@slopware-skills
 ```
 
-Install only the companions you want. Start a new Codex task afterward so its
-skill catalog includes the newly installed plugin. See the
+Install only the layers you want. Start a new Codex task afterward so its skill
+catalog includes each newly installed plugin. See the
 [official plugin documentation](https://learn.chatgpt.com/docs/plugins#install-and-use-a-plugin)
 for the new-task activation behavior.
 
@@ -159,13 +169,17 @@ context. It still sends nothing. A live demonstration begins only when you
 explicitly ask to try the system against real Codex state, and each normal
 authority boundary continues to apply.
 
+The advanced tour explains CODER as the development engine, Timebox as the
+authorized convergence envelope, MSL and MSW as communication and scope
+kernels, and the exact setup path for any combination.
+
 ## What using it feels like
 
 1. Start a new empty Codex task in ChatGPT Voice.
 2. Invoke the skill and describe your goal, or say "start the voice optimizer
    tutorial" for a teaching-first tour with optional live demonstrations.
-3. Hear one concise companion update, then keep talking. It never blocks setup
-   or repeats after you ignore or decline it.
+3. Hear one concise stack update, then keep talking. It never blocks setup or
+   repeats after you ignore or decline it.
 4. If the work belongs to a codebase, name its Codex project or ask the
    coordinator to help discover it.
 5. Accept the Freeway offer, name existing threads, or explicitly ask for new

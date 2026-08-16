@@ -1,6 +1,6 @@
 {
   "name": "timebox",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Bound agent work with Available Work Time, Closeout Grace Period, and a hard stop.",
   "author": {
     "name": "Slopware Engineer",

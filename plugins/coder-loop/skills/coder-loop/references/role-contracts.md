@@ -6,8 +6,10 @@ not omit facts the role needs to perform or prove its work.
 ## Coordinator
 
 Keep the parent orchestration-only. Own the outcome, decomposition, sequencing,
-candidate boundary, cross-family integration, acceptance decision, and final
-delivery. Do not implement a task family or review your own implementation.
+candidate boundary, integration decision, acceptance decision, and final
+delivery. Route every source, test, generated-output, or configuration change
+needed for composition to a bounded integration owner. Do not implement a task
+family, repair a conflict, or review your own implementation.
 
 Before every dispatch, include the current repository state, relevant user
 changes, exact authority, and the evidence that will prove the family. Do not
@@ -25,7 +27,7 @@ Retained behavior: [behavior that must survive]
 Acceptance claims: [claims this family must settle]
 Dependencies: [completed prerequisites and current evidence]
 Exclusions: [adjacent work that remains out of scope]
-Authority: [local edits, tests, commit, and external-write boundaries]
+Authority: [local edits, tests, top-level task actions, commit, and external-write boundaries]
 Repository state: [branch, head, user changes to preserve]
 
 Implement and verify only this family. Preserve unrelated user changes. Return
@@ -55,12 +57,12 @@ Raw artifacts: [diff, files, tests, logs, screenshots, or other evidence]
 Project priority policy: [authoritative policy, or none]
 Authority: read-only; do not edit, commit, publish, or delegate.
 
-Apply the CODER Loop review kernel. Admit an observation only when deleting it leaves
-an acceptance claim unmet or unsupported. For each admitted gap, identify the
-claim, belonging evidence, contract impact, and the smallest sufficient repair
-direction. Separate acceptance-blocking gaps from non-blocking observations.
-State that no blocking gap remains only when every live acceptance claim has
-belonging evidence.
+Apply the CODER Loop review kernel. Admit an observation only when deleting it
+leaves an acceptance claim unmet or unsupported. For each admitted gap,
+identify the claim, belonging evidence, contract impact, and the smallest
+sufficient repair direction. Separate acceptance-blocking gaps from
+non-blocking observations. State that no blocking gap remains only when every
+live acceptance claim has belonging evidence.
 ```
 
 Do not ask the reviewer to implement a fix. Do not resume the implementer as
