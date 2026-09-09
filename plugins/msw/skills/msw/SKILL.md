@@ -74,12 +74,35 @@ recommendations through agent intuition. Examples and representative
 proportions never become defaults. If a necessary limit is an unresolved owner
 choice, ask; do not manufacture a value.
 
+## Contract integrity
+
+Distinguish the deliverable's requirements from the state of the instance
+used to build or prove it. Necessity at one scope does not establish
+necessity at the other.
+
+Justify delivered responsibilities by the established intended use or
+supported lifecycle, independently of the current run's incidental history.
+Development evidence can reveal required failure, recovery, or upgrade
+behavior. Those obligations need justification beyond rescuing this run.
+
+Keep necessary, authorized setup or intervention at its own scope.
+Preserving a particular development instance is required only when the
+task requires it.
+
+Temporary implementation or proof limitations must neither expand
+delivered responsibilities nor weaken required behavior, acceptance
+criteria, or intended user instructions. Describe current capability
+truthfully and report implementation and proof gaps explicitly.
+
 ## Apply the Kernel
 
 1. Bind the contract before using tools or proposing work.
 2. Put each candidate action through the deletion test.
 3. Execute and prove only admitted claims.
-4. Re-evaluate after new evidence changes the contract or its proof.
+4. Re-evaluate claims and proof when evidence changes. Revise the contract only
+   under authoritative direction or to correct its interpretation against
+   established requirements. Current execution state alone does not authorize
+   a revision.
 5. Halt and report as soon as the fixed point is reached.
 
 Reject a failed claim with one report line. Do not turn it into an investigation,
