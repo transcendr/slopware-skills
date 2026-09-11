@@ -57,6 +57,11 @@ and arguably more effective, because it gives the agent one necessity test, a
 proof obligation, and a clear stopping condition without layering on another
 workflow.
 
+MSW also protects [contract integrity](plugins/msw/README.md#contract-integrity):
+temporary development state must neither add product responsibilities nor weaken
+required behavior. Necessary environment work stays at its own scope, and
+current capability and proof gaps must be reported truthfully.
+
 It applies to implementation, debugging, review, research, planning, and
 documentation, not just code size. The original
 [MSW Kernel post](https://x.com/aienginerd/status/2085342869850603672)

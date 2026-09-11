@@ -33,6 +33,23 @@ and documentation, not only to code size. The original
 [MSW Kernel post](https://x.com/aienginerd/status/2085342869850603672)
 introduced the idea.
 
+## Contract integrity
+
+The contract stays grounded in the requested outcome. Temporary development
+state must neither expand the deliverable's responsibilities nor weaken its
+required behavior, acceptance criteria, or intended user instructions.
+
+For example, restarting an old test process may be necessary to prove a change.
+That alone does not justify permanent compatibility behavior. Recovery or
+upgrade support is necessary when established intended use or the supported
+lifecycle requires it. If the current implementation cannot fulfill the agreed
+behavior, report the implementation or proof gap truthfully while preserving
+the requirement.
+
+New evidence can change the work and proof needed. Revising the contract
+requires authoritative direction or a correction against established
+requirements. See the [canonical rule](skills/msw/SKILL.md#contract-integrity).
+
 ## Use MSW
 
 Invoke the skill at the start of a task:

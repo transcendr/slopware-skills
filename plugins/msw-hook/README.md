@@ -11,9 +11,11 @@ separate package so the core
 
 ## What it does
 
-The hook reinforces four things:
+The hook reinforces the kernel:
 
 - define the requested outcome and smallest proof;
+- keep incidental execution state from expanding or weakening the contract,
+  distinguishing environment work from deliverable requirements;
 - admit only work required by that contract;
 - prove every necessary claim; and
 - stop at the fixed point and report honestly.
