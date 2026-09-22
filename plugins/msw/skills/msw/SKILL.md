@@ -139,7 +139,8 @@ the particular mechanism currently providing it.
 Do not invent problems to justify adding or preserving implementation
 details. A blocker that prevents the requested outcome without serving an
 established requirement of the feature does not belong in the solution.
-Do not add it; correct or remove it if already present.
+Do not add it. If already present, apply
+[retrospective cleanup](#retro-cleanup).
 
 Treat every proposed or existing condition, mechanism, change, investigation,
 test, review, and operational step as a claim.
@@ -162,6 +163,19 @@ Use the existing response or plan; no separate artifact or approval gate
 is required. Reuse a valid established contract and settled proof. Revisit
 them only when new authoritative requirements or relevant evidence justify
 it. An analysis request does not itself authorize execution.
+
+<a id="retro-cleanup"></a>
+## Retrospective cleanup
+
+When existing code fails [outcome-first](#outcome-first), deletion alone
+is a valid solution. Delete the rejected behavior together with any code,
+tests, assertions, fixtures, configuration, or documentation that exists
+solely to support or enforce it.
+
+Do not replace or repurpose that machinery, or invert its assertions,
+unless the feature's contract independently requires the work. Verify the
+requested outcome with the smallest sufficient evidence, reusing existing
+proof where sufficient. Removing code creates no obligation to add code.
 
 ## Apply the Kernel
 
