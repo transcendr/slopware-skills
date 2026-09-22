@@ -120,10 +120,29 @@ Resolve material ambiguity under the kernel's attended/unattended rule.
 Do not narrow the contract to fit the proposal or expand it to justify
 additional work.
 
-### Step 2: Evaluate the proposal against that contract
+<a id="outcome-first"></a>
+### Step 2: Start from the feature
 
-Treat every proposed condition, mechanism, change, investigation, test,
-review, and operational step as a claim.
+Decide what the requested feature must accomplish, then design the
+implementation to make that happen.
+
+Judge the work against that bound contract. A guard, check, blocker, or
+subsystem is an implementation detail. Neither it nor an adjacent concern
+supplies a contract of its own. Its purpose must not replace the feature's
+requested outcome.
+
+Existing does not mean necessary. A presumed purpose is a hypothesis, not
+a justification. An existing guarantee constrains the solution when an
+authoritative requirement establishes it; that does not require preserving
+the particular mechanism currently providing it.
+
+Do not invent problems to justify adding or preserving implementation
+details. A blocker that prevents the requested outcome without serving an
+established requirement of the feature does not belong in the solution.
+Do not add it; correct or remove it if already present.
+
+Treat every proposed or existing condition, mechanism, change, investigation,
+test, review, and operational step as a claim.
 
 Apply the deletion test to each claim: identify the concrete contract
 requirement that would remain unmet or unproven without it, using the task's
