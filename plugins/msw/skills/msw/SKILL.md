@@ -94,16 +94,67 @@ delivered responsibilities nor weaken required behavior, acceptance
 criteria, or intended user instructions. Describe current capability
 truthfully and report implementation and proof gaps explicitly.
 
+<a id="two-step-analysis"></a>
+## Two-step analysis
+
+When asked to apply MSW's two-step analysis to a proposal, perform these
+steps in order. A proposal may be a plan, design, implementation approach,
+repair, or review recommendation.
+
+### Step 1: Establish and validate the outcome contract
+
+Derive the contract from the request and authoritative requirements,
+independently of the proposed solution.
+
+State the requested outcome, applicable constraints and existing guarantees
+that must be preserved, and the smallest acceptance criteria and evidence
+that would prove success.
+
+Check that the contract includes every required outcome and excludes
+obligations introduced solely by the proposed mechanism. A mechanism belongs
+in the contract only when an authoritative requirement makes that mechanism
+itself mandatory. Apply Contract integrity to distinguish delivered behavior
+from incidental implementation or proof conditions.
+
+Resolve material ambiguity under the kernel's attended/unattended rule.
+Do not narrow the contract to fit the proposal or expand it to justify
+additional work.
+
+### Step 2: Evaluate the proposal against that contract
+
+Treat every proposed condition, mechanism, change, investigation, test,
+review, and operational step as a claim.
+
+Apply the deletion test to each claim: identify the concrete contract
+requirement that would remain unmet or unproven without it, using the task's
+actual inputs and environment. Retain necessary claims; reject the rest.
+Where a smaller reliable act closes the same gap, use it.
+
+Then check sufficiency: would the retained proposal achieve every part of
+the contract, with the required proof? Identify missing work, missing proof,
+and unsupported assumptions. Minimality alone does not establish completeness.
+
+Report the contract, the assessment, and the smallest complete proposal.
+Give rejected claims worth the user's attention one line each. Distinguish
+evidence already established from verification still required; analysis of
+a proposal does not prove its implementation.
+
+Use the existing response or plan; no separate artifact or approval gate
+is required. Reuse a valid established contract and settled proof. Revisit
+them only when new authoritative requirements or relevant evidence justify
+it. An analysis request does not itself authorize execution.
+
 ## Apply the Kernel
 
-1. Bind the contract before using tools or proposing work.
-2. Put each candidate action through the deletion test.
-3. Execute and prove only admitted claims.
-4. Re-evaluate claims and proof when evidence changes. Revise the contract only
+1. Bind and validate the contract before proposing or doing work, then admit
+   candidate actions through the deletion test. For explicit proposal
+   assessment, use the [two-step analysis](#two-step-analysis).
+2. Execute and prove only admitted claims.
+3. Re-evaluate claims and proof when evidence changes. Revise the contract only
    under authoritative direction or to correct its interpretation against
    established requirements. Current execution state alone does not authorize
    a revision.
-5. Halt and report as soon as the fixed point is reached.
+4. Halt and report as soon as the fixed point is reached.
 
 Reject a failed claim with one report line. Do not turn it into an investigation,
 fix, or deferred follow-up.
