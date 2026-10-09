@@ -17,6 +17,7 @@ Portable, individually installable skills and plugins for AI coding agents by
 | [Timebox](plugins/timebox/README.md) | Skill and plugin | Converge authorized work inside AWT and a closeout-only CGP. |
 | [CODER Loop](plugins/coder-loop/README.md) | Codex skill and plugin | Optimize Codex development through bounded work, fresh evaluation, and evidence-scoped remediation. |
 | [Codex Voice Optimizer](plugins/codex-voice-optimizer/README.md) | Codex skill and plugin | Optimize Codex Voice for hands-free orchestration across owning work threads. |
+| [Codex App Link](plugins/codex-app-link/README.md) | Claude Code skill and plugin | Let Claude Code create, message, wait on, and read Codex desktop-app threads. |
 
 Each package has its own documentation and remains independently installable.
 
@@ -483,6 +484,57 @@ lifecycle hook cannot determine those safely.
 
 ---
 
+## Codex App Link
+
+> **Claude orchestrates. Codex threads do the work.**
+
+[Package documentation](plugins/codex-app-link/README.md) ·
+[Skill source](plugins/codex-app-link/skills/codex-app-link/SKILL.md)
+
+Codex App Link lets Claude Code drive threads in the Codex desktop app. Claude
+can create a thread, send it a message, steer a running turn, wait for the
+thread to finish, and read the reply. The threads stay ordinary Codex app
+threads, so you can open, watch, and continue any of them in the app.
+
+```text
+Send this handoff to Codex thread 01a10323-9edd-... and tell me when it's done.
+```
+
+The wait follows the thread, not a single turn, so chained turns and turns that
+end without a normal completion event cannot make it hang. It returns `done`,
+`stalled`, or `timeout`. Output is compact `key=value` text plus the raw reply,
+to keep the agent's context small.
+
+It needs macOS, the running Codex desktop app, and Node.js 22.5 or later. The
+package is intentionally absent from the Codex marketplace because its job is
+to let Claude drive Codex. It has no hook, daemon, MCP server, or npm
+dependency.
+
+## Install Codex App Link
+
+### Claude Code
+
+```bash
+claude plugin marketplace add transcendr/slopware-skills
+claude plugin install codex-app-link@slopware-skills
+```
+
+### skills.sh
+
+```bash
+npx skills add https://github.com/transcendr/slopware-skills/tree/main/plugins/codex-app-link/skills/codex-app-link -g -a claude-code
+```
+
+### Generic `~/.claude/skills`
+
+```bash
+git clone https://github.com/transcendr/slopware-skills.git
+mkdir -p ~/.claude/skills
+cp -R slopware-skills/plugins/codex-app-link/skills/codex-app-link ~/.claude/skills/codex-app-link
+```
+
+---
+
 ## Repository layout
 
 ```text
@@ -524,6 +576,12 @@ plugins/
         role-contracts.md
         workflows/
           tutorial.md
+  codex-app-link/
+    .claude-plugin/plugin.json
+    README.md
+    skills/codex-app-link/
+      SKILL.md
+      scripts/codex-thread.mjs
   codex-voice-optimizer/
     .codex-plugin/plugin.json
     README.md
