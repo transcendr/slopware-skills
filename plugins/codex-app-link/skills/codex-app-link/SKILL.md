@@ -54,6 +54,16 @@ Never do any of these (each has caused missed completions):
 
 `--turn` is still accepted, but it only lets an earlier finish count; it never blocks on that turn.
 
+## Managing a project through Codex threads
+
+When the user onboards you as the manager of work that Codex threads carry out, read these once before acting:
+
+- [references/strategic.md](references/strategic.md): roles, likely thread configurations (including the recommended coordinator-plus-work-threads setup), onboarding questions, and how to read the state of a project from its threads.
+- [references/operational.md](references/operational.md): the dispatch, review, wait, verify and merge loop, authority rules, and lessons from real orchestration.
+- [references/companions.md](references/companions.md): how to use MSW, MSL and Timebox when the project has them, and how to offer them when it does not.
+
+For a single message to a thread, the commands above are enough.
+
 ## Orchestration pattern
 
 1. `new` to create a worker thread, or take an existing thread ID from the user.

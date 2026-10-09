@@ -505,6 +505,12 @@ end without a normal completion event cannot make it hang. It returns `done`,
 `stalled`, or `timeout`. Output is compact `key=value` text plus the raw reply,
 to keep the agent's context small.
 
+The skill also carries orchestrator knowledge: roles and likely thread
+configurations, onboarding, inferring project state from thread discovery, the
+dispatch-verify-merge loop, and companion enforcement. When a project uses MSW,
+MSL and Timebox, Claude enforces them by default and assigns AWT/CGP pairs to
+Codex work threads.
+
 It needs macOS, the running Codex desktop app, and Node.js 22.5 or later. The
 package is intentionally absent from the Codex marketplace because its job is
 to let Claude drive Codex. It has no hook, daemon, MCP server, or npm
@@ -582,6 +588,10 @@ plugins/
     skills/codex-app-link/
       SKILL.md
       scripts/codex-thread.mjs
+      references/
+        companions.md
+        operational.md
+        strategic.md
   codex-voice-optimizer/
     .codex-plugin/plugin.json
     README.md

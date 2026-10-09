@@ -63,6 +63,26 @@ them.
 | `read <id> [--last N]` | Final replies of the last N turns |
 | `open <id>` | Make the app load a thread without sending anything |
 
+## Built-in orchestrator knowledge
+
+The skill carries reference material for managing a project, so you do not
+have to re-explain the job each time you onboard a new Claude session:
+
+- **[Strategy](skills/codex-app-link/references/strategic.md):** roles,
+  likely thread configurations, onboarding questions, and how Claude can infer
+  the state of the work from thread discovery. A coordinator thread on a
+  stronger model plus one or more work threads is the recommended setup, never
+  a requirement.
+- **[Operations](skills/codex-app-link/references/operational.md):** the
+  dispatch, review, wait, verify and merge loop, authority rules, and lessons
+  from real orchestration.
+- **[Companions](skills/codex-app-link/references/companions.md):** when a
+  project uses [MSW](../msw/README.md), [MSL](../msl/README.md) and
+  [Timebox](../timebox/README.md), Claude enforces them by default: MSW on every
+  handoff and review, MSL in its own writing, and an AWT/CGP pair on every
+  Codex dispatch (never on its own orchestration). When they are absent, it
+  offers them once.
+
 ## Requirements
 
 - macOS, with the Codex desktop app (ChatGPT.app) running.
@@ -116,10 +136,11 @@ cp -R slopware-skills/plugins/codex-app-link/skills/codex-app-link ~/.claude/ski
 
 ## Works with the Slopware Dev Stack
 
-Codex App Link works alone. When Claude hands work to Codex threads,
-[MSW](../msw/README.md) keeps each handoff to the necessary work,
-[Timebox](../timebox/README.md) gives a thread an authorized AWT/CGP clock, and
-[MSL](../msl/README.md) shapes what Claude reports back.
+Codex App Link works alone. When the project uses the companions, Claude
+enforces them throughout: [MSW](../msw/README.md) keeps each handoff and review
+to the necessary work, [Timebox](../timebox/README.md) gives every Codex
+dispatch an AWT/CGP clock, and [MSL](../msl/README.md) shapes what Claude
+writes. See the [companion contract](skills/codex-app-link/references/companions.md).
 
 ## License
 
