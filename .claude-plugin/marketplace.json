@@ -30,6 +30,12 @@
       "description": "Minimum Sufficient Language: write what the reader must act on, and nothing they must wade through.",
       "source": "./plugins/msl",
       "category": "productivity"
+    },
+    {
+      "name": "codex-app-link",
+      "description": "Let Claude Code create, message, steer, wait on, and read Codex desktop-app threads.",
+      "source": "./plugins/codex-app-link",
+      "category": "productivity"
     }
   ]
 }

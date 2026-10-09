@@ -1,0 +1,21 @@
+{
+  "name": "codex-app-link",
+  "version": "0.1.0",
+  "description": "Let Claude Code create, message, steer, wait on, and read Codex desktop-app threads.",
+  "author": {
+    "name": "Slopware Engineer",
+    "url": "https://x.com/aienginerd"
+  },
+  "homepage": "https://github.com/transcendr/slopware-skills",
+  "repository": "https://github.com/transcendr/slopware-skills",
+  "license": "CC-BY-4.0",
+  "keywords": [
+    "codex",
+    "codex-app",
+    "claude-code",
+    "orchestration",
+    "multi-agent",
+    "threads",
+    "ai-agents"
+  ]
+}
