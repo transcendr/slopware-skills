@@ -67,6 +67,7 @@ and `lastAgentMessage`, then judge the work yourself.
   Both have missed real completions: turns chain, and some end without a normal
   completion event.
 - Do not poll `status` in a loop. The wait already does that safely.
+- Match the cadence to the work. For process work (live tests, UI driving, ops steps), also run `scripts/codex-progress.py` so that approval waits, missing tool runtimes and stalls surface within minutes. Ask the worker for a short note after every step. Implementation work needs only the wait.
 - On `stalled`, check before acting: a high-effort model can reason silently
   for 15 minutes or more, and a long test run writes nothing until it ends.
   Look at the session file's last write and at running processes.

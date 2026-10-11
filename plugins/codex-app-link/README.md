@@ -63,6 +63,8 @@ them.
 | `read <id> [--last N]` | Final replies of the last N turns |
 | `open <id>` | Make the app load a thread without sending anything |
 
+`scripts/codex-progress.py <id> [silence-seconds]` streams a running thread's progress notes, approval waits, turn end, and long silences. Run it under a background monitor alongside `wait` during live testing or other step-by-step process work.
+
 ## Built-in orchestrator knowledge
 
 The skill carries reference material for managing a project, so you do not

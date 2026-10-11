@@ -54,6 +54,16 @@ Never do any of these (each has caused missed completions):
 
 `--turn` is still accepted, but it only lets an earlier finish count; it never blocks on that turn.
 
+## Watching progress live (process work)
+
+`wait` reports only that a thread finished. For **process work**, meaning live QA tests, computer-use or UI driving, deploys and ops steps, also stream the thread's progress, so that a blocked approval prompt, a missing plugin runtime or a stalled step surfaces within minutes:
+
+```bash
+python3 <skill-base-dir>/scripts/codex-progress.py <id> 240   # run under a background monitor
+```
+
+It prints one line per new assistant note (`NOTE`), approval-request event (`APPROVAL_WAIT`) and turn end (`TURN_END`). After 240 seconds without a session write it prints a `SILENT` line; check it before acting, because a silent model may just be reasoning. Run it **alongside** `wait`, not instead of it. Ask the Codex worker to post a short progress note after every step. For **implementation work** (coding a scoped handoff, running tests, opening a PR), `wait` alone is enough. Stop the monitor when the turn ends.
+
 ## Managing a project through Codex threads
 
 When the user onboards you as the manager of work that Codex threads carry out, read these once before acting:
@@ -97,5 +107,6 @@ The socket protocol is private and undocumented. It was verified on 2026-10-06 a
 | `not-loaded-in-app` | Deep link did not load the thread within 30s. Open the thread in the app manually and retry |
 | `thread-not-indexed` | Wrong ID, or the thread was created on another machine |
 | `thread-busy` | A turn is running. `wait`, or `send --steer` |
+| `thread-follower-start-turn-timeout`, or `not-loaded-in-app` on a thread that loads late | The turn often **did** start anyway. Run `status <id>` before retrying; resending would deliver the message twice |
 | `request-version-mismatch` / `no-handler-for-request` | The app's private protocol changed. See "How it works" |
 | `new` returns `exitCode: 1` and no `finalMessage` | The first turn failed. Read the rollout's `task_complete` event; often an unsupported model or a CLI version mismatch |
