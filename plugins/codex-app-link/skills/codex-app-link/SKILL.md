@@ -11,11 +11,14 @@ description: Create Codex threads and send messages into Codex desktop-app (GUI)
 
 Add `--json` only when you need every field. Do not pipe JSON through `jq` into your context. Errors are one-line JSON on stderr, with exit code 1.
 
-Set `CT` to the script inside this skill's base directory:
+Set `CT` to the script inside this skill's base directory, **fresh in every session**:
 
 ```bash
 CT=<skill-base-dir>/scripts/codex-thread.mjs
+node $CT version        # confirms the version and path you are actually running
 ```
+
+Never reuse a `.../codex-app-link/<version>/...` path remembered from an earlier session or a summary. Plugin updates install side by side, so an old path keeps running the old version and misses its fixes and scripts.
 
 Requirements: macOS, the Codex desktop app (ChatGPT.app) running, and Node.js 22.5 or later (the script reads Codex's thread index through `node:sqlite`).
 
@@ -28,8 +31,12 @@ Multiple Codex instances: set `CODEX_HOME` to the instance's home (for example `
 | `node $CT new --cwd DIR --text "..." [--timeout SEC] [-- <codex exec args>]` | Create a thread with the CLI, run its first turn, then load it in the app. Returns `threadId` and `finalMessage` |
 | `node $CT send <id> --text "..." [--wait] [--timeout SEC]` | Start a turn in an idle thread through the app. `--wait` blocks until it finishes and returns `lastAgentMessage` |
 | `node $CT send <id> --text "..." --steer` | Add a message to the turn that is running now |
-| `node $CT wait <id> [--timeout SEC] [--settle SEC] [--stall SEC]` | Block until the **thread** is done (see "Waiting for results"). Prints `result`: `done`, `stalled` or `timeout` (exit 0, 3 or 4), plus `lastAgentMessage` |
+| `node $CT wait <id> [--timeout SEC] [--settle SEC] [--stall SEC] [--until-question] [--expect REGEX]` | Block until the **thread** is done (see "Waiting for results"). Prints `result`: `done`, `stalled`, `timeout`, `question` or `paused` (exit 0, 3, 4, 5 or 6), plus `lastAgentMessage` |
 | `node $CT read <id> [--last N]` | Final replies of the last N turns |
+| `node $CT result <id> [--marker RESULT] [--turns N]` | The latest `RESULT` block in recent replies (in or out of a code fence), parsed into `key=value` lines. Exit 6 if there is none |
+| `node $CT watch (<id>... \| --tracked) [--expect REGEX] [--cursor FILE]` | One event line per `STARTED`, `QUESTION`, `APPROVAL`, `COMPACTED`, `RESULT`, `PAUSED`, `DONE` or `STALLED`, across several threads (see "Managing several threads") |
+| `node $CT track add <id> --name N [--role R]` / `track rm N` / `track list` | The project's thread registry at `<git root>/.codex-app-link.json`. Every command then accepts the name in place of the ID |
+| `node $CT version` | The plugin version, script path and registry path |
 | `node $CT questions <id> [--all] [--since ISO]` | Formal questions the thread asked (`request_user_input*`), unanswered by default, with options and the answer. Exit 5 if any are pending |
 | `node $CT open <id>` | Make the app load a thread without sending anything |
 
@@ -67,6 +74,34 @@ python3 <skill-base-dir>/scripts/codex-progress.py <id> 240   # run under a back
 ```
 
 It prints one line per new assistant note (`NOTE`), formal question (`QUESTION`, with its options), approval-request event (`APPROVAL_WAIT`) and turn end (`TURN_END`). After 240 seconds without a session write it prints a `SILENT` line; check it before acting, because a silent model may just be reasoning. Run it **alongside** `wait`, not instead of it. Ask the Codex worker to post a short progress note after every step. For **implementation work** (coding a scoped handoff, running tests, opening a PR), `wait` alone is enough. Stop the monitor when the turn ends.
+
+## Managing several threads: track, watch, result
+
+When you run more than one worker, or anything long, use the manager kit rather than separate waits:
+
+1. **Name the threads once per project:** `node $CT track add <id> --name sol-b --role "worker: render"`. The
+   registry is a small JSON file at the git root, so every later manager of the project inherits the roster.
+   Commit it.
+2. **Run one watch for all of them,** as a background monitor, and re-arm it when the monitor expires:
+
+   ```bash
+   node $CT watch --tracked --expect '^RESULT ' --cursor .codex-app-link.cursor.json
+   ```
+
+   `--cursor` saves offsets and turn state after every poll, so a re-armed watch resumes exactly where the last
+   one stopped and loses nothing in between. Keep the cursor file out of git.
+3. **Act on each event:**
+
+   | Event | What to do |
+   |---|---|
+   | `QUESTION` | Answer now with `send <name> --steer`. The worker keeps going on its default otherwise |
+   | `PAUSED` | The thread went idle without its result: a compaction pause, a "waiting for controller resume" stop, or a crash. Read its last reply, then resume it with `send` |
+   | `RESULT` | Run `node $CT result <name>`, then verify the work yourself |
+   | `STALLED` | Check before acting: long reasoning and long commands write nothing |
+   | `COMPACTED`, `STARTED`, `APPROVAL` | Context. An `APPROVAL` may need you in the app |
+
+   Ask every worker to end with a RESULT block (`RESULT key=value …`) and to treat only that block as the end of
+   its task. `--expect` is what tells a finished worker from one that stopped short.
 
 ## Managing a project through Codex threads
 

@@ -414,6 +414,200 @@ async function create({ cwd, prompt, extra = [], timeoutMs }) {
   });
 }
 
+// ---------- Manager kit: registry, results, watch ----------
+
+// A per-project registry names the threads a manager tracks, so commands take
+// `sol-b` instead of a UUID and `watch --tracked` knows what to follow. It lives
+// at the git root as .codex-app-link.json (override: --registry or
+// CODEX_APP_LINK_REGISTRY), so every manager of the project shares it.
+function registryPath(opt = {}) {
+  if (opt.registry) return path.resolve(String(opt.registry));
+  if (process.env.CODEX_APP_LINK_REGISTRY) return path.resolve(process.env.CODEX_APP_LINK_REGISTRY);
+  const r = spawnSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' });
+  return path.join(r.status === 0 ? r.stdout.trim() : process.cwd(), '.codex-app-link.json');
+}
+
+function loadRegistry(file) {
+  try {
+    const reg = JSON.parse(fs.readFileSync(file, 'utf8'));
+    return { threads: Array.isArray(reg.threads) ? reg.threads : [] };
+  } catch { return { threads: [] }; }
+}
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function resolveRef(ref, reg) {
+  if (ref === undefined) throw new Fail('missing-thread', 'pass a thread ID or a tracked name');
+  if (UUID.test(ref)) return ref;
+  const hit = reg.threads.find(t => t.name.toLowerCase() === String(ref).toLowerCase());
+  if (!hit) throw new Fail('unknown-thread-name', `${ref} is not in the registry; run "track list"`);
+  return hit.id;
+}
+
+const nameOf = (id, reg) => reg.threads.find(t => t.id === id)?.name ?? id.slice(0, 8);
+
+function track(action, pos, opt, file) {
+  const reg = loadRegistry(file);
+  if (action === 'add') {
+    const id = pos[0];
+    if (!UUID.test(id || '')) throw new Fail('invalid-thread-id', id);
+    if (!opt.name || opt.name === true) throw new Fail('missing-name', 'track add <id> --name NAME [--role ROLE] [--note TEXT]');
+    locate(id);
+    const entry = { id, name: String(opt.name), role: opt.role ? String(opt.role) : null, note: opt.note ? String(opt.note) : null,
+      added: new Date().toISOString() };
+    reg.threads = reg.threads.filter(t => t.id !== id && t.name.toLowerCase() !== entry.name.toLowerCase());
+    reg.threads.push(entry);
+  } else if (action === 'rm') {
+    const before = reg.threads.length;
+    reg.threads = reg.threads.filter(t => t.name.toLowerCase() !== String(pos[0]).toLowerCase() && t.id !== pos[0]);
+    if (reg.threads.length === before) throw new Fail('unknown-thread-name', pos[0]);
+  } else if (action !== 'list') {
+    throw new Fail('invalid-track-action', 'track add|rm|list');
+  }
+  if (action !== 'list') fs.writeFileSync(file, JSON.stringify(reg, null, 2) + '\n');
+  return reg.threads.map(t => {
+    let s = { status: 'unknown' };
+    try { s = turnState(locate(t.id).rollout_path); } catch (e) { s = { status: e.code || 'error' }; }
+    return { name: t.name, id: t.id, role: t.role, status: s.status, note: t.note };
+  });
+}
+
+// RESULT blocks: the line that starts with the marker, plus the key=value lines
+// and indented continuations after it, inside or outside a code fence. A space
+// followed by `key=` starts a new field, so `branch=x head=y` splits in two.
+const KEY_START = /\s+(?=[A-Za-z_][\w.-]*=)/;
+
+function extractResult(text, marker = 'RESULT') {
+  if (!text) return null;
+  const lines = String(text).split('\n');
+  const starts = l => { const t = l.trim(); return t === marker || t.startsWith(`${marker} `); };
+  let start = -1;
+  for (let i = lines.length - 1; i >= 0; i--) if (starts(lines[i])) { start = i; break; }
+  if (start < 0) return null;
+  const block = [];
+  for (let i = start; i < lines.length; i++) {
+    const l = lines[i];
+    if (/^\s*```/.test(l)) break;
+    if (i > start && !l.trim()) {
+      if (/^\s*[A-Za-z_][\w.-]*=/.test(lines[i + 1] || '')) continue;
+      break;
+    }
+    block.push(l);
+  }
+  const fields = {};
+  let last = null;
+  const add = (k, v) => { fields[k] = fields[k] === undefined ? v : `${fields[k]}\n${v}`; last = k; };
+  block.forEach((l, n) => {
+    const body = n === 0 ? l.trim().slice(marker.length).trim() : l;
+    if (n > 0 && !/^\s*[A-Za-z_][\w.-]*=/.test(body)) {
+      if (last && body.trim()) fields[last] += `\n${body.trim()}`;
+      return;
+    }
+    for (const part of body.trim().split(KEY_START)) {
+      const eq = part.indexOf('=');
+      if (eq > 0) add(part.slice(0, eq), part.slice(eq + 1).trim());
+    }
+  });
+  return { raw: block.join('\n'), fields };
+}
+
+function latestResult(rolloutPath, marker, turns = 10) {
+  const done = completedTurns(rolloutPath).filter(t => t.message);
+  for (const t of done.slice(-turns).reverse()) {
+    const r = extractResult(t.message, marker);
+    if (r) return { turnId: t.turnId, completedAt: t.completedAt, ...r };
+  }
+  return null;
+}
+
+// watch: one event stream for many threads, one line per event, for a
+// background monitor. Events:
+//   STARTED   a turn began (also after compaction or a resume)
+//   QUESTION  a formal request_user_input* question, with options; answer with send --steer
+//   APPROVAL  an approval-request event
+//   COMPACTED the thread compacted its context
+//   RESULT    the thread settled idle and its last reply matches --expect (first matching line)
+//   PAUSED    the thread settled idle WITHOUT matching --expect: it stopped short, so resume it
+//   DONE      the thread settled idle (no --expect given)
+//   STALLED   active, but no session write for --stall seconds (verify before acting)
+// --cursor FILE saves offsets and turn state after every poll, so a re-armed watch
+// continues exactly where the last one stopped and misses nothing in between.
+async function watch(ids, reg, { expect = null, settleMs = 45_000, stallMs = 45 * 60_000, pollMs = 5_000,
+  timeoutMs = null, cursorFile = null } = {}) {
+  const expectRe = expect ? new RegExp(expect, 'm') : null;
+  const saved = cursorFile && fs.existsSync(cursorFile) ? JSON.parse(fs.readFileSync(cursorFile, 'utf8')) : {};
+  const threads = ids.map(id => {
+    const file = locate(id).rollout_path;
+    const prev = saved[id];
+    if (prev && prev.file === file && prev.offset <= fs.statSync(file).size) return { id, ...prev, partial: '' };
+    const s = turnState(file);
+    return { id, file, offset: fs.statSync(file).size, partial: '', active: s.status === 'active', lastMessage: s.lastAgentMessage,
+      idleSince: null, classified: true, stallWarned: false };
+  });
+  const emit = (t, kind, detail = '') => {
+    const ts = new Date().toISOString().slice(11, 19);
+    console.log(`${ts} ${kind} ${nameOf(t.id, reg)}${detail ? ` ${String(detail).replace(/\s+/g, ' ').slice(0, 380)}` : ''}`);
+  };
+  const deadline = timeoutMs ? Date.now() + timeoutMs : Infinity;
+  for (;;) {
+    for (const t of threads) {
+      const size = fs.statSync(t.file).size;
+      if (size > t.offset) {
+        const fd = fs.openSync(t.file, 'r');
+        const buf = Buffer.alloc(size - t.offset);
+        fs.readSync(fd, buf, 0, buf.length, t.offset);
+        fs.closeSync(fd);
+        const text = t.partial + buf.toString('utf8');
+        const lines = text.split('\n');
+        t.partial = lines.pop();
+        t.offset = size - Buffer.byteLength(t.partial);
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          let rec;
+          try { rec = JSON.parse(line); } catch { continue; }
+          const p = rec.payload || {};
+          if (rec.type === 'compacted') emit(t, 'COMPACTED');
+          if (rec.type === 'event_msg' && p.type === 'task_started') {
+            t.active = true; t.classified = false; t.idleSince = null; t.stallWarned = false;
+            emit(t, 'STARTED', `turn=${p.turn_id}`);
+          } else if (rec.type === 'event_msg' && (p.type === 'task_complete' || p.type === 'turn_aborted')) {
+            // Every completion is classified once, even for a turn that began before this watch.
+            t.active = false; t.idleSince = Date.now(); t.classified = false;
+            if (p.type === 'task_complete') t.lastMessage = p.last_agent_message ?? t.lastMessage;
+          } else if (rec.type === 'event_msg' && String(p.type || '').toLowerCase().includes('approval')) {
+            emit(t, 'APPROVAL', p.type);
+          } else if (rec.type === 'response_item' && p.type === 'function_call' && String(p.name || '').startsWith('request_user_input')) {
+            let qs = [];
+            try { qs = JSON.parse(p.arguments || '{}').questions || []; } catch { /* malformed */ }
+            for (const q of qs) {
+              const opts = (q.options || []).map(o => (typeof o === 'string' ? o : o.label ?? JSON.stringify(o)));
+              emit(t, 'QUESTION', `${q.title ?? ''}${opts.length ? ` [options: ${opts.join(' | ')}]` : ''}`);
+            }
+          }
+        }
+      }
+      const now = Date.now();
+      if (!t.active && t.idleSince && !t.classified && now - t.idleSince >= settleMs) {
+        t.classified = true;
+        const msg = t.lastMessage || '';
+        if (!expectRe) emit(t, 'DONE', msg.slice(0, 300));
+        else if (expectRe.test(msg)) emit(t, 'RESULT', msg.split('\n').find(l => expectRe.test(l)) || msg.slice(0, 300));
+        else emit(t, 'PAUSED', msg.slice(0, 300));
+      }
+      if (t.active && !t.stallWarned && now - fs.statSync(t.file).mtimeMs >= stallMs) {
+        t.stallWarned = true;
+        emit(t, 'STALLED', `no session write for ${Math.round((now - fs.statSync(t.file).mtimeMs) / 1000)}s; verify before acting`);
+      }
+    }
+    if (cursorFile) {
+      const state = Object.fromEntries(threads.map(({ id, partial, ...rest }) => [id, rest]));
+      fs.writeFileSync(cursorFile, JSON.stringify(state));
+    }
+    if (Date.now() >= deadline) return;
+    await sleep(pollMs);
+  }
+}
+
 // ---------- CLI ----------
 
 function parse(argv) {
@@ -437,26 +631,41 @@ function textArg(opt) {
   return null;
 }
 
-const USAGE = `codex-thread <command>
-  status  <threadId>                       turn state, last reply, whether the app has it loaded
-  read    <threadId> [--last N]            last N completed turns' final replies (default 1)
-  wait    <threadId> [--timeout SEC=10800] [--settle SEC=45] [--stall SEC=2700] [--poll SEC=15] [--turn ID]
-          [--until-question]               block until the THREAD is idle for --settle seconds; prints
+const USAGE = `codex-thread <command>     (<thread> = a thread ID or a name from "track")
+  status  <thread>                         turn state, last reply, whether the app has it loaded
+  read    <thread> [--last N]              last N completed turns' final replies (default 1)
+  wait    <thread> [--timeout SEC=10800] [--settle SEC=45] [--stall SEC=2700] [--poll SEC=15] [--turn ID]
+          [--until-question] [--expect REGEX]
+                                           block until the THREAD is idle for --settle seconds; prints
                                            result done|stalled|timeout (exit 0|3|4) plus lastAgentMessage.
-                                           --until-question also returns result=question (exit 5) when the
-                                           thread asks a new formal question; answer it with send --steer
-  questions <threadId> [--all] [--since ISO]
-                                           formal questions (request_user_input*) the thread asked; by
-                                           default only unanswered ones. Exit 5 if any are pending
-  send    <threadId> (--text T | --file F | --stdin) [--steer] [--wait] [--timeout SEC] [--no-open]
+                                           --until-question: also return result=question (exit 5) when the
+                                           thread asks a new formal question; answer it with send --steer.
+                                           --expect: a finish whose last reply doesn't match REGEX is
+                                           result=paused (exit 6), meaning it stopped short and needs a resume
+  questions <thread> [--all] [--since ISO] formal questions (request_user_input*); unanswered by default.
+                                           Exit 5 if any are pending
+  result  <thread> [--marker RESULT] [--turns N]
+                                           the latest RESULT block in the last N replies (default 10),
+                                           parsed into key=value fields. Exit 6 if there is none
+  watch   (<thread>... | --tracked) [--expect REGEX] [--settle SEC=45] [--stall SEC=2700] [--poll SEC=5]
+          [--cursor FILE] [--timeout SEC]  one line per event across threads: STARTED QUESTION APPROVAL
+                                           COMPACTED RESULT PAUSED DONE STALLED. --cursor resumes exactly
+                                           where the last watch stopped
+  track   add <id> --name NAME [--role ROLE] [--note TEXT] | rm <name> | list   [--registry FILE]
+                                           the project's thread registry (<git root>/.codex-app-link.json)
+  send    <thread> (--text T | --file F | --stdin) [--steer] [--wait] [--timeout SEC] [--no-open]
   new     --cwd DIR (--text T | --file F) [--no-open] [--timeout SEC] [-- <extra codex exec args>]
-  open    <threadId>                       make the app load the thread (background deep link)
-  list    [--limit N] [--cwd DIR]          recent threads from the local index`;
+  open    <thread>                         make the app load the thread (background deep link)
+  list    [--limit N] [--cwd DIR]          recent threads from the local index
+  version                                  plugin version and this script's path`;
 
 async function main() {
   const [cmd, ...rest] = process.argv.slice(2);
   const { pos, opt } = parse(rest);
   const timeoutMs = opt.timeout ? Number(opt.timeout) * 1000 : undefined;
+  const regFile = registryPath(opt);
+  const reg = loadRegistry(regFile);
+  if (['status', 'read', 'wait', 'questions', 'result', 'send', 'open'].includes(cmd)) pos[0] = resolveRef(pos[0], reg);
   let out;
   switch (cmd) {
     case 'status': out = await status(pos[0]); break;
@@ -469,8 +678,34 @@ async function main() {
       const sec = k => (opt[k] !== undefined ? Number(opt[k]) * 1000 : undefined);
       out = await waitIdle(pos[0], { turnId: opt.turn || null, timeoutMs, settleMs: sec('settle'), stallMs: sec('stall'),
         pollMs: sec('poll'), untilQuestion: !!opt['until-question'] });
-      // exit codes: 0 done, 3 stalled, 4 timeout, 5 question (output is printed in every case)
-      process.exitCode = { stalled: 3, timeout: 4, question: 5 }[out.result] ?? 0;
+      if (out.result === 'done' && typeof opt.expect === 'string' && !new RegExp(opt.expect, 'm').test(out.lastAgentMessage || '')) {
+        out = { ...out, result: 'paused' };
+      }
+      // exit codes: 0 done, 3 stalled, 4 timeout, 5 question, 6 paused (output is printed in every case)
+      process.exitCode = { stalled: 3, timeout: 4, question: 5, paused: 6 }[out.result] ?? 0;
+      break;
+    }
+    case 'result': {
+      const marker = typeof opt.marker === 'string' ? opt.marker : 'RESULT';
+      const r = latestResult(locate(pos[0]).rollout_path, marker, Number(opt.turns || 10));
+      if (!r) { out = { result: 'none', marker }; process.exitCode = 6; break; }
+      out = opt.json ? r : Object.entries(r.fields).map(([k, v]) => `${k}=${v}`).join('\n');
+      break;
+    }
+    case 'watch': {
+      const ids = opt.tracked ? reg.threads.map(t => t.id) : pos.map(r => resolveRef(r, reg));
+      if (!ids.length) throw new Fail('nothing-to-watch', 'pass thread IDs or names, or --tracked with a registry');
+      const sec = k => (opt[k] !== undefined ? Number(opt[k]) * 1000 : undefined);
+      await watch(ids, reg, { expect: typeof opt.expect === 'string' ? opt.expect : null, settleMs: sec('settle'),
+        stallMs: sec('stall'), pollMs: sec('poll'), timeoutMs, cursorFile: typeof opt.cursor === 'string' ? path.resolve(opt.cursor) : null });
+      return;
+    }
+    case 'track': out = track(pos[0], pos.slice(1), opt, regFile); break;
+    case 'version': {
+      const here = path.dirname(new URL(import.meta.url).pathname);
+      let version = 'unknown';
+      try { version = JSON.parse(fs.readFileSync(path.join(here, '../../../.claude-plugin/plugin.json'), 'utf8')).version; } catch { /* not in a plugin */ }
+      out = { version, script: new URL(import.meta.url).pathname, registry: regFile };
       break;
     }
     case 'questions': {

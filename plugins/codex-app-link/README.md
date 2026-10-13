@@ -59,8 +59,12 @@ them.
 | `new --cwd DIR --text "..."` | Create a thread with the Codex CLI, run its first turn, then load it in the app |
 | `send <id> --text "..."` | Start a turn in an idle thread |
 | `send <id> --text "..." --steer` | Add a message to the turn that is running now |
-| `wait <id> [--until-question]` | Block until the thread is done, stalled or timed out, or (with the flag) asks a formal question |
+| `wait <id> [--until-question] [--expect REGEX]` | Block until the thread is done, stalled or timed out, asks a formal question (`--until-question`), or stops without its result (`--expect`, which returns `paused`) |
 | `questions <id> [--all]` | Formal questions the thread asked, unanswered by default, with their options |
+| `result <id>` | The latest RESULT block, parsed into `key=value` fields |
+| `watch --tracked --expect '^RESULT ' --cursor FILE` | One resumable event stream for every tracked thread: questions, results, pauses, stalls, compactions |
+| `track add <id> --name N` / `track list` | The project's thread registry, so every command takes names |
+| `version` | Which version and script path you are running |
 | `read <id> [--last N]` | Final replies of the last N turns |
 | `open <id>` | Make the app load a thread without sending anything |
 

@@ -149,6 +149,14 @@ Never accept "tests pass" or "within scope" on the thread's word.
   `.../codex-app-link/<version>/...` keeps running that version after an update and misses fixes and new scripts.
   Re-read the skill's base directory at the start of each session.
 
+- **Workers stop short, and an idle thread isn't a finished one** (2026-10-11 to 13). Codex workers repeatedly
+  ended turns with "waiting for the controller to resume" after compaction or at a self-chosen checkpoint, with no
+  RESULT. Treating "idle" as "done" either loses that time or ships unverified work. Contract every worker to finish
+  with a RESULT block, watch with `--expect '^RESULT '`, and resume on `PAUSED`. Steering a running turn is safe
+  at any time.
+- **One watch, not many.** Separate waits per thread, each re-armed by hand, drifted and missed events. A single
+  `watch --tracked --cursor FILE` covers every thread, and the cursor makes re-arming lossless.
+
 ## Script pitfalls
 
 - `send` refuses while a turn runs (`thread-busy`). Wait first, or use
