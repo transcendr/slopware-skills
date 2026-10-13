@@ -25,8 +25,8 @@ function query(sql, ...params) {
 
 const CODEX_HOME = process.env.CODEX_HOME || path.join(os.homedir(), '.codex');
 const SOCKET = path.join(CODEX_HOME, 'ipc', 'ipc.sock');
-// codex:// deep links are handled by the default Codex instance (~/.codex), whatever
-// CODEX_HOME says, so they can only load threads for that instance.
+// `open codex://...` is handled by the default Codex instance (~/.codex), whatever
+// CODEX_HOME says; other instances are reached by process instead (openInInstance).
 const DEFAULT_HOME = path.join(os.homedir(), '.codex');
 const IS_DEFAULT_HOME = path.resolve(CODEX_HOME) === path.resolve(DEFAULT_HOME);
 // Prefer the CLI bundled with the desktop app: it matches the app's version and
@@ -233,17 +233,43 @@ async function waitIdle(threadId, { turnId = null, timeoutMs = 3 * 3600_000, pol
 // background (`open -g`); the app loads it and becomes the owner. This can switch
 // the thread shown in the app window. Opening also delivers any `codex queue`d
 // messages, which may start a turn immediately.
+// A second instance runs the same app bundle (with its own user-data dir), so
+// `open` cannot choose it. Send the link as a GetURL Apple Event addressed to
+// the process that owns this instance's socket instead.
+const GURL_JXA = `ObjC.import('Foundation');
+function run(a) {
+  const c = s => (s.charCodeAt(0) << 24) | (s.charCodeAt(1) << 16) | (s.charCodeAt(2) << 8) | s.charCodeAt(3);
+  const ev = $.NSAppleEventDescriptor.appleEventWithEventClassEventIDTargetDescriptorReturnIDTransactionID(
+    c('GURL'), c('GURL'), $.NSAppleEventDescriptor.descriptorWithProcessIdentifier(parseInt(a[0], 10)), -1, 0);
+  ev.setParamDescriptorForKeyword($.NSAppleEventDescriptor.descriptorWithString(a[1]), c('----'));
+  const err = Ref();
+  const reply = ev.sendEventWithOptionsTimeoutError(3, 10, err);
+  return reply && !reply.isNil() ? 'sent' : 'error: ' + (err[0] ? ObjC.unwrap(err[0].localizedDescription) : 'unknown');
+}`;
+
+function openInInstance(threadId) {
+  const owner = spawnSync('lsof', ['-t', SOCKET], { encoding: 'utf8' });
+  const pid = String(owner.stdout || '').trim().split('\n')[0];
+  if (!/^\d+$/.test(pid)) {
+    throw new Fail('not-loaded-in-instance', `no running app owns ${SOCKET}; start the app instance for CODEX_HOME=${CODEX_HOME}, `
+      + 'or open the thread in it, then retry');
+  }
+  const r = spawnSync('osascript', ['-l', 'JavaScript', '-e', GURL_JXA, pid, `codex://threads/${threadId}`], { encoding: 'utf8' });
+  if (r.status !== 0 || String(r.stdout).trim() !== 'sent') {
+    throw new Fail('open-failed', `could not send the thread link to pid ${pid}: ${String(r.stderr || r.stdout).trim()}`);
+  }
+}
+
 async function ensureLoaded(threadId, { open = true } = {}) {
   const probe = () => withIpc(ipc => owner(ipc, threadId), 3000);
   try { return { ownerId: await probe(), opened: false }; }
   catch (e) { if (!open || !['request-timeout', 'no-client-found'].includes(e.code)) throw e; }
-  if (!IS_DEFAULT_HOME) {
-    throw new Fail('not-loaded-in-instance', `thread is not loaded in the app serving CODEX_HOME=${CODEX_HOME}; `
-      + 'codex:// links open in the default instance (~/.codex), so it cannot be loaded automatically. '
-      + 'Open the thread in that instance\'s app, then retry');
+  if (IS_DEFAULT_HOME) {
+    const r = spawnSync('open', ['-g', `codex://threads/${threadId}`]);
+    if (r.status !== 0) throw new Fail('open-failed', String(r.stderr || '').trim());
+  } else {
+    openInInstance(threadId);
   }
-  const r = spawnSync('open', ['-g', `codex://threads/${threadId}`]);
-  if (r.status !== 0) throw new Fail('open-failed', String(r.stderr || '').trim());
   const deadline = Date.now() + 30_000;
   while (Date.now() < deadline) {
     await sleep(2000);

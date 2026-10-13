@@ -19,7 +19,7 @@ CT=<skill-base-dir>/scripts/codex-thread.mjs
 
 Requirements: macOS, the Codex desktop app (ChatGPT.app) running, and Node.js 22.5 or later (the script reads Codex's thread index through `node:sqlite`).
 
-Multiple Codex instances: set `CODEX_HOME` to the instance's home (for example `CODEX_HOME=~/.codex-work`) on every command. The script then uses that instance's socket, thread index and session files. `codex://` links always open in the default instance (`~/.codex`), so for any other instance the script never opens one. A thread that instance's app has not loaded fails with `not-loaded-in-instance`; open it in that app, then retry.
+Multiple Codex instances: set `CODEX_HOME` to the instance's home (for example `CODEX_HOME=~/.codex-work`) on every command. The script then uses that instance's socket, thread index and session files. `open codex://...` always reaches the default instance (`~/.codex`), so for any other instance the script loads a thread by sending the `codex://threads/<id>` link as a GetURL Apple Event to the process that owns that instance's socket. The first use may trigger a macOS Automation prompt. If no process owns the socket, it fails with `not-loaded-in-instance`.
 
 | Command | Purpose |
 |---|---|
@@ -107,7 +107,7 @@ The socket protocol is private and undocumented. It was verified on 2026-10-06 a
 |---|---|
 | `app-not-running` | Start the Codex desktop app (ChatGPT.app) |
 | `not-loaded-in-app` | Deep link did not load the thread within 30s. Open the thread in the app manually and retry |
-| `not-loaded-in-instance` | `CODEX_HOME` names a non-default instance and its app has not loaded the thread. Open the thread in that instance's app and retry |
+| `not-loaded-in-instance` | No running app owns the `CODEX_HOME` instance's socket. Start that instance (or open the thread in it) and retry |
 | `thread-not-indexed` | Wrong ID, or the thread was created on another machine |
 | `thread-busy` | A turn is running. `wait`, or `send --steer` |
 | `thread-follower-start-turn-timeout`, or `not-loaded-in-app` on a thread that loads late | The turn often **did** start anyway. Run `status <id>` before retrying; resending would deliver the message twice |
