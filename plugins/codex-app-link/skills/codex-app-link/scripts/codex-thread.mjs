@@ -139,62 +139,84 @@ function locate(threadId) {
   return rows[0];
 }
 
-// Rollout files grow without bound (long threads exceed V8's ~512 MiB string
-// limit), so read them as a stream of lines instead of one string. Lines are
+// Rollout files grow without bound (long threads pass hundreds of MB), and every
+// question this script asks is about recent history. Read them backwards from
+// the end, a chunk at a time, and stop as soon as the answer is known. Lines are
 // split on the newline byte and decoded individually, so multi-byte characters
 // never straddle a chunk boundary.
-function* rolloutLines(rolloutPath) {
+function* linesFromEnd(rolloutPath) {
   const fd = fs.openSync(rolloutPath, 'r');
-  const chunk = Buffer.alloc(8 * 1024 * 1024);
-  let rest = Buffer.alloc(0);
+  const size = 1024 * 1024;
+  let pos = fs.fstatSync(fd).size;
+  let carry = Buffer.alloc(0); // start of a line whose beginning is in an earlier chunk
   try {
-    for (let n; (n = fs.readSync(fd, chunk, 0, chunk.length, null)) > 0;) {
-      const buf = rest.length ? Buffer.concat([rest, chunk.subarray(0, n)]) : chunk.subarray(0, n);
-      let start = 0;
-      for (let i = buf.indexOf(10); i !== -1; i = buf.indexOf(10, start)) {
-        yield buf.toString('utf8', start, i);
-        start = i + 1;
+    while (pos > 0) {
+      const len = Math.min(size, pos);
+      pos -= len;
+      const chunk = Buffer.alloc(len);
+      fs.readSync(fd, chunk, 0, len, pos);
+      const buf = carry.length ? Buffer.concat([chunk, carry]) : chunk;
+      let end = buf.length;
+      for (let i = buf.lastIndexOf(10, end - 1); i !== -1; i = end > 0 ? buf.lastIndexOf(10, end - 1) : -1) {
+        if (end > i + 1) yield buf.toString('utf8', i + 1, end);
+        end = i;
       }
-      rest = Buffer.from(buf.subarray(start));
+      carry = Buffer.from(buf.subarray(0, end));
     }
-    if (rest.length) yield rest.toString('utf8');
+    if (carry.length) yield carry.toString('utf8');
   } finally { fs.closeSync(fd); }
 }
 
+function parseRecord(line) { try { return JSON.parse(line); } catch { return null; } } // tolerate a partial last line
+
 // Turn state from the rollout: task_started => busy; task_complete/turn_aborted => idle.
+// Scanning backwards, the most recent task_started decides: the thread is idle if
+// that turn already ended (an end event for it appeared later), active otherwise.
 function turnState(rolloutPath) {
-  const state = { status: 'unknown', turnId: null, lastTurnId: null, lastTurnStatus: null, lastAgentMessage: null, completedTurns: 0 };
-  for (const line of rolloutLines(rolloutPath)) {
-    // Cheap prefilter: only turn lifecycle events matter here.
-    if (!line.includes('"task_') && !line.includes('"turn_aborted"')) continue;
-    let rec;
-    try { rec = JSON.parse(line); } catch { continue; } // a partially written last line
-    if (rec.type !== 'event_msg') continue;
+  const state = { status: 'unknown', turnId: null, lastTurnId: null, lastTurnStatus: null, lastAgentMessage: null };
+  const ended = new Map(); // turnId -> end event, collected from the end of the file
+  let latestEnd = null;
+  for (const line of linesFromEnd(rolloutPath)) {
+    if (!line.includes('"task_') && !line.includes('"turn_aborted"')) continue; // cheap prefilter
+    const rec = parseRecord(line);
+    if (!rec || rec.type !== 'event_msg') continue;
     const p = rec.payload || {};
-    if (p.type === 'task_started') {
-      state.status = 'active'; state.turnId = p.turn_id; state.lastTurnId = p.turn_id; state.lastTurnStatus = 'inProgress';
-    } else if (p.type === 'task_complete' || p.type === 'turn_aborted') {
-      if (state.turnId && p.turn_id && p.turn_id !== state.turnId) continue;
-      state.status = 'idle'; state.lastTurnId = p.turn_id ?? state.turnId; state.turnId = null;
-      state.lastTurnStatus = p.type === 'task_complete' ? 'completed' : 'aborted';
-      if (p.type === 'task_complete') { state.completedTurns++; state.lastAgentMessage = p.last_agent_message ?? null; }
+    if (p.type === 'task_complete' || p.type === 'turn_aborted') {
+      latestEnd ??= p;
+      if (p.turn_id) ended.set(p.turn_id, p);
+    } else if (p.type === 'task_started') {
+      const end = ended.get(p.turn_id);
+      if (end) {
+        state.status = 'idle'; state.lastTurnId = p.turn_id;
+        state.lastTurnStatus = end.type === 'task_complete' ? 'completed' : 'aborted';
+      } else {
+        state.status = 'active'; state.turnId = p.turn_id; state.lastTurnId = p.turn_id; state.lastTurnStatus = 'inProgress';
+      }
+      break;
     }
   }
+  if (state.status === 'unknown' && latestEnd) { // an end with no start in the file
+    state.status = 'idle'; state.lastTurnId = latestEnd.turn_id ?? null;
+    state.lastTurnStatus = latestEnd.type === 'task_complete' ? 'completed' : 'aborted';
+  }
+  const lastComplete = latestEnd?.type === 'task_complete' ? latestEnd : [...ended.values()].find(e => e.type === 'task_complete');
+  state.lastAgentMessage = lastComplete?.last_agent_message ?? null;
   return state;
 }
 
-function completedTurns(rolloutPath) {
+// The last `limit` completed or aborted turns, oldest first.
+function completedTurns(rolloutPath, limit = 1) {
   const turns = [];
-  for (const line of rolloutLines(rolloutPath)) {
-    if (!line.trim()) continue;
-    let rec;
-    try { rec = JSON.parse(line); } catch { continue; }
-    const p = rec.payload || {};
-    if (rec.type === 'event_msg' && (p.type === 'task_complete' || p.type === 'turn_aborted')) {
+  for (const line of linesFromEnd(rolloutPath)) {
+    if (turns.length >= limit) break;
+    if (!line.includes('"task_complete"') && !line.includes('"turn_aborted"')) continue;
+    const rec = parseRecord(line);
+    const p = rec?.payload || {};
+    if (rec?.type === 'event_msg' && (p.type === 'task_complete' || p.type === 'turn_aborted')) {
       turns.push({ turnId: p.turn_id, status: p.type === 'task_complete' ? 'completed' : 'aborted', completedAt: p.completed_at ?? rec.timestamp, message: p.last_agent_message ?? null });
     }
   }
-  return turns;
+  return turns.reverse();
 }
 
 // Formal questions. Codex asks through request_user_input / request_user_input_async
@@ -229,38 +251,44 @@ function userText(p) {
   return (p.content || []).map(c => c.text || '').join('').trim();
 }
 
-function questionsIn(rolloutPath) {
+// Questions asked at or after sinceMs, oldest first. Scans backwards and stops at
+// sinceMs, once every collected question knows the turn it was asked in.
+function questionsIn(rolloutPath, sinceMs = 0) {
   const asked = [];
-  let turnId = null;
-  for (const line of rolloutLines(rolloutPath)) {
-    if (!line.trim()) continue;
-    let rec;
-    try { rec = JSON.parse(line); } catch { continue; }
+  let answer = null; // earliest qualifying user message after the current position
+  for (const line of linesFromEnd(rolloutPath)) {
+    const rec = parseRecord(line);
+    if (!rec) continue;
     const p = rec.payload || {};
-    if (rec.type === 'event_msg' && p.type === 'task_started') turnId = p.turn_id;
+    if (rec.type === 'event_msg' && p.type === 'task_started') {
+      for (const q of asked) if (q.turnId === undefined) q.turnId = p.turn_id;
+      if (Date.parse(rec.timestamp) < sinceMs) break;
+      continue;
+    }
+    if (Date.parse(rec.timestamp) < sinceMs && asked.every(q => q.turnId !== undefined)) break;
     if (rec.type !== 'response_item') continue;
     if (p.type === 'function_call' && String(p.name || '').startsWith('request_user_input')) {
+      if (Date.parse(rec.timestamp) < sinceMs) continue;
       let args = {};
       try { args = JSON.parse(p.arguments || '{}'); } catch { /* keep empty */ }
       const items = (args.questions || []).map(q => ({
         title: q.title ?? q.question ?? '',
         options: (q.options || []).map(o => (typeof o === 'string' ? o : o.label ?? o.title ?? JSON.stringify(o))),
       }));
-      asked.push({ callId: p.call_id, askedAt: rec.timestamp, turnId, async: p.name.endsWith('_async'),
-        questions: items, answeredAt: null, answer: null });
+      asked.push({ callId: p.call_id, askedAt: rec.timestamp, turnId: undefined, async: p.name.endsWith('_async'),
+        questions: items, answeredAt: answer?.at ?? null, answer: answer?.text ?? null });
     } else if (p.type === 'message' && p.role === 'user') {
       const text = userText(p);
       if (!text || INJECTED_USER.test(text) || automationKind(text)) continue;
-      for (const q of asked) {
-        if (!q.answeredAt) { q.answeredAt = rec.timestamp; q.answer = text.slice(0, 400); }
-      }
+      answer = { at: rec.timestamp, text: text.slice(0, 400) };
     }
   }
-  return asked;
+  for (const q of asked) if (q.turnId === undefined) q.turnId = null;
+  return asked.reverse();
 }
 
 function pendingQuestions(rolloutPath, sinceMs = 0) {
-  return questionsIn(rolloutPath).filter(q => !q.answeredAt && Date.parse(q.askedAt) >= sinceMs);
+  return questionsIn(rolloutPath, sinceMs).filter(q => !q.answeredAt);
 }
 
 async function status(threadId, { needOwner = true } = {}) {
@@ -554,8 +582,8 @@ function extractResult(text, marker = 'RESULT') {
 }
 
 function latestResult(rolloutPath, marker, turns = 10) {
-  const done = completedTurns(rolloutPath).filter(t => t.message);
-  for (const t of done.slice(-turns).reverse()) {
+  const done = completedTurns(rolloutPath, turns).filter(t => t.message);
+  for (const t of done.reverse()) {
     const r = extractResult(t.message, marker);
     if (r) return { turnId: t.turnId, completedAt: t.completedAt, ...r };
   }
@@ -721,7 +749,7 @@ async function main() {
     case 'status': out = await status(pos[0]); break;
     case 'read': {
       const t = locate(pos[0]);
-      out = { threadId: pos[0], turns: completedTurns(t.rollout_path).slice(-Number(opt.last || 1)) };
+      out = { threadId: pos[0], turns: completedTurns(t.rollout_path, Number(opt.last || 1)) };
       break;
     }
     case 'wait': {
@@ -762,7 +790,7 @@ async function main() {
       const t = locate(pos[0]);
       const since = opt.since ? Date.parse(opt.since) : 0;
       if (opt.since && Number.isNaN(since)) throw new Fail('invalid-since', opt.since);
-      const all = questionsIn(t.rollout_path).filter(q => Date.parse(q.askedAt) >= since);
+      const all = questionsIn(t.rollout_path, since);
       const shown = opt.all ? all : all.filter(q => !q.answeredAt);
       const pending = all.filter(q => !q.answeredAt).length;
       out = opt.json ? { threadId: pos[0], pending, questions: shown }
