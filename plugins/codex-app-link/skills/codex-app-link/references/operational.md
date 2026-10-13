@@ -154,12 +154,12 @@ Never accept "tests pass" or "within scope" on the thread's word.
   RESULT. Treating "idle" as "done" either loses that time or ships unverified work. Contract every worker to finish
   with a RESULT block, watch with `--expect '^RESULT '`, and resume on `PAUSED`. Steering a running turn is safe
   at any time.
-- **With Jevpact, compaction pauses are normally resumed for you, but not always.** Jevpact sends the
-  pre-compaction "context maintenance" message (`watch` shows it as `MAINTENANCE`). The worker pauses, compaction
-  runs, and Jevpact's controller then sends a formatted resume message. The controller cancels that resume when it
-  judges the session's work is likely done, and it can judge wrong. A worker left that way goes idle without its
-  RESULT, so `PAUSED` is the manager's safety net. On `PAUSED` after a `MAINTENANCE`/`COMPACTED` pair, read the
-  last reply and resume with `send`, unless the reply really is the RESULT.
+- **A maintenance controller's resume is not guaranteed** (2026-10-13, seen with Jevpact). Controllers that pause
+  a worker before compaction normally resume it afterwards. They may skip the resume when they judge the work done,
+  and that call can be wrong. `PAUSED` catches it, with or without a controller. If you use one, configure its
+  actual pause and resume patterns in the registry's `automation` section. Its wording is user-configurable, so
+  never rely on built-in strings. That way its steps show as `MAINTENANCE`, and its messages don't count as
+  answers to questions.
 - **One watch, not many.** Separate waits per thread, each re-armed by hand, drifted and missed events. A single
   `watch --tracked --cursor FILE` covers every thread, and the cursor makes re-arming lossless.
 

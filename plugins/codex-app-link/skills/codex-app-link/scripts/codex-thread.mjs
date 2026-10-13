@@ -180,8 +180,28 @@ function completedTurns(rolloutPath) {
 // "wait" never sees the thread go idle: a manager must look for questions directly.
 // The rollout never links an answer to its question. A question counts as answered
 // once a user message (a send or steer) arrives after it; injected context such as
-// AGENTS.md, environment blocks or automation prompts (Jevpact compaction) doesn't count.
-const INJECTED_USER = /^\s*(# AGENTS\.md|<environment_context>|<user_instructions>|<INSTRUCTIONS>|Jevpact context maintenance)/;
+// AGENTS.md, environment blocks or a configured automation prompt doesn't count.
+const INJECTED_USER = /^\s*(# AGENTS\.md|<environment_context>|<user_instructions>|<INSTRUCTIONS>)/;
+
+// Optional context-maintenance controllers (for example Jevpact) send their own user
+// messages: a pause request before compaction and a resume after it. Their wording is
+// configurable, so nothing is built in. A project sets regexes in its registry
+// ("automation": {"pause": ..., "resume": ...}) or passes --pause-pattern/--resume-pattern.
+// Matching messages become MAINTENANCE events and never count as answers.
+const AUTOMATION = { pause: null, resume: null };
+function configureAutomation(reg, opt) {
+  const pick = (flag, key) => (typeof opt[flag] === 'string' ? opt[flag] : reg.automation?.[key]);
+  for (const [flag, key] of [['pause-pattern', 'pause'], ['resume-pattern', 'resume']]) {
+    const src = pick(flag, key);
+    if (!src) continue;
+    try { AUTOMATION[key] = new RegExp(src, 'i'); } catch (e) { throw new Fail('invalid-pattern', `${key}: ${e.message}`); }
+  }
+}
+function automationKind(text) {
+  if (AUTOMATION.pause?.test(text)) return 'pause';
+  if (AUTOMATION.resume?.test(text)) return 'resume';
+  return null;
+}
 
 function userText(p) {
   return (p.content || []).map(c => c.text || '').join('').trim();
@@ -208,7 +228,7 @@ function questionsIn(rolloutPath) {
         questions: items, answeredAt: null, answer: null });
     } else if (p.type === 'message' && p.role === 'user') {
       const text = userText(p);
-      if (!text || INJECTED_USER.test(text)) continue;
+      if (!text || INJECTED_USER.test(text) || automationKind(text)) continue;
       for (const q of asked) {
         if (!q.answeredAt) { q.answeredAt = rec.timestamp; q.answer = text.slice(0, 400); }
       }
@@ -430,7 +450,7 @@ function registryPath(opt = {}) {
 function loadRegistry(file) {
   try {
     const reg = JSON.parse(fs.readFileSync(file, 'utf8'));
-    return { threads: Array.isArray(reg.threads) ? reg.threads : [] };
+    return { ...reg, threads: Array.isArray(reg.threads) ? reg.threads : [] };
   } catch { return { threads: [] }; }
 }
 
@@ -526,7 +546,7 @@ function latestResult(rolloutPath, marker, turns = 10) {
 //   QUESTION  a formal request_user_input* question, with options; answer with send --steer
 //   APPROVAL  an approval-request event
 //   COMPACTED the thread compacted its context
-//   MAINTENANCE Jevpact's pre-compaction pause request (its controller normally resumes after)
+//   MAINTENANCE a configured maintenance controller paused or resumed the worker (see AUTOMATION)
 //   RESULT    the thread settled idle and its last reply matches --expect (first matching line)
 //   PAUSED    the thread settled idle WITHOUT matching --expect: it stopped short, so resume it
 //   DONE      the thread settled idle (no --expect given)
@@ -576,13 +596,10 @@ async function watch(ids, reg, { expect = null, settleMs = 45_000, stallMs = 45 
             t.active = false; t.idleSince = Date.now(); t.classified = false;
             if (p.type === 'task_complete') t.lastMessage = p.last_agent_message ?? t.lastMessage;
           } else if (rec.type === 'response_item' && p.type === 'message' && p.role === 'user'
-            && /^\s*Jevpact context maintenance/.test(userText(p))) {
-            // Jevpact (if installed) asks for a pause before compacting, then its controller resumes the
-            // worker. It may cancel the resume when it judges the work done; PAUSED then catches a wrong call.
-            const text = userText(p);
-            if (/prepare to compact/i.test(text)) emit(t, 'MAINTENANCE', 'Jevpact pause requested for compaction');
-            else if (/\bcontinue\b/i.test(text)) emit(t, 'MAINTENANCE', 'Jevpact resume sent');
-            else emit(t, 'MAINTENANCE', text.slice(0, 160));
+            && automationKind(userText(p))) {
+            // A maintenance controller normally resumes after its own pause, but it may decide the work
+            // is done and skip the resume. PAUSED then catches a wrong call.
+            emit(t, 'MAINTENANCE', automationKind(userText(p)) === 'pause' ? 'pause requested' : 'resume sent');
           } else if (rec.type === 'event_msg' && String(p.type || '').toLowerCase().includes('approval')) {
             emit(t, 'APPROVAL', p.type);
           } else if (rec.type === 'response_item' && p.type === 'function_call' && String(p.name || '').startsWith('request_user_input')) {
@@ -657,7 +674,8 @@ const USAGE = `codex-thread <command>     (<thread> = a thread ID or a name from
                                            the latest RESULT block in the last N replies (default 10),
                                            parsed into key=value fields. Exit 6 if there is none
   watch   (<thread>... | --tracked) [--expect REGEX] [--settle SEC=45] [--stall SEC=2700] [--poll SEC=5]
-          [--cursor FILE] [--timeout SEC]  one line per event across threads: STARTED QUESTION APPROVAL
+          [--cursor FILE] [--timeout SEC] [--pause-pattern RE] [--resume-pattern RE]
+                                           one line per event across threads: STARTED QUESTION APPROVAL
                                            COMPACTED MAINTENANCE RESULT PAUSED DONE STALLED. --cursor resumes exactly
                                            where the last watch stopped
   track   add <id> --name NAME [--role ROLE] [--note TEXT] | rm <name> | list   [--registry FILE]
@@ -674,6 +692,7 @@ async function main() {
   const timeoutMs = opt.timeout ? Number(opt.timeout) * 1000 : undefined;
   const regFile = registryPath(opt);
   const reg = loadRegistry(regFile);
+  configureAutomation(reg, opt);
   if (['status', 'read', 'wait', 'questions', 'result', 'send', 'open'].includes(cmd)) pos[0] = resolveRef(pos[0], reg);
   let out;
   switch (cmd) {
