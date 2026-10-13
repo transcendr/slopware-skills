@@ -139,12 +139,34 @@ function locate(threadId) {
   return rows[0];
 }
 
+// Rollout files grow without bound (long threads exceed V8's ~512 MiB string
+// limit), so read them as a stream of lines instead of one string. Lines are
+// split on the newline byte and decoded individually, so multi-byte characters
+// never straddle a chunk boundary.
+function* rolloutLines(rolloutPath) {
+  const fd = fs.openSync(rolloutPath, 'r');
+  const chunk = Buffer.alloc(8 * 1024 * 1024);
+  let rest = Buffer.alloc(0);
+  try {
+    for (let n; (n = fs.readSync(fd, chunk, 0, chunk.length, null)) > 0;) {
+      const buf = rest.length ? Buffer.concat([rest, chunk.subarray(0, n)]) : chunk.subarray(0, n);
+      let start = 0;
+      for (let i = buf.indexOf(10); i !== -1; i = buf.indexOf(10, start)) {
+        yield buf.toString('utf8', start, i);
+        start = i + 1;
+      }
+      rest = Buffer.from(buf.subarray(start));
+    }
+    if (rest.length) yield rest.toString('utf8');
+  } finally { fs.closeSync(fd); }
+}
+
 // Turn state from the rollout: task_started => busy; task_complete/turn_aborted => idle.
 function turnState(rolloutPath) {
   const state = { status: 'unknown', turnId: null, lastTurnId: null, lastTurnStatus: null, lastAgentMessage: null, completedTurns: 0 };
-  const lines = fs.readFileSync(rolloutPath, 'utf8').split('\n');
-  for (const line of lines) {
-    if (!line.trim()) continue;
+  for (const line of rolloutLines(rolloutPath)) {
+    // Cheap prefilter: only turn lifecycle events matter here.
+    if (!line.includes('"task_') && !line.includes('"turn_aborted"')) continue;
     let rec;
     try { rec = JSON.parse(line); } catch { continue; } // a partially written last line
     if (rec.type !== 'event_msg') continue;
@@ -163,7 +185,7 @@ function turnState(rolloutPath) {
 
 function completedTurns(rolloutPath) {
   const turns = [];
-  for (const line of fs.readFileSync(rolloutPath, 'utf8').split('\n')) {
+  for (const line of rolloutLines(rolloutPath)) {
     if (!line.trim()) continue;
     let rec;
     try { rec = JSON.parse(line); } catch { continue; }
@@ -210,7 +232,7 @@ function userText(p) {
 function questionsIn(rolloutPath) {
   const asked = [];
   let turnId = null;
-  for (const line of fs.readFileSync(rolloutPath, 'utf8').split('\n')) {
+  for (const line of rolloutLines(rolloutPath)) {
     if (!line.trim()) continue;
     let rec;
     try { rec = JSON.parse(line); } catch { continue; }
