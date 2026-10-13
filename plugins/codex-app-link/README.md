@@ -110,6 +110,10 @@ Sending to a thread the app has not loaded opens its `codex://threads/<id>`
 link in the background. That can switch the thread shown in the app window.
 `--no-open` turns this off.
 
+For a second Codex instance, set `CODEX_HOME` to its home. `codex://` links
+always open in the default instance, so for any other instance the script never
+opens one. Open the thread in that instance's app instead.
+
 The package has no hook, daemon, MCP server, npm dependency, or persistent
 state. It is one skill and one Node script.
 

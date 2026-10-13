@@ -25,6 +25,10 @@ function query(sql, ...params) {
 
 const CODEX_HOME = process.env.CODEX_HOME || path.join(os.homedir(), '.codex');
 const SOCKET = path.join(CODEX_HOME, 'ipc', 'ipc.sock');
+// codex:// deep links are handled by the default Codex instance (~/.codex), whatever
+// CODEX_HOME says, so they can only load threads for that instance.
+const DEFAULT_HOME = path.join(os.homedir(), '.codex');
+const IS_DEFAULT_HOME = path.resolve(CODEX_HOME) === path.resolve(DEFAULT_HOME);
 // Prefer the CLI bundled with the desktop app: it matches the app's version and
 // supports the same models. An older `codex` on PATH may reject the configured model.
 const APP_CODEX = '/Applications/ChatGPT.app/Contents/Resources/codex-cli/bin/codex';
@@ -233,6 +237,11 @@ async function ensureLoaded(threadId, { open = true } = {}) {
   const probe = () => withIpc(ipc => owner(ipc, threadId), 3000);
   try { return { ownerId: await probe(), opened: false }; }
   catch (e) { if (!open || !['request-timeout', 'no-client-found'].includes(e.code)) throw e; }
+  if (!IS_DEFAULT_HOME) {
+    throw new Fail('not-loaded-in-instance', `thread is not loaded in the app serving CODEX_HOME=${CODEX_HOME}; `
+      + 'codex:// links open in the default instance (~/.codex), so it cannot be loaded automatically. '
+      + 'Open the thread in that instance\'s app, then retry');
+  }
   const r = spawnSync('open', ['-g', `codex://threads/${threadId}`]);
   if (r.status !== 0) throw new Fail('open-failed', String(r.stderr || '').trim());
   const deadline = Date.now() + 30_000;

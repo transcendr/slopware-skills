@@ -19,6 +19,8 @@ CT=<skill-base-dir>/scripts/codex-thread.mjs
 
 Requirements: macOS, the Codex desktop app (ChatGPT.app) running, and Node.js 22.5 or later (the script reads Codex's thread index through `node:sqlite`).
 
+Multiple Codex instances: set `CODEX_HOME` to the instance's home (for example `CODEX_HOME=~/.codex-work`) on every command. The script then uses that instance's socket, thread index and session files. `codex://` links always open in the default instance (`~/.codex`), so for any other instance the script never opens one. A thread that instance's app has not loaded fails with `not-loaded-in-instance`; open it in that app, then retry.
+
 | Command | Purpose |
 |---|---|
 | `node $CT list [--limit N] [--cwd DIR]` | Recent threads (id, title, cwd, updated) |
@@ -92,7 +94,7 @@ For a single message to a thread, the commands above are enough.
 ## How it works
 
 - **Sending:** the app listens on a private socket, `~/.codex/ipc/ipc.sock`. Each message is JSON with a 4-byte little-endian length in front. The script sends `initialize`, then `thread-owner-discovery` to find the app client that has the thread loaded, then `thread-follower-start-turn` (idle) or `thread-follower-steer-turn` (busy) to that client. This was learned from the Jevpact Codex plugin (`plugins/jevpact/src/codex.js`).
-- **Loading:** the app only answers for threads it has loaded. When a thread isn't loaded, `send` and `new` open `codex://threads/<id>` with `open -g`. That loads it in the background, but **can switch the thread shown in the app window**. `--no-open` disables this.
+- **Loading:** the app only answers for threads it has loaded. When a thread isn't loaded, `send` and `new` open `codex://threads/<id>` with `open -g`. That loads it in the background, but **can switch the thread shown in the app window**. `--no-open` disables this. This only happens for the default instance; see "Multiple Codex instances" above.
 - **State:** the thread index is `~/.codex/state_5.sqlite` (table `threads`, read-only). Turn state and replies come from the thread's rollout JSONL: `task_started` means busy; `task_complete` (which carries `last_agent_message`) or `turn_aborted` means idle.
 - **Creating:** `new` runs `codex exec --json` using the CLI bundled with the app (`/Applications/ChatGPT.app/Contents/Resources/codex-cli/bin/codex`, override with `CODEX_BIN`). The older `codex` on PATH (nvm) may reject the configured model.
 - **Queued messages:** `codex queue --thread <id> --message ...` stores a message that runs only when a client loads the thread. Opening the thread delivers it at once, so check `status` after `open` before sending.
@@ -105,6 +107,7 @@ The socket protocol is private and undocumented. It was verified on 2026-10-06 a
 |---|---|
 | `app-not-running` | Start the Codex desktop app (ChatGPT.app) |
 | `not-loaded-in-app` | Deep link did not load the thread within 30s. Open the thread in the app manually and retry |
+| `not-loaded-in-instance` | `CODEX_HOME` names a non-default instance and its app has not loaded the thread. Open the thread in that instance's app and retry |
 | `thread-not-indexed` | Wrong ID, or the thread was created on another machine |
 | `thread-busy` | A turn is running. `wait`, or `send --steer` |
 | `thread-follower-start-turn-timeout`, or `not-loaded-in-app` on a thread that loads late | The turn often **did** start anyway. Run `status <id>` before retrying; resending would deliver the message twice |
