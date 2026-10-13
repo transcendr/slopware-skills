@@ -526,6 +526,7 @@ function latestResult(rolloutPath, marker, turns = 10) {
 //   QUESTION  a formal request_user_input* question, with options; answer with send --steer
 //   APPROVAL  an approval-request event
 //   COMPACTED the thread compacted its context
+//   MAINTENANCE Jevpact's pre-compaction pause request (its controller normally resumes after)
 //   RESULT    the thread settled idle and its last reply matches --expect (first matching line)
 //   PAUSED    the thread settled idle WITHOUT matching --expect: it stopped short, so resume it
 //   DONE      the thread settled idle (no --expect given)
@@ -574,6 +575,14 @@ async function watch(ids, reg, { expect = null, settleMs = 45_000, stallMs = 45 
             // Every completion is classified once, even for a turn that began before this watch.
             t.active = false; t.idleSince = Date.now(); t.classified = false;
             if (p.type === 'task_complete') t.lastMessage = p.last_agent_message ?? t.lastMessage;
+          } else if (rec.type === 'response_item' && p.type === 'message' && p.role === 'user'
+            && /^\s*Jevpact context maintenance/.test(userText(p))) {
+            // Jevpact (if installed) asks for a pause before compacting, then its controller resumes the
+            // worker. It may cancel the resume when it judges the work done; PAUSED then catches a wrong call.
+            const text = userText(p);
+            if (/prepare to compact/i.test(text)) emit(t, 'MAINTENANCE', 'Jevpact pause requested for compaction');
+            else if (/\bcontinue\b/i.test(text)) emit(t, 'MAINTENANCE', 'Jevpact resume sent');
+            else emit(t, 'MAINTENANCE', text.slice(0, 160));
           } else if (rec.type === 'event_msg' && String(p.type || '').toLowerCase().includes('approval')) {
             emit(t, 'APPROVAL', p.type);
           } else if (rec.type === 'response_item' && p.type === 'function_call' && String(p.name || '').startsWith('request_user_input')) {
@@ -649,7 +658,7 @@ const USAGE = `codex-thread <command>     (<thread> = a thread ID or a name from
                                            parsed into key=value fields. Exit 6 if there is none
   watch   (<thread>... | --tracked) [--expect REGEX] [--settle SEC=45] [--stall SEC=2700] [--poll SEC=5]
           [--cursor FILE] [--timeout SEC]  one line per event across threads: STARTED QUESTION APPROVAL
-                                           COMPACTED RESULT PAUSED DONE STALLED. --cursor resumes exactly
+                                           COMPACTED MAINTENANCE RESULT PAUSED DONE STALLED. --cursor resumes exactly
                                            where the last watch stopped
   track   add <id> --name NAME [--role ROLE] [--note TEXT] | rm <name> | list   [--registry FILE]
                                            the project's thread registry (<git root>/.codex-app-link.json)

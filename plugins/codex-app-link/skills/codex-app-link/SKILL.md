@@ -34,7 +34,7 @@ Multiple Codex instances: set `CODEX_HOME` to the instance's home (for example `
 | `node $CT wait <id> [--timeout SEC] [--settle SEC] [--stall SEC] [--until-question] [--expect REGEX]` | Block until the **thread** is done (see "Waiting for results"). Prints `result`: `done`, `stalled`, `timeout`, `question` or `paused` (exit 0, 3, 4, 5 or 6), plus `lastAgentMessage` |
 | `node $CT read <id> [--last N]` | Final replies of the last N turns |
 | `node $CT result <id> [--marker RESULT] [--turns N]` | The latest `RESULT` block in recent replies (in or out of a code fence), parsed into `key=value` lines. Exit 6 if there is none |
-| `node $CT watch (<id>... \| --tracked) [--expect REGEX] [--cursor FILE]` | One event line per `STARTED`, `QUESTION`, `APPROVAL`, `COMPACTED`, `RESULT`, `PAUSED`, `DONE` or `STALLED`, across several threads (see "Managing several threads") |
+| `node $CT watch (<id>... \| --tracked) [--expect REGEX] [--cursor FILE]` | One event line per `STARTED`, `QUESTION`, `APPROVAL`, `COMPACTED`, `MAINTENANCE`, `RESULT`, `PAUSED`, `DONE` or `STALLED`, across several threads (see "Managing several threads") |
 | `node $CT track add <id> --name N [--role R]` / `track rm N` / `track list` | The project's thread registry at `<git root>/.codex-app-link.json`. Every command then accepts the name in place of the ID |
 | `node $CT version` | The plugin version, script path and registry path |
 | `node $CT questions <id> [--all] [--since ISO]` | Formal questions the thread asked (`request_user_input*`), unanswered by default, with options and the answer. Exit 5 if any are pending |
@@ -98,7 +98,8 @@ When you run more than one worker, or anything long, use the manager kit rather 
    | `PAUSED` | The thread went idle without its result: a compaction pause, a "waiting for controller resume" stop, or a crash. Read its last reply, then resume it with `send` |
    | `RESULT` | Run `node $CT result <name>`, then verify the work yourself |
    | `STALLED` | Check before acting: long reasoning and long commands write nothing |
-   | `COMPACTED`, `STARTED`, `APPROVAL` | Context. An `APPROVAL` may need you in the app |
+   | `MAINTENANCE`, `COMPACTED`, `STARTED` | Context. With Jevpact, `MAINTENANCE` then `COMPACTED` is a planned pause, and its controller normally resumes the worker. When it decides the work is done and cancels the resume, you'll get `PAUSED`: resume it yourself |
+| `APPROVAL` | It may need you in the app |
 
    Ask every worker to end with a RESULT block (`RESULT key=value …`) and to treat only that block as the end of
    its task. `--expect` is what tells a finished worker from one that stopped short.
