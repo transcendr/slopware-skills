@@ -139,6 +139,16 @@ Never accept "tests pass" or "within scope" on the thread's word.
 - When the coordinator recommends a task, its claim can be checked in minutes.
   Doing so before presenting it saves the user a round trip.
 
+- **Workers ask formal questions you won't see unless you look** (2026-10-13). Codex's `request_user_input_async`
+  doesn't block the turn, and `wait` reports only idleness. Across one project, 10 questions went unanswered. They
+  covered spec gaps, scope ambiguities, safety confirmations and a timebox-extension request. The workers fell back
+  on their stated defaults, which hid the problem until the user saw a question in the app. Wait with
+  `--until-question` (or run `codex-progress.py`), answer with `send --steer`, and run `questions <id>` before
+  verifying any result.
+- **Resolve the script path from the installed plugin, not from memory.** A manager that hardcodes
+  `.../codex-app-link/<version>/...` keeps running that version after an update and misses fixes and new scripts.
+  Re-read the skill's base directory at the start of each session.
+
 ## Script pitfalls
 
 - `send` refuses while a turn runs (`thread-busy`). Wait first, or use

@@ -175,6 +175,52 @@ function completedTurns(rolloutPath) {
   return turns;
 }
 
+// Formal questions. Codex asks through request_user_input / request_user_input_async
+// tool calls. The async form is accepted at once and the turn keeps running, so
+// "wait" never sees the thread go idle: a manager must look for questions directly.
+// The rollout never links an answer to its question. A question counts as answered
+// once a user message (a send or steer) arrives after it; injected context such as
+// AGENTS.md, environment blocks or automation prompts (Jevpact compaction) doesn't count.
+const INJECTED_USER = /^\s*(# AGENTS\.md|<environment_context>|<user_instructions>|<INSTRUCTIONS>|Jevpact context maintenance)/;
+
+function userText(p) {
+  return (p.content || []).map(c => c.text || '').join('').trim();
+}
+
+function questionsIn(rolloutPath) {
+  const asked = [];
+  let turnId = null;
+  for (const line of fs.readFileSync(rolloutPath, 'utf8').split('\n')) {
+    if (!line.trim()) continue;
+    let rec;
+    try { rec = JSON.parse(line); } catch { continue; }
+    const p = rec.payload || {};
+    if (rec.type === 'event_msg' && p.type === 'task_started') turnId = p.turn_id;
+    if (rec.type !== 'response_item') continue;
+    if (p.type === 'function_call' && String(p.name || '').startsWith('request_user_input')) {
+      let args = {};
+      try { args = JSON.parse(p.arguments || '{}'); } catch { /* keep empty */ }
+      const items = (args.questions || []).map(q => ({
+        title: q.title ?? q.question ?? '',
+        options: (q.options || []).map(o => (typeof o === 'string' ? o : o.label ?? o.title ?? JSON.stringify(o))),
+      }));
+      asked.push({ callId: p.call_id, askedAt: rec.timestamp, turnId, async: p.name.endsWith('_async'),
+        questions: items, answeredAt: null, answer: null });
+    } else if (p.type === 'message' && p.role === 'user') {
+      const text = userText(p);
+      if (!text || INJECTED_USER.test(text)) continue;
+      for (const q of asked) {
+        if (!q.answeredAt) { q.answeredAt = rec.timestamp; q.answer = text.slice(0, 400); }
+      }
+    }
+  }
+  return asked;
+}
+
+function pendingQuestions(rolloutPath, sinceMs = 0) {
+  return questionsIn(rolloutPath).filter(q => !q.answeredAt && Date.parse(q.askedAt) >= sinceMs);
+}
+
 async function status(threadId, { needOwner = true } = {}) {
   const t = locate(threadId);
   const s = turnState(t.rollout_path);
@@ -189,6 +235,14 @@ async function status(threadId, { needOwner = true } = {}) {
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
+function formatQuestions(list) {
+  return list.map(q => {
+    const head = `[${q.askedAt}${q.answeredAt ? ` answered ${q.answeredAt}` : ' PENDING'}]`;
+    const body = q.questions.map(x => `Q: ${x.title}${x.options.length ? `\n  options: ${x.options.join(' | ')}` : ''}`).join('\n');
+    return `${head}\n${body}${q.answer ? `\n  answer: ${q.answer.replace(/\s+/g, ' ').slice(0, 200)}` : ''}`;
+  }).join('\n---\n');
+}
+
 // Wait until the THREAD is done, not a particular turn. Codex often chains turns
 // (compaction, auto-continue), and a turn can end without a normal completion
 // event, so pinning to a turn ID can hang forever. Rules:
@@ -197,9 +251,12 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 // - stalled = thread claims active but its rollout file has not been written
 //            for `stallMs` (dead or wedged turn): return instead of hanging.
 // - timeout = overall deadline reached.
+// - question = (with untilQuestion) the thread asked a formal question that no user
+//              message has answered yet. Only questions asked after the wait began
+//              count, so an old unanswered one can't end every wait at once.
 // Always returns a result object (never throws on timeout) so callers see state.
 async function waitIdle(threadId, { turnId = null, timeoutMs = 3 * 3600_000, pollMs = 15_000,
-  settleMs = 45_000, stallMs = 45 * 60_000 } = {}) {
+  settleMs = 45_000, stallMs = 45 * 60_000, untilQuestion = false } = {}) {
   const t = locate(threadId);
   const started = Date.now();
   const deadline = started + timeoutMs;
@@ -207,6 +264,13 @@ async function waitIdle(threadId, { turnId = null, timeoutMs = 3 * 3600_000, pol
   for (;;) {
     const s = turnState(t.rollout_path);
     const now = Date.now();
+    if (untilQuestion) {
+      const pending = pendingQuestions(t.rollout_path, started);
+      if (pending.length) {
+        return { threadId, result: 'question', waitedSeconds: Math.round((now - started) / 1000), ...s,
+          pendingQuestions: pending.length, message: formatQuestions(pending) };
+      }
+    }
     const pastTurn = !turnId || s.lastTurnId !== turnId || s.status === 'idle';
     if (s.status === 'idle' && pastTurn) {
       idleSince ??= now;
@@ -377,8 +441,13 @@ const USAGE = `codex-thread <command>
   status  <threadId>                       turn state, last reply, whether the app has it loaded
   read    <threadId> [--last N]            last N completed turns' final replies (default 1)
   wait    <threadId> [--timeout SEC=10800] [--settle SEC=45] [--stall SEC=2700] [--poll SEC=15] [--turn ID]
-                                           block until the THREAD is idle for --settle seconds; prints
-                                           result done|stalled|timeout (exit 0|3|4) plus lastAgentMessage
+          [--until-question]               block until the THREAD is idle for --settle seconds; prints
+                                           result done|stalled|timeout (exit 0|3|4) plus lastAgentMessage.
+                                           --until-question also returns result=question (exit 5) when the
+                                           thread asks a new formal question; answer it with send --steer
+  questions <threadId> [--all] [--since ISO]
+                                           formal questions (request_user_input*) the thread asked; by
+                                           default only unanswered ones. Exit 5 if any are pending
   send    <threadId> (--text T | --file F | --stdin) [--steer] [--wait] [--timeout SEC] [--no-open]
   new     --cwd DIR (--text T | --file F) [--no-open] [--timeout SEC] [-- <extra codex exec args>]
   open    <threadId>                       make the app load the thread (background deep link)
@@ -398,9 +467,22 @@ async function main() {
     }
     case 'wait': {
       const sec = k => (opt[k] !== undefined ? Number(opt[k]) * 1000 : undefined);
-      out = await waitIdle(pos[0], { turnId: opt.turn || null, timeoutMs, settleMs: sec('settle'), stallMs: sec('stall'), pollMs: sec('poll') });
-      // exit codes: 0 done, 3 stalled, 4 timeout (output is printed in every case)
-      process.exitCode = out.result === 'stalled' ? 3 : out.result === 'timeout' ? 4 : 0;
+      out = await waitIdle(pos[0], { turnId: opt.turn || null, timeoutMs, settleMs: sec('settle'), stallMs: sec('stall'),
+        pollMs: sec('poll'), untilQuestion: !!opt['until-question'] });
+      // exit codes: 0 done, 3 stalled, 4 timeout, 5 question (output is printed in every case)
+      process.exitCode = { stalled: 3, timeout: 4, question: 5 }[out.result] ?? 0;
+      break;
+    }
+    case 'questions': {
+      const t = locate(pos[0]);
+      const since = opt.since ? Date.parse(opt.since) : 0;
+      if (opt.since && Number.isNaN(since)) throw new Fail('invalid-since', opt.since);
+      const all = questionsIn(t.rollout_path).filter(q => Date.parse(q.askedAt) >= since);
+      const shown = opt.all ? all : all.filter(q => !q.answeredAt);
+      const pending = all.filter(q => !q.answeredAt).length;
+      out = opt.json ? { threadId: pos[0], pending, questions: shown }
+        : { pending, asked: all.length, message: shown.length ? formatQuestions(shown) : null };
+      process.exitCode = pending ? 5 : 0;
       break;
     }
     case 'send': out = await send(pos[0], textArg(opt), { steer: !!opt.steer, wait: !!opt.wait, timeoutMs, open: !opt['no-open'] }); break;

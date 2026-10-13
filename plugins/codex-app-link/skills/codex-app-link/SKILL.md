@@ -30,6 +30,7 @@ Multiple Codex instances: set `CODEX_HOME` to the instance's home (for example `
 | `node $CT send <id> --text "..." --steer` | Add a message to the turn that is running now |
 | `node $CT wait <id> [--timeout SEC] [--settle SEC] [--stall SEC]` | Block until the **thread** is done (see "Waiting for results"). Prints `result`: `done`, `stalled` or `timeout` (exit 0, 3 or 4), plus `lastAgentMessage` |
 | `node $CT read <id> [--last N]` | Final replies of the last N turns |
+| `node $CT questions <id> [--all] [--since ISO]` | Formal questions the thread asked (`request_user_input*`), unanswered by default, with options and the answer. Exit 5 if any are pending |
 | `node $CT open <id>` | Make the app load a thread without sending anything |
 
 Long messages: `--file path` or `--stdin` instead of `--text`.
@@ -47,6 +48,7 @@ node $CT wait <id> --timeout 10800        # run_in_background; one command, no l
   - `result: "stalled"` (exit 3): the thread claims to be active, but its session file has not been written for `--stall` seconds (default 2700, 45 min). **Verify before acting:** a silence of 15+ minutes is normal while a high-effort model reasons, or while a long command runs, because neither writes to the session file until it finishes. Check the last session-file write and running processes. If it is still writing or a process is running, restart `wait`. Treat the turn as dead only if it stays silent past the threshold with nothing running.
   - `result: "timeout"` (exit 4): the overall `--timeout` (default 3h) was reached. The current state is printed.
 - **On exit, read `result` and `lastAgentMessage` from its output, then judge the work yourself.** Do not require a particular reply format.
+- **Questions don't end a wait unless you ask.** Codex asks formal questions with `request_user_input_async`. It is accepted at once and the turn keeps running, so a plain `wait` never returns for it, and the worker proceeds on its own default. Use `wait --until-question` (`result: "question"`, exit 5), or run `codex-progress.py`, which prints `QUESTION` lines. Then answer with `send <id> --steer`. Run `questions <id>` before closing out any handoff.
 
 Never do any of these (each has caused missed completions):
 
@@ -64,7 +66,7 @@ Never do any of these (each has caused missed completions):
 python3 <skill-base-dir>/scripts/codex-progress.py <id> 240   # run under a background monitor
 ```
 
-It prints one line per new assistant note (`NOTE`), approval-request event (`APPROVAL_WAIT`) and turn end (`TURN_END`). After 240 seconds without a session write it prints a `SILENT` line; check it before acting, because a silent model may just be reasoning. Run it **alongside** `wait`, not instead of it. Ask the Codex worker to post a short progress note after every step. For **implementation work** (coding a scoped handoff, running tests, opening a PR), `wait` alone is enough. Stop the monitor when the turn ends.
+It prints one line per new assistant note (`NOTE`), formal question (`QUESTION`, with its options), approval-request event (`APPROVAL_WAIT`) and turn end (`TURN_END`). After 240 seconds without a session write it prints a `SILENT` line; check it before acting, because a silent model may just be reasoning. Run it **alongside** `wait`, not instead of it. Ask the Codex worker to post a short progress note after every step. For **implementation work** (coding a scoped handoff, running tests, opening a PR), `wait` alone is enough. Stop the monitor when the turn ends.
 
 ## Managing a project through Codex threads
 

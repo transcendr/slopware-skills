@@ -59,11 +59,12 @@ them.
 | `new --cwd DIR --text "..."` | Create a thread with the Codex CLI, run its first turn, then load it in the app |
 | `send <id> --text "..."` | Start a turn in an idle thread |
 | `send <id> --text "..." --steer` | Add a message to the turn that is running now |
-| `wait <id>` | Block until the thread is done, stalled, or timed out |
+| `wait <id> [--until-question]` | Block until the thread is done, stalled or timed out, or (with the flag) asks a formal question |
+| `questions <id> [--all]` | Formal questions the thread asked, unanswered by default, with their options |
 | `read <id> [--last N]` | Final replies of the last N turns |
 | `open <id>` | Make the app load a thread without sending anything |
 
-`scripts/codex-progress.py <id> [silence-seconds]` streams a running thread's progress notes, approval waits, turn end, and long silences. Run it under a background monitor alongside `wait` during live testing or other step-by-step process work.
+`scripts/codex-progress.py <id> [silence-seconds]` streams a running thread's progress notes, formal questions, approval waits, turn end and long silences. Run it under a background monitor alongside `wait` during live testing or other step-by-step process work.
 
 ## Built-in orchestrator knowledge
 
