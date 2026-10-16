@@ -597,7 +597,7 @@ function latestResult(rolloutPath, marker, turns = 10) {
 //   APPROVAL  an approval-request event
 //   COMPACTED the thread compacted its context
 //   MAINTENANCE a configured maintenance controller paused or resumed the worker (see AUTOMATION)
-//   RESULT    the thread settled idle and its last reply matches --expect (first matching line)
+//   RESULT    a turn completed with a reply matching --expect (first matching line), reported at once
 //   PAUSED    the thread settled idle WITHOUT matching --expect: it stopped short, so resume it
 //   DONE      the thread settled idle (no --expect given)
 //   STALLED   active, but no session write for --stall seconds (verify before acting)
@@ -645,6 +645,15 @@ async function watch(ids, reg, { expect = null, settleMs = 45_000, stallMs = 45 
             // Every completion is classified once, even for a turn that began before this watch.
             t.active = false; t.idleSince = Date.now(); t.classified = false;
             if (p.type === 'task_complete') t.lastMessage = p.last_agent_message ?? t.lastMessage;
+            // A reply that matches --expect is reported at once: a maintenance or chained turn
+            // starting inside the settle window would otherwise hide it. Settle still applies
+            // to replies that don't match, where a following turn may yet finish the work.
+            if (expectRe && p.type === 'task_complete' && typeof p.last_agent_message === 'string'
+              && expectRe.test(p.last_agent_message)) {
+              t.classified = true;
+              const msg = t.lastMessage;
+              emit(t, 'RESULT', msg.split('\n').find(l => expectRe.test(l)) || msg.slice(0, 300));
+            }
           } else if (rec.type === 'response_item' && p.type === 'message' && p.role === 'user'
             && automationKind(userText(p))) {
             // A maintenance controller normally resumes after its own pause, but it may decide the work
