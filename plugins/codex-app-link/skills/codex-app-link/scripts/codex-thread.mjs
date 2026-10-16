@@ -601,6 +601,8 @@ function latestResult(rolloutPath, marker, turns = 10) {
 //   PAUSED    the thread settled idle WITHOUT matching --expect: it stopped short, so resume it
 //   DONE      the thread settled idle (no --expect given)
 //   STALLED   active, but no session write for --stall seconds (verify before acting)
+//   MISSING   the thread's session file is gone (reported once; other threads keep being watched)
+//   FOUND     a missing session file is available again; read the thread for anything missed
 // --cursor FILE saves offsets and turn state after every poll, so a re-armed watch
 // continues exactly where the last one stopped and misses nothing in between.
 async function watch(ids, reg, { expect = null, settleMs = 45_000, stallMs = 45 * 60_000, pollMs = 5_000,
@@ -610,6 +612,12 @@ async function watch(ids, reg, { expect = null, settleMs = 45_000, stallMs = 45 
   const threads = ids.map(id => {
     const file = locate(id).rollout_path;
     const prev = saved[id];
+    if (!fs.existsSync(file)) {
+      // The session file is gone (seen when Codex dropped a large rollout). Keep watching the
+      // other threads; MISSING is reported once and FOUND if the file comes back.
+      return { id, file, offset: 0, partial: '', active: false, lastMessage: null, idleSince: null,
+        classified: true, stallWarned: false, missing: true, missingWarned: false };
+    }
     if (prev && prev.file === file && prev.offset <= fs.statSync(file).size) return { id, ...prev, partial: '' };
     const s = turnState(file);
     return { id, file, offset: fs.statSync(file).size, partial: '', active: s.status === 'active', lastMessage: s.lastAgentMessage,
@@ -622,6 +630,24 @@ async function watch(ids, reg, { expect = null, settleMs = 45_000, stallMs = 45 
   const deadline = timeoutMs ? Date.now() + timeoutMs : Infinity;
   for (;;) {
     for (const t of threads) {
+      if (!fs.existsSync(t.file)) {
+        let relocated = null;
+        try { relocated = locate(t.id).rollout_path; } catch { /* index unavailable */ }
+        if (relocated && relocated !== t.file && fs.existsSync(relocated)) {
+          t.file = relocated;
+        } else {
+          if (!t.missingWarned) {
+            t.missingWarned = true; t.missing = true;
+            emit(t, 'MISSING', `session file not found: ${t.file}; check the thread in the app`);
+          }
+          continue;
+        }
+      }
+      if (t.missing) {
+        // Read from the file's current end: replaying a rebuilt history would repeat old events.
+        t.missing = false; t.missingWarned = false; t.offset = fs.statSync(t.file).size; t.partial = '';
+        emit(t, 'FOUND', `session file available again: ${t.file}; read the thread for anything missed`);
+      }
       const size = fs.statSync(t.file).size;
       if (size > t.offset) {
         const fd = fs.openSync(t.file, 'r');
