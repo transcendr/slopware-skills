@@ -185,6 +185,7 @@ function turnState(rolloutPath) {
       latestEnd ??= p;
       if (p.turn_id) ended.set(p.turn_id, p);
     } else if (p.type === 'task_started') {
+      state.startedAt = Date.parse(rec.timestamp) || null;
       const end = ended.get(p.turn_id);
       if (end) {
         state.status = 'idle'; state.lastTurnId = p.turn_id;
@@ -257,6 +258,9 @@ function questionsIn(rolloutPath, sinceMs = 0) {
   const asked = [];
   let answer = null; // earliest qualifying user message after the current position
   for (const line of linesFromEnd(rolloutPath)) {
+    // Only three kinds of record matter here; skip parsing everything else (turns can be tens of MB).
+    if (!line.includes('request_user_input') && !line.includes('"role":"user"') && !line.includes('"role": "user"')
+      && !line.includes('task_started')) continue;
     const rec = parseRecord(line);
     if (!rec) continue;
     const p = rec.payload || {};
@@ -593,7 +597,8 @@ function latestResult(rolloutPath, marker, turns = 10) {
 // watch: one event stream for many threads, one line per event, for a
 // background monitor. Events:
 //   STARTED   a turn began (also after compaction or a resume)
-//   QUESTION  a formal request_user_input* question, with options; answer with send --steer
+//   QUESTION  a formal request_user_input* question, with options; answer with send --steer.
+//             Also found by re-checking the running turn for pending questions whenever the file grows.
 //   APPROVAL  an approval-request event
 //   COMPACTED the thread compacted its context
 //   MAINTENANCE a configured maintenance controller paused or resumed the worker (see AUTOMATION)
@@ -679,6 +684,7 @@ async function watch(ids, reg, { expect = null, settleMs = 45_000, stallMs = 45 
           if (rec.type === 'compacted') emit(t, 'COMPACTED');
           if (rec.type === 'event_msg' && p.type === 'task_started') {
             t.active = true; t.classified = false; t.idleSince = null; t.stallWarned = false; t.reported = [];
+            t.turnStartedAt = Date.parse(rec.timestamp) || Date.now();
             emit(t, 'STARTED', `turn=${p.turn_id}`);
           } else if (rec.type === 'event_msg' && (p.type === 'task_complete' || p.type === 'turn_aborted')) {
             // Every completion is classified once, even for a turn that began before this watch.
@@ -711,10 +717,26 @@ async function watch(ids, reg, { expect = null, settleMs = 45_000, stallMs = 45 
           } else if (rec.type === 'response_item' && p.type === 'function_call' && String(p.name || '').startsWith('request_user_input')) {
             let qs = [];
             try { qs = JSON.parse(p.arguments || '{}').questions || []; } catch { /* malformed */ }
+            t.askedIds = [...(t.askedIds || []), p.call_id];
             for (const q of qs) {
               const opts = (q.options || []).map(o => (typeof o === 'string' ? o : o.label ?? JSON.stringify(o)));
               emit(t, 'QUESTION', `${q.title ?? ''}${opts.length ? ` [options: ${opts.join(' | ')}]` : ''}`);
             }
+          }
+        }
+      }
+      // Safety net: the incremental read has been seen to pass a question without reporting it
+      // (a replay of the same file reports it). While a turn runs, ask the file which questions are
+      // actually pending, exactly as the questions command does, and report any not yet reported.
+      if (t.active && size !== t.questionsCheckedAt) {
+        t.questionsCheckedAt = size;
+        // Pending questions belong to the running turn; scan back only to its start.
+        t.turnStartedAt ??= turnState(t.file).startedAt ?? 0;
+        for (const q of pendingQuestions(t.file, t.turnStartedAt ?? 0)) {
+          if ((t.askedIds || []).includes(q.callId)) continue;
+          t.askedIds = [...(t.askedIds || []), q.callId];
+          for (const item of q.questions) {
+            emit(t, 'QUESTION', `${item.title}${item.options.length ? ` [options: ${item.options.join(' | ')}]` : ''}`);
           }
         }
       }
