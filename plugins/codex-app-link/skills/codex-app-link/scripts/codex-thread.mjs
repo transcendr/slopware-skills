@@ -597,7 +597,7 @@ function latestResult(rolloutPath, marker, turns = 10) {
 //   APPROVAL  an approval-request event
 //   COMPACTED the thread compacted its context
 //   MAINTENANCE a configured maintenance controller paused or resumed the worker (see AUTOMATION)
-//   RESULT    a turn completed with a reply matching --expect (first matching line), reported at once
+//   RESULT    a reply matching --expect, reported when it is written (mid-turn too), one line per match
 //   PAUSED    the thread settled idle WITHOUT matching --expect: it stopped short, so resume it
 //   DONE      the thread settled idle (no --expect given)
 //   STALLED   active, but no session write for --stall seconds (verify before acting)
@@ -627,6 +627,11 @@ async function watch(ids, reg, { expect = null, settleMs = 45_000, stallMs = 45 
   const emit = (t, kind, detail = '') => {
     const ts = new Date().toISOString().slice(11, 19);
     console.log(`${ts} ${kind} ${nameOf(t.id, reg)}${detail ? ` ${String(detail).replace(/\s+/g, ' ').slice(0, 380)}` : ''}`);
+  };
+  // Every matching line is a result: one reply can close several pieces of work.
+  const emitResults = (t, msg) => {
+    const lines = msg.split('\n').filter(l => expectRe.test(l));
+    for (const line of lines.length ? lines : [msg.slice(0, 300)]) emit(t, 'RESULT', line);
   };
   const deadline = timeoutMs ? Date.now() + timeoutMs : Infinity;
   for (;;) {
@@ -673,7 +678,7 @@ async function watch(ids, reg, { expect = null, settleMs = 45_000, stallMs = 45 
           const p = rec.payload || {};
           if (rec.type === 'compacted') emit(t, 'COMPACTED');
           if (rec.type === 'event_msg' && p.type === 'task_started') {
-            t.active = true; t.classified = false; t.idleSince = null; t.stallWarned = false;
+            t.active = true; t.classified = false; t.idleSince = null; t.stallWarned = false; t.reported = [];
             emit(t, 'STARTED', `turn=${p.turn_id}`);
           } else if (rec.type === 'event_msg' && (p.type === 'task_complete' || p.type === 'turn_aborted')) {
             // Every completion is classified once, even for a turn that began before this watch.
@@ -685,9 +690,17 @@ async function watch(ids, reg, { expect = null, settleMs = 45_000, stallMs = 45 
             if (expectRe && p.type === 'task_complete' && typeof p.last_agent_message === 'string'
               && expectRe.test(p.last_agent_message)) {
               t.classified = true;
-              const msg = t.lastMessage;
-              emit(t, 'RESULT', msg.split('\n').find(l => expectRe.test(l)) || msg.slice(0, 300));
+              // Already reported when it was written mid-turn (below): don't repeat it.
+              if (!(t.reported || []).includes(p.last_agent_message)) emitResults(t, p.last_agent_message);
             }
+          } else if (rec.type === 'response_item' && p.type === 'message' && p.role === 'assistant'
+            && expectRe && expectRe.test(userText(p))) {
+            // A worker can finish one piece of work and carry on in the same turn (for example,
+            // queued work steered into it). Its result is reported the moment it is written,
+            // not only when the turn ends.
+            const text = userText(p);
+            t.reported = [...(t.reported || []), text];
+            emitResults(t, text);
           } else if (rec.type === 'response_item' && p.type === 'message' && p.role === 'user'
             && automationKind(userText(p))) {
             // A maintenance controller normally resumes after its own pause, but it may decide the work
@@ -710,7 +723,7 @@ async function watch(ids, reg, { expect = null, settleMs = 45_000, stallMs = 45 
         t.classified = true;
         const msg = t.lastMessage || '';
         if (!expectRe) emit(t, 'DONE', msg.slice(0, 300));
-        else if (expectRe.test(msg)) emit(t, 'RESULT', msg.split('\n').find(l => expectRe.test(l)) || msg.slice(0, 300));
+        else if (expectRe.test(msg)) { if (!(t.reported || []).includes(msg)) emitResults(t, msg); }
         else emit(t, 'PAUSED', msg.slice(0, 300));
       }
       if (t.active && !t.stallWarned && now - fs.statSync(t.file).mtimeMs >= stallMs) {
@@ -719,7 +732,7 @@ async function watch(ids, reg, { expect = null, settleMs = 45_000, stallMs = 45 
       }
     }
     if (cursorFile) {
-      const state = Object.fromEntries(threads.map(({ id, ...rest }) => [id, rest]));
+      const state = Object.fromEntries(threads.map(({ id, reported, ...rest }) => [id, rest]));
       fs.writeFileSync(cursorFile, JSON.stringify(state));
     }
     if (Date.now() >= deadline) return;

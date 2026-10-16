@@ -96,7 +96,7 @@ When you run more than one worker, or anything long, use the manager kit rather 
    |---|---|
    | `QUESTION` | Answer now with `send <name> --steer`. The worker keeps going on its default otherwise |
    | `PAUSED` | The thread went idle without its result: a compaction pause, a "waiting for controller resume" stop, or a crash. Read its last reply, then resume it with `send` |
-   | `RESULT` | Run `node $CT result <name>`, then verify the work yourself |
+   | `RESULT` | Reported as soon as a reply containing a matching line is written, including mid-turn (one event per matching line, so chained work reports each result). Run `node $CT result <name>`, then verify the work yourself. Anchor `--expect` to the result line itself (for example `'^\s*RESULT (handoff\|research)='`), so replies that merely mention it don't match |
    | `STALLED` | Check before acting: long reasoning and long commands write nothing |
    | `COMPACTED`, `STARTED`, `MAINTENANCE` | Context. `MAINTENANCE` appears only if you configured a maintenance controller's patterns (below) |
 | `APPROVAL` | It may need you in the app |
