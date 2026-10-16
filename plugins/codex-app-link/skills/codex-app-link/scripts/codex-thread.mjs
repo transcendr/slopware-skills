@@ -614,6 +614,21 @@ function latestResult(rolloutPath, marker, turns = 10) {
 async function watch(ids, reg, { expect = null, settleMs = 45_000, stallMs = 45 * 60_000, pollMs = 5_000,
   timeoutMs = null, cursorFile = null } = {}) {
   const expectRe = expect ? new RegExp(expect, 'm') : null;
+  if (cursorFile) {
+    // Two watches sharing a cursor each advance it past events the other then never reports.
+    const lock = `${cursorFile}.lock`;
+    let holder = null;
+    try { holder = Number(fs.readFileSync(lock, 'utf8')); } catch { /* no lock */ }
+    if (holder && holder !== process.pid) {
+      let alive = false;
+      try { process.kill(holder, 0); alive = true; } catch { /* stale lock */ }
+      if (alive) throw new Fail('cursor-in-use', `another watch (pid ${holder}) is using ${cursorFile}; stop it first`);
+    }
+    fs.writeFileSync(lock, String(process.pid));
+    const release = () => { try { if (Number(fs.readFileSync(lock, 'utf8')) === process.pid) fs.unlinkSync(lock); } catch { /* gone */ } };
+    process.on('exit', release);
+    for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) process.on(sig, () => { release(); process.exit(130); });
+  }
   const saved = cursorFile && fs.existsSync(cursorFile) ? JSON.parse(fs.readFileSync(cursorFile, 'utf8')) : {};
   const threads = ids.map(id => {
     const file = locate(id).rollout_path;
