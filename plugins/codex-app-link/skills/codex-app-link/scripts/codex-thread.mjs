@@ -615,12 +615,12 @@ async function watch(ids, reg, { expect = null, settleMs = 45_000, stallMs = 45 
     if (!fs.existsSync(file)) {
       // The session file is gone (seen when Codex dropped a large rollout). Keep watching the
       // other threads; MISSING is reported once and FOUND if the file comes back.
-      return { id, file, offset: 0, partial: '', active: false, lastMessage: null, idleSince: null,
+      return { id, file, offset: 0, active: false, lastMessage: null, idleSince: null,
         classified: true, stallWarned: false, missing: true, missingWarned: false };
     }
-    if (prev && prev.file === file && prev.offset <= fs.statSync(file).size) return { id, ...prev, partial: '' };
+    if (prev && prev.file === file && prev.offset <= fs.statSync(file).size) return { id, ...prev };
     const s = turnState(file);
-    return { id, file, offset: fs.statSync(file).size, partial: '', active: s.status === 'active', lastMessage: s.lastAgentMessage,
+    return { id, file, offset: fs.statSync(file).size, active: s.status === 'active', lastMessage: s.lastAgentMessage,
       idleSince: null, classified: true, stallWarned: false };
   });
   const emit = (t, kind, detail = '') => {
@@ -645,7 +645,7 @@ async function watch(ids, reg, { expect = null, settleMs = 45_000, stallMs = 45 
       }
       if (t.missing) {
         // Read from the file's current end: replaying a rebuilt history would repeat old events.
-        t.missing = false; t.missingWarned = false; t.offset = fs.statSync(t.file).size; t.partial = '';
+        t.missing = false; t.missingWarned = false; t.offset = fs.statSync(t.file).size;
         emit(t, 'FOUND', `session file available again: ${t.file}; read the thread for anything missed`);
       }
       const size = fs.statSync(t.file).size;
@@ -654,10 +654,12 @@ async function watch(ids, reg, { expect = null, settleMs = 45_000, stallMs = 45 
         const buf = Buffer.alloc(size - t.offset);
         fs.readSync(fd, buf, 0, buf.length, t.offset);
         fs.closeSync(fd);
-        const text = t.partial + buf.toString('utf8');
-        const lines = text.split('\n');
-        t.partial = lines.pop();
-        t.offset = size - Buffer.byteLength(t.partial);
+        // offset always marks the end of the last complete line, so a line still being written
+        // is simply read again next poll, as after a restart. Only complete lines are decoded:
+        // a read can also end inside a multi-byte character.
+        const end = buf.lastIndexOf(0x0a) + 1;
+        t.offset += end;
+        const lines = buf.subarray(0, end).toString('utf8').split('\n');
         for (const line of lines) {
           if (!line.trim()) continue;
           let rec;
@@ -711,7 +713,7 @@ async function watch(ids, reg, { expect = null, settleMs = 45_000, stallMs = 45 
       }
     }
     if (cursorFile) {
-      const state = Object.fromEntries(threads.map(({ id, partial, ...rest }) => [id, rest]));
+      const state = Object.fromEntries(threads.map(({ id, ...rest }) => [id, rest]));
       fs.writeFileSync(cursorFile, JSON.stringify(state));
     }
     if (Date.now() >= deadline) return;
