@@ -423,7 +423,10 @@ async function send(threadId, text, { steer = false, wait = false, timeoutMs, op
   const t = locate(threadId);
   const { ownerId, opened } = await ensureLoaded(threadId, { open });
   // Read state only after loading: opening can start a turn for queued messages.
-  const s = turnState(t.rollout_path);
+  // Codex has been seen to lose a large thread's session file while the thread keeps running
+  // in the app. The app still accepts messages by thread id, so without the file, --steer
+  // means "steer the running turn" and its absence means "start a turn".
+  const s = fs.existsSync(t.rollout_path) ? turnState(t.rollout_path) : { status: steer ? 'active' : 'idle', turnId: '(session file missing)' };
   return withIpc(async ipc => {
     let result;
     if (s.status === 'active') {
