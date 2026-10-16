@@ -603,6 +603,7 @@ function latestResult(rolloutPath, marker, turns = 10) {
 //   STALLED   active, but no session write for --stall seconds (verify before acting)
 //   MISSING   the thread's session file is gone (reported once; other threads keep being watched)
 //   FOUND     a missing session file is available again; read the thread for anything missed
+//   UNPARSED  a complete session line failed to parse; an event may be lost, so read the thread
 // --cursor FILE saves offsets and turn state after every poll, so a re-armed watch
 // continues exactly where the last one stopped and misses nothing in between.
 async function watch(ids, reg, { expect = null, settleMs = 45_000, stallMs = 45 * 60_000, pollMs = 5_000,
@@ -651,9 +652,10 @@ async function watch(ids, reg, { expect = null, settleMs = 45_000, stallMs = 45 
       const size = fs.statSync(t.file).size;
       if (size > t.offset) {
         const fd = fs.openSync(t.file, 'r');
-        const buf = Buffer.alloc(size - t.offset);
-        fs.readSync(fd, buf, 0, buf.length, t.offset);
+        const want = Buffer.alloc(size - t.offset);
+        const got = fs.readSync(fd, want, 0, want.length, t.offset);
         fs.closeSync(fd);
+        const buf = want.subarray(0, got); // a read can return fewer bytes than the size reported
         // offset always marks the end of the last complete line, so a line still being written
         // is simply read again next poll, as after a restart. Only complete lines are decoded:
         // a read can also end inside a multi-byte character.
@@ -663,7 +665,11 @@ async function watch(ids, reg, { expect = null, settleMs = 45_000, stallMs = 45 
         for (const line of lines) {
           if (!line.trim()) continue;
           let rec;
-          try { rec = JSON.parse(line); } catch { continue; }
+          try { rec = JSON.parse(line); } catch (e) {
+            // A complete line that fails to parse means a lost event: never drop it silently.
+            emit(t, 'UNPARSED', `${line.length} chars at offset ${t.offset}: ${e.message}`);
+            continue;
+          }
           const p = rec.payload || {};
           if (rec.type === 'compacted') emit(t, 'COMPACTED');
           if (rec.type === 'event_msg' && p.type === 'task_started') {
