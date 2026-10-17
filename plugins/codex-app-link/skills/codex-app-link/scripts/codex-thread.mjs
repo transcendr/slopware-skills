@@ -711,11 +711,15 @@ async function watch(ids, reg, { expect = null, settleMs = 45_000, stallMs = 45 
             // A reply that matches --expect is reported at once: a maintenance or chained turn
             // starting inside the settle window would otherwise hide it. Settle still applies
             // to replies that don't match, where a following turn may yet finish the work.
+            t.lastSeenEnd = p.turn_id ?? t.lastSeenEnd;
             if (expectRe && p.type === 'task_complete' && typeof p.last_agent_message === 'string'
               && expectRe.test(p.last_agent_message)) {
               t.classified = true;
               // Already reported when it was written mid-turn (below): don't repeat it.
-              if (!(t.reported || []).includes(p.last_agent_message)) emitResults(t, p.last_agent_message);
+              if (!(t.reported || []).includes(p.last_agent_message)) {
+                emitResults(t, p.last_agent_message);
+                t.reported = [...(t.reported || []), p.last_agent_message];
+              }
             }
           } else if (rec.type === 'response_item' && p.type === 'message' && p.role === 'assistant'
             && expectRe && expectRe.test(userText(p))) {
@@ -743,18 +747,30 @@ async function watch(ids, reg, { expect = null, settleMs = 45_000, stallMs = 45 
           }
         }
       }
-      // Safety net: the incremental read has been seen to pass a question without reporting it
-      // (a replay of the same file reports it). While a turn runs, ask the file which questions are
-      // actually pending, exactly as the questions command does, and report any not yet reported.
-      if (t.active && size !== t.questionsCheckedAt) {
-        t.questionsCheckedAt = size;
-        // Pending questions belong to the running turn; scan back only to its start.
-        t.turnStartedAt ??= turnState(t.file).startedAt ?? 0;
-        for (const q of pendingQuestions(t.file, t.turnStartedAt ?? 0)) {
-          if ((t.askedIds || []).includes(q.callId)) continue;
-          t.askedIds = [...(t.askedIds || []), q.callId];
-          for (const item of q.questions) {
-            emit(t, 'QUESTION', `${item.title}${item.options.length ? ` [options: ${item.options.join(' | ')}]` : ''}`);
+      // Safety net: the incremental read has been seen to pass records without reporting them
+      // (a replay of the same file reports them). Whenever the file grows, ask it directly what
+      // the current turn is, which questions are pending and how the last turn ended, exactly as
+      // the status and questions commands do, and report anything not yet reported.
+      if (size !== t.checkedAt) {
+        t.checkedAt = size;
+        const st = turnState(t.file);
+        if (st.status === 'active') {
+          t.turnStartedAt = st.startedAt ?? t.turnStartedAt ?? 0;
+          for (const q of pendingQuestions(t.file, t.turnStartedAt)) {
+            if ((t.askedIds || []).includes(q.callId)) continue;
+            t.askedIds = [...(t.askedIds || []), q.callId];
+            for (const item of q.questions) {
+              emit(t, 'QUESTION', `${item.title}${item.options.length ? ` [options: ${item.options.join(' | ')}]` : ''}`);
+            }
+          }
+        } else if (st.status === 'idle' && st.lastTurnId && st.lastTurnId !== t.lastSeenEnd) {
+          t.lastSeenEnd = st.lastTurnId;
+          const msg = st.lastAgentMessage || '';
+          if (t.active) { t.active = false; t.idleSince = Date.now(); t.classified = false; t.lastMessage = msg; }
+          if (expectRe && expectRe.test(msg) && !(t.reported || []).includes(msg)) {
+            emitResults(t, msg);
+            t.reported = [...(t.reported || []), msg];
+            t.classified = true;
           }
         }
       }
