@@ -38,6 +38,13 @@ const PROTOCOL = {
   'thread-owner-discovery': 1,
   'thread-follower-start-turn': 2,
   'thread-follower-steer-turn': 1,
+  'thread-follower-update-thread-settings': 2,
+};
+
+// Access presets, as the composer's access selector sends them (`full-access`
+// agent mode). Measured against the app bundle on 2026-10-19.
+const ACCESS_PRESETS = {
+  full: { permissions: ':danger-full-access', approvalPolicy: 'never', approvalsReviewer: 'user' },
 };
 
 class Fail extends Error {
@@ -417,6 +424,25 @@ async function ensureLoaded(threadId, { open = true } = {}) {
 }
 
 // ---------- Commands ----------
+
+// Sets a thread's access the way the composer's selector does. The app reloads
+// threads under a restricted profile after a restart (workspace write, network
+// off), which breaks builds, the Simulator and localhost services until access
+// is restored. With no turn running, the setting applies from the next turn.
+async function access(threadId, mode, { open = true } = {}) {
+  const threadSettings = ACCESS_PRESETS[mode];
+  if (!threadSettings) throw new Fail('invalid-access-mode', `${mode}; expected one of: ${Object.keys(ACCESS_PRESETS).join(', ')}`);
+  const t = locate(threadId);
+  const { ownerId, opened } = await ensureLoaded(threadId, { open });
+  const s = turnState(t.rollout_path);
+  return withIpc(async ipc => {
+    const res = await ipc.request('thread-follower-update-thread-settings', {
+      conversationId: threadId, threadSettings, activeTurnId: s.status === 'active' ? s.turnId : null, condition: null,
+    }, ownerId);
+    const applied = res.result?.result?.applied ?? res.result?.applied;
+    return { threadId, mode, applied: applied === true, appliedTo: s.status === 'active' ? 'current-turn' : 'next-turn', openedInApp: opened };
+  }, 15000);
+}
 
 async function send(threadId, text, { steer = false, wait = false, timeoutMs, open = true } = {}) {
   if (!text || !text.trim()) throw new Fail('empty-message');
@@ -845,6 +871,8 @@ const USAGE = `codex-thread <command>     (<thread> = a thread ID or a name from
   send    <thread> (--text T | --file F | --stdin) [--steer] [--wait] [--timeout SEC] [--no-open]
   new     --cwd DIR (--text T | --file F) [--no-open] [--timeout SEC] [-- <extra codex exec args>]
   open    <thread>                         make the app load the thread (background deep link)
+  access  <thread> full [--no-open]        set the thread's access like the composer's selector (Full access);
+                                           applies from the next turn, or to the running turn
   list    [--limit N] [--cwd DIR]          recent threads from the local index
   version                                  plugin version and this script's path`;
 
@@ -855,7 +883,7 @@ async function main() {
   const regFile = registryPath(opt);
   const reg = loadRegistry(regFile);
   configureAutomation(reg, opt);
-  if (['status', 'read', 'wait', 'questions', 'result', 'send', 'open'].includes(cmd)) pos[0] = resolveRef(pos[0], reg);
+  if (['status', 'read', 'wait', 'questions', 'result', 'send', 'open', 'access'].includes(cmd)) pos[0] = resolveRef(pos[0], reg);
   let out;
   switch (cmd) {
     case 'status': out = await status(pos[0]); break;
@@ -912,6 +940,7 @@ async function main() {
     }
     case 'send': out = await send(pos[0], textArg(opt), { steer: !!opt.steer, wait: !!opt.wait, timeoutMs, open: !opt['no-open'] }); break;
     case 'open': out = { threadId: pos[0], ...(await ensureLoaded((locate(pos[0]), pos[0]))) }; break;
+    case 'access': out = await access(pos[0], pos[1], { open: !opt['no-open'] }); break;
     case 'new': {
       const created = await create({ cwd: opt.cwd, prompt: textArg(opt), extra: opt._rest || [], timeoutMs });
       let loaded = { ownerId: null, opened: false }, loadError = null;

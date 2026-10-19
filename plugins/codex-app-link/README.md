@@ -67,6 +67,7 @@ them.
 | `version` | Which version and script path you are running |
 | `read <id> [--last N]` | Final replies of the last N turns |
 | `open <id>` | Make the app load a thread without sending anything |
+| `access <id> full` | Set the thread's access to Full access, as the composer's selector does (needed after an app restart) |
 
 `scripts/codex-progress.py <id> [silence-seconds]` streams a running thread's progress notes, formal questions, approval waits, turn end and long silences. Run it under a background monitor alongside `wait` during live testing or other step-by-step process work.
 

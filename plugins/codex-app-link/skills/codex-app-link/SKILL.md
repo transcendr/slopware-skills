@@ -39,6 +39,7 @@ Multiple Codex instances: set `CODEX_HOME` to the instance's home (for example `
 | `node $CT version` | The plugin version, script path and registry path |
 | `node $CT questions <id> [--all] [--since ISO]` | Formal questions the thread asked (`request_user_input*`), unanswered by default, with options and the answer. Exit 5 if any are pending |
 | `node $CT open <id>` | Make the app load a thread without sending anything |
+| `node $CT access <id> full [--no-open]` | Set the thread's access the way the composer's selector does (Full access). It applies from the next turn, or to the running turn. Use it after an app restart: the app reloads threads under a restricted profile (workspace write, network off) |
 
 Long messages: `--file path` or `--stdin` instead of `--text`.
 
@@ -158,6 +159,7 @@ The socket protocol is private and undocumented. It was verified on 2026-10-06 a
 |---|---|
 | `app-not-running` | Start the Codex desktop app (ChatGPT.app) |
 | `not-loaded-in-app` | Deep link did not load the thread within 30s. Open the thread in the app manually and retry |
+| A thread's commands fail with `EPERM`, no network, or no Simulator after the app restarted | The app reloaded it under a restricted profile. Run `access <id> full`, then check the next turn: the rollout's `turn_context` shows `sandbox_policy` `danger-full-access` |
 | `not-loaded-in-instance` | No running app owns the `CODEX_HOME` instance's socket. Start that instance (or open the thread in it) and retry |
 | `thread-not-indexed` | Wrong ID, or the thread was created on another machine |
 | `thread-busy` | A turn is running. `wait`, or `send --steer` |
