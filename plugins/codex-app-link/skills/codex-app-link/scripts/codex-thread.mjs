@@ -124,6 +124,132 @@ class Ipc {
   close() { this.sock?.destroy(); }
 }
 
+// ---------- Shared app-server daemon client ----------
+//
+// Terminal CLI sessions (`codex` in a terminal) don't belong to the desktop app: they
+// are clients of the shared local app-server daemon, which holds the thread. The app
+// never takes ownership of such a thread, so the IPC route above can't reach it. The
+// daemon speaks JSON-RPC over a WebSocket on a Unix socket; a second client can steer
+// or start turns on the same loaded thread, so the terminal sees the message arrive
+// and no second instance of the thread is created.
+
+const DAEMON_SOCKET = path.join(CODEX_HOME, 'app-server-control', 'app-server-control.sock');
+
+class Daemon {
+  constructor(timeoutMs) { this.timeoutMs = timeoutMs; this.pending = new Map(); this.buf = Buffer.alloc(0); this.nextId = 1; }
+
+  async open() {
+    if (!fs.existsSync(DAEMON_SOCKET)) throw new Fail('daemon-not-running', `no app-server daemon socket at ${DAEMON_SOCKET}`);
+    this.sock = net.createConnection(DAEMON_SOCKET);
+    await new Promise((resolve, reject) => {
+      const t = setTimeout(() => reject(new Fail('daemon-connect-timeout')), this.timeoutMs);
+      this.sock.once('error', e => { clearTimeout(t); reject(new Fail('daemon-connect-error', e.message)); });
+      this.sock.once('connect', () => {
+        const key = Buffer.from(randomUUID().replace(/-/g, ''), 'hex').toString('base64');
+        this.sock.write(`GET / HTTP/1.1\r\nHost: localhost\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n`
+          + `Sec-WebSocket-Key: ${key}\r\nSec-WebSocket-Version: 13\r\n\r\n`);
+      });
+      let head = Buffer.alloc(0);
+      const onData = d => {
+        head = Buffer.concat([head, d]);
+        const end = head.indexOf('\r\n\r\n');
+        if (end < 0) return;
+        this.sock.off('data', onData);
+        clearTimeout(t);
+        if (!/^HTTP\/1\.1 101/.test(head.subarray(0, end).toString())) return reject(new Fail('daemon-handshake-failed', head.subarray(0, end).toString().split('\r\n')[0]));
+        this.sock.on('data', x => this.receive(x));
+        this.receive(head.subarray(end + 4));
+        resolve();
+      };
+      this.sock.on('data', onData);
+    });
+    this.sock.on('error', () => this.failAll(new Fail('daemon-connection-error')));
+    this.sock.on('close', () => this.failAll(new Fail('daemon-disconnected')));
+    await this.request('initialize', { clientInfo: { name: 'codex-app-link', title: 'codex-app-link', version: '0' } });
+    this.notify('initialized');
+    return this;
+  }
+
+  receive(data) {
+    this.buf = Buffer.concat([this.buf, data]);
+    for (;;) {
+      if (this.buf.length < 2) return;
+      let len = this.buf[1] & 0x7f, off = 2;
+      if (len === 126) { if (this.buf.length < 4) return; len = this.buf.readUInt16BE(2); off = 4; }
+      else if (len === 127) { if (this.buf.length < 10) return; len = Number(this.buf.readBigUInt64BE(2)); off = 10; }
+      if (this.buf.length < off + len) return;
+      const op = this.buf[0] & 0x0f, body = this.buf.subarray(off, off + len);
+      this.buf = this.buf.subarray(off + len);
+      if (op === 1) this.handle(JSON.parse(body.toString('utf8')));
+      else if (op === 9) this.frame(0xa, body); // answer pings
+    }
+  }
+
+  handle(msg) {
+    if (msg.id === undefined || !this.pending.has(msg.id)) return; // notifications and server requests
+    const p = this.pending.get(msg.id);
+    this.pending.delete(msg.id);
+    clearTimeout(p.timer);
+    if (msg.error) p.reject(new Fail('daemon-request-failed', `${p.method}: ${msg.error.message || JSON.stringify(msg.error)}`));
+    else p.resolve(msg.result);
+  }
+
+  frame(op, payload) {
+    const mask = Buffer.from(randomUUID().replace(/-/g, '').slice(0, 8), 'hex');
+    const n = payload.length;
+    const head = n < 126 ? Buffer.from([0x80 | op, 0x80 | n])
+      : n < 65536 ? Buffer.concat([Buffer.from([0x80 | op, 0x80 | 126]), Buffer.from([n >> 8, n & 0xff])])
+        : (() => { const b = Buffer.alloc(10); b[0] = 0x80 | op; b[1] = 0x80 | 127; b.writeBigUInt64BE(BigInt(n), 2); return b; })();
+    const body = Buffer.from(payload);
+    for (let i = 0; i < body.length; i++) body[i] ^= mask[i % 4];
+    this.sock.write(Buffer.concat([head, mask, body]));
+  }
+
+  notify(method, params) { this.frame(1, Buffer.from(JSON.stringify({ jsonrpc: '2.0', method, ...(params ? { params } : {}) }))); }
+
+  request(method, params) {
+    const id = this.nextId++;
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => { this.pending.delete(id); reject(new Fail('daemon-request-timeout', method)); }, this.timeoutMs);
+      this.pending.set(id, { resolve, reject, timer, method });
+      this.frame(1, Buffer.from(JSON.stringify({ jsonrpc: '2.0', id, method, params })));
+    });
+  }
+
+  failAll(err) {
+    for (const p of this.pending.values()) { clearTimeout(p.timer); p.reject(err); }
+    this.pending.clear();
+  }
+
+  close() { this.sock?.destroy(); }
+}
+
+async function withDaemon(fn, timeoutMs = 8000) {
+  const d = await new Daemon(timeoutMs).open();
+  try { return await fn(d); } finally { d.close(); }
+}
+
+// Whether the shared daemon has this thread loaded. A missing daemon means "no".
+async function daemonHolds(threadId) {
+  if (!fs.existsSync(DAEMON_SOCKET)) return false;
+  try {
+    return await withDaemon(async d => {
+      for (let cursor = null; ;) {
+        const r = await d.request('thread/loaded/list', cursor ? { cursor } : {});
+        if ((r.data || []).includes(threadId)) return true;
+        if (!r.nextCursor) return false;
+        cursor = r.nextCursor;
+      }
+    }, 3000);
+  } catch { return false; }
+}
+
+// The daemon's own view of the newest turn: authoritative for steering preconditions.
+async function daemonLatestTurn(d, threadId) {
+  const r = await d.request('thread/turns/list', { threadId, limit: 1, sortDirection: 'desc' });
+  return (r.data || [])[0] || null;
+}
+
 async function withIpc(fn, timeoutMs = 8000) {
   const ipc = await new Ipc(timeoutMs).open();
   try { return await fn(ipc); } finally { ipc.close(); }
@@ -310,8 +436,9 @@ async function status(threadId, { needOwner = true } = {}) {
     try { ownerClientId = await withIpc(ipc => owner(ipc, threadId)); }
     catch (e) { ownerError = e.code || e.message; }
   }
+  const loadedInDaemon = !ownerClientId && await daemonHolds(threadId);
   return { threadId, title: t.title, cwd: t.cwd, model: t.model, archived: !!t.archived, rolloutPath: t.rollout_path,
-    ...s, loadedInApp: !!ownerClientId, ownerClientId, ownerError };
+    ...s, loadedInApp: !!ownerClientId, ownerClientId, ownerError, loadedInDaemon };
 }
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -433,7 +560,12 @@ async function access(threadId, mode, { open = true } = {}) {
   const threadSettings = ACCESS_PRESETS[mode];
   if (!threadSettings) throw new Fail('invalid-access-mode', `${mode}; expected one of: ${Object.keys(ACCESS_PRESETS).join(', ')}`);
   const t = locate(threadId);
-  const { ownerId, opened } = await ensureLoaded(threadId, { open });
+  let appOwner = null;
+  try { appOwner = await withIpc(ipc => owner(ipc, threadId), 3000); } catch { /* not app-owned */ }
+  if (!appOwner && await daemonHolds(threadId)) {
+    throw new Fail('daemon-thread', 'this thread is a terminal session on the shared app-server daemon; set its access in that terminal');
+  }
+  const { ownerId, opened } = appOwner ? { ownerId: appOwner, opened: false } : await ensureLoaded(threadId, { open });
   const s = turnState(t.rollout_path);
   return withIpc(async ipc => {
     const res = await ipc.request('thread-follower-update-thread-settings', {
@@ -444,10 +576,39 @@ async function access(threadId, mode, { open = true } = {}) {
   }, 15000);
 }
 
+// A thread held by the shared daemon (a terminal CLI session) is driven through the
+// daemon, on the instance it already holds: steer requires the daemon's active turn id,
+// so a message can never land in a different turn or start a parallel one.
+async function sendViaDaemon(threadId, text, { steer, wait, timeoutMs }) {
+  let result = await withDaemon(async d => {
+    const turn = await daemonLatestTurn(d, threadId);
+    const input = [{ type: 'text', text, text_elements: [] }];
+    if (turn?.status === 'inProgress') {
+      if (!steer) throw new Fail('thread-busy', `turn ${turn.id} is running; pass --steer to inject into it, or run "wait" first`);
+      const r = await d.request('turn/steer', { threadId, expectedTurnId: turn.id, input, clientUserMessageId: randomUUID() });
+      return { mode: 'steer', turnId: r.turnId ?? turn.id };
+    }
+    const r = await d.request('turn/start', { threadId, input, clientUserMessageId: randomUUID() });
+    if (typeof r.turn?.id !== 'string') throw new Fail('invalid-start-turn-response', JSON.stringify(r).slice(0, 300));
+    return { mode: 'start', turnId: r.turn.id };
+  }, 15000);
+  result = { accepted: true, threadId, via: 'daemon', ...result };
+  if (wait && result.turnId) {
+    const done = await waitIdle(threadId, { turnId: result.turnId, timeoutMs });
+    result = { ...result, turnStatus: done.lastTurnStatus, lastAgentMessage: done.lastAgentMessage };
+  }
+  return result;
+}
+
 async function send(threadId, text, { steer = false, wait = false, timeoutMs, open = true } = {}) {
   if (!text || !text.trim()) throw new Fail('empty-message');
   const t = locate(threadId);
-  const { ownerId, opened } = await ensureLoaded(threadId, { open });
+  // Route first: an app-owned thread uses the app's IPC; a thread the shared daemon holds
+  // (a terminal session) uses the daemon. Only a thread neither holds is opened in the app.
+  let appOwner = null;
+  try { appOwner = await withIpc(ipc => owner(ipc, threadId), 3000); } catch { /* not app-owned */ }
+  if (!appOwner && await daemonHolds(threadId)) return sendViaDaemon(threadId, text, { steer, wait, timeoutMs });
+  const { ownerId, opened } = appOwner ? { ownerId: appOwner, opened: false } : await ensureLoaded(threadId, { open });
   // Read state only after loading: opening can start a turn for queued messages.
   // Codex has been seen to lose a large thread's session file while the thread keeps running
   // in the app. The app still accepts messages by thread id, so without the file, --steer

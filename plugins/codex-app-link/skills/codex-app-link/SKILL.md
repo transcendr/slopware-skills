@@ -5,7 +5,7 @@ description: Create Codex threads and send messages into Codex desktop-app (GUI)
 
 # Codex App Link
 
-`scripts/codex-thread.mjs` drives Codex threads from the terminal. It sends messages through the Codex desktop app, works whether or not the thread is in the foreground, and reads replies from Codex's own session files. By default, output is compact text, to save tokens in an agent's context:
+`scripts/codex-thread.mjs` drives Codex threads from the terminal. It sends messages through the Codex desktop app, or through the shared app-server daemon for a thread open in a terminal `codex` session, works whether or not the thread is in the foreground, and reads replies from Codex's own session files. By default, output is compact text, to save tokens in an agent's context:
 - one line of `key=value` scalars;
 - then the agent's reply (`lastAgentMessage`) as raw, unescaped text.
 
@@ -20,6 +20,12 @@ node $CT version        # confirms the version and path you are actually running
 
 Never reuse a `.../codex-app-link/<version>/...` path remembered from an earlier session or a summary. Plugin updates install side by side, so an old path keeps running the old version and misses its fixes and scripts.
 
+**Terminal sessions.** A thread open in a terminal `codex` session is held by the shared local app-server daemon
+(`~/.codex/app-server-control/app-server-control.sock`), not the app, so the app can never take it over. `send`
+detects this (`status` shows `loadedInDaemon=true`) and talks to the daemon instead: `--steer` injects into the
+daemon's active turn, with that turn id as a precondition, and a plain send starts a turn when the thread is idle.
+Either way the message lands in the one live instance the terminal shows; no second process or fork is created.
+
 Requirements: macOS, the Codex desktop app (ChatGPT.app) running, and Node.js 22.5 or later (the script reads Codex's thread index through `node:sqlite`).
 
 Multiple Codex instances: set `CODEX_HOME` to the instance's home (for example `CODEX_HOME=~/.codex-work`) on every command. The script then uses that instance's socket, thread index and session files. `open codex://...` always reaches the default instance (`~/.codex`), so for any other instance the script loads a thread by sending the `codex://threads/<id>` link as a GetURL Apple Event to the process that owns that instance's socket. The first use may trigger a macOS Automation prompt. If no process owns the socket, it fails with `not-loaded-in-instance`.
@@ -27,7 +33,7 @@ Multiple Codex instances: set `CODEX_HOME` to the instance's home (for example `
 | Command | Purpose |
 |---|---|
 | `node $CT list [--limit N] [--cwd DIR]` | Recent threads (id, title, cwd, updated) |
-| `node $CT status <id>` | `status` (idle/active), current `turnId`, `lastAgentMessage`, `loadedInApp` |
+| `node $CT status <id>` | `status` (idle/active), current `turnId`, `lastAgentMessage`, `loadedInApp`, `loadedInDaemon` |
 | `node $CT new --cwd DIR --text "..." [--timeout SEC] [-- <codex exec args>]` | Create a thread with the CLI, run its first turn, then load it in the app. Returns `threadId` and `finalMessage` |
 | `node $CT send <id> --text "..." [--wait] [--timeout SEC]` | Start a turn in an idle thread through the app. `--wait` blocks until it finishes and returns `lastAgentMessage` |
 | `node $CT send <id> --text "..." --steer` | Add a message to the turn that is running now |
@@ -158,7 +164,8 @@ The socket protocol is private and undocumented. It was verified on 2026-10-06 a
 | Error | Meaning / fix |
 |---|---|
 | `app-not-running` | Start the Codex desktop app (ChatGPT.app) |
-| `not-loaded-in-app` | Deep link did not load the thread within 30s. Open the thread in the app manually and retry |
+| `not-loaded-in-app` | Deep link did not load the thread within 30s, and the shared daemon doesn't hold it either. Open the thread in the app manually and retry |
+| `daemon-thread` | `access` on a terminal session: set its access in that terminal |
 | A thread's commands fail with `EPERM`, no network, or no Simulator after the app restarted | The app reloaded it under a restricted profile. Run `access <id> full`, then check the next turn: the rollout's `turn_context` shows `sandbox_policy` `danger-full-access` |
 | `not-loaded-in-instance` | No running app owns the `CODEX_HOME` instance's socket. Start that instance (or open the thread in it) and retry |
 | `thread-not-indexed` | Wrong ID, or the thread was created on another machine |

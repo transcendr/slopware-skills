@@ -1,6 +1,6 @@
 {
   "name": "codex-app-link",
-  "version": "0.2.14",
+  "version": "0.2.15",
   "description": "Let Claude Code create, message, steer, wait on, and read Codex desktop-app threads.",
   "author": {
     "name": "Slopware Engineer",
