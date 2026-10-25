@@ -437,8 +437,11 @@ async function status(threadId, { needOwner = true } = {}) {
     catch (e) { ownerError = e.code || e.message; }
   }
   const loadedInDaemon = !ownerClientId && await daemonHolds(threadId);
+  const queued = readQueue(threadId).length;
+  const runningFor = s.status === 'active' && s.startedAt ? `${Math.round((Date.now() - s.startedAt) / 60_000)}m` : null;
   return { threadId, title: t.title, cwd: t.cwd, model: t.model, archived: !!t.archived, rolloutPath: t.rollout_path,
-    ...s, loadedInApp: !!ownerClientId, ownerClientId, ownerError, loadedInDaemon };
+    ...s, runningFor, queued: queued || null, loadedInApp: !!ownerClientId, ownerClientId, ownerError, loadedInDaemon,
+    rule: s.status === 'active' ? RULES.active : null };
 }
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -584,7 +587,7 @@ async function sendViaDaemon(threadId, text, { steer, wait, timeoutMs }) {
     const turn = await daemonLatestTurn(d, threadId);
     const input = [{ type: 'text', text, text_elements: [] }];
     if (turn?.status === 'inProgress') {
-      if (!steer) throw new Fail('thread-busy', `turn ${turn.id} is running; pass --steer to inject into it, or run "wait" first`);
+      if (!steer) throw new Fail('thread-busy', busyHint(turn.id));
       const r = await d.request('turn/steer', { threadId, expectedTurnId: turn.id, input, clientUserMessageId: randomUUID() });
       return { mode: 'steer', turnId: r.turnId ?? turn.id };
     }
@@ -617,7 +620,7 @@ async function send(threadId, text, { steer = false, wait = false, timeoutMs, op
   return withIpc(async ipc => {
     let result;
     if (s.status === 'active') {
-      if (!steer) throw new Fail('thread-busy', `turn ${s.turnId} is running; pass --steer to inject into it, or run "wait" first`);
+      if (!steer) throw new Fail('thread-busy', busyHint(s.turnId));
       const id = randomUUID();
       const res = await ipc.request('thread-follower-steer-turn', {
         conversationId: threadId, clientUserMessageId: id,
@@ -645,6 +648,69 @@ async function send(threadId, text, { steer = false, wait = false, timeoutMs, op
     }
     return result;
   }, 15000);
+}
+
+// Protocol reminders printed with command output (as `rule: ...`), so the rule that governs
+// what to do next is in front of the caller at the moment it acts.
+const RULES = {
+  start: 'new turn: one handoff or follow-up per turn; the RESULT ends it. New work for a busy thread: send --queue.',
+  steer: "steer is input for THIS turn's work only (answer its question, correct it). New follow-up work: send --queue, never --steer.",
+  queued: 'queued: delivered as a new turn when the running turn ends; `queue <thread>` lists it, `queue <thread> rm <id>` removes it.',
+  active: 'active turn: queue new work (send --queue); steer only to answer or correct it. Past its timebox: act on it now.',
+  questions: 'answer with send --steer: an answer is input for this turn.',
+  done: 'read the full reply and RESULT before acting, and check its claims against the evidence.',
+  stalled: "stalled: inspect and act in this turn; don't just wait again.",
+  created: 'new thread: track it with a name, and give it one handoff with its timebox.',
+};
+const busyHint = turnId => `turn ${turnId} is running. New work: --queue (delivered when it ends). --steer only to answer or correct this turn.`;
+
+// A per-thread follow-up queue. A message queued for a busy thread is delivered as a new turn
+// when the running turn ends, one message per turn, by a detached deliverer (one per thread).
+const QUEUE_DIR = path.join(os.homedir(), '.codex', 'codex-app-link-queue');
+const queueFile = id => path.join(QUEUE_DIR, `${id}.json`);
+function readQueue(id) {
+  try { return JSON.parse(fs.readFileSync(queueFile(id), 'utf8')); } catch { return []; }
+}
+function writeQueue(id, items) {
+  fs.mkdirSync(QUEUE_DIR, { recursive: true });
+  const tmp = `${queueFile(id)}.${process.pid}.tmp`;
+  fs.writeFileSync(tmp, JSON.stringify(items, null, 1));
+  fs.renameSync(tmp, queueFile(id));
+}
+function delivererAlive(id) {
+  try { const pid = Number(fs.readFileSync(`${queueFile(id)}.lock`, 'utf8')); process.kill(pid, 0); return pid; } catch { return 0; }
+}
+function startDeliverer(id) {
+  if (delivererAlive(id)) return;
+  const child = spawn(process.execPath, [new URL(import.meta.url).pathname, 'deliver', id],
+    { detached: true, stdio: 'ignore' });
+  child.unref();
+}
+function enqueue(threadId, text, turnId) {
+  const items = readQueue(threadId);
+  const item = { id: randomUUID().slice(0, 8), queuedAt: new Date().toISOString(), afterTurn: turnId, text };
+  items.push(item);
+  writeQueue(threadId, items);
+  startDeliverer(threadId);
+  return { accepted: true, threadId, mode: 'queued', queueId: item.id, position: items.length, afterTurn: turnId };
+}
+async function deliver(threadId) {
+  const lock = `${queueFile(threadId)}.lock`;
+  if (delivererAlive(threadId)) return;
+  fs.mkdirSync(QUEUE_DIR, { recursive: true });
+  fs.writeFileSync(lock, String(process.pid));
+  try {
+    for (;;) {
+      if (!readQueue(threadId).length) return;
+      const w = await waitIdle(threadId, { settleMs: 20_000, timeoutMs: 24 * 3600_000 });
+      if (w.result !== 'done') continue;
+      const items = readQueue(threadId);
+      if (!items.length) return;
+      try { await send(threadId, items[0].text, {}); }
+      catch (e) { if (e.code === 'thread-busy') continue; throw e; }
+      writeQueue(threadId, readQueue(threadId).filter(x => x.id !== items[0].id));
+    }
+  } finally { try { if (Number(fs.readFileSync(lock, 'utf8')) === process.pid) fs.unlinkSync(lock); } catch { /* gone */ } }
 }
 
 // New thread via the CLI. The CLI runs the first turn and exits, which releases
@@ -834,9 +900,11 @@ async function watch(ids, reg, { expect = null, settleMs = 45_000, stallMs = 45 
     return { id, file, offset: fs.statSync(file).size, active: s.status === 'active', lastMessage: s.lastAgentMessage,
       idleSince: null, classified: true, stallWarned: false };
   });
+  const WATCH_RULES = { QUESTION: RULES.questions, STALLED: RULES.stalled, DONE: RULES.done, PAUSED: RULES.done };
   const emit = (t, kind, detail = '') => {
     const ts = new Date().toISOString().slice(11, 19);
-    console.log(`${ts} ${kind} ${nameOf(t.id, reg)}${detail ? ` ${String(detail).replace(/\s+/g, ' ').slice(0, 380)}` : ''}`);
+    const rule = WATCH_RULES[kind] ? ` | rule: ${WATCH_RULES[kind]}` : '';
+    console.log(`${ts} ${kind} ${nameOf(t.id, reg)}${detail ? ` ${String(detail).replace(/\s+/g, ' ').slice(0, 380)}` : ''}${rule}`);
   };
   // Every matching line is a result: one reply can close several pieces of work.
   const emitResults = (t, msg) => {
@@ -1044,7 +1112,7 @@ async function main() {
   const regFile = registryPath(opt);
   const reg = loadRegistry(regFile);
   configureAutomation(reg, opt);
-  if (['status', 'read', 'wait', 'questions', 'result', 'send', 'open', 'access'].includes(cmd)) pos[0] = resolveRef(pos[0], reg);
+  if (['status', 'read', 'wait', 'questions', 'result', 'send', 'open', 'access', 'queue', 'deliver'].includes(cmd)) pos[0] = resolveRef(pos[0], reg);
   let out;
   switch (cmd) {
     case 'status': out = await status(pos[0]); break;
@@ -1062,13 +1130,14 @@ async function main() {
       }
       // exit codes: 0 done, 3 stalled, 4 timeout, 5 question, 6 paused (output is printed in every case)
       process.exitCode = { stalled: 3, timeout: 4, question: 5, paused: 6 }[out.result] ?? 0;
+      out = { ...out, rule: { done: RULES.done, paused: RULES.done, stalled: RULES.stalled, question: RULES.questions }[out.result] ?? null };
       break;
     }
     case 'result': {
       const marker = typeof opt.marker === 'string' ? opt.marker : 'RESULT';
       const r = latestResult(locate(pos[0]).rollout_path, marker, Number(opt.turns || 10));
       if (!r) { out = { result: 'none', marker }; process.exitCode = 6; break; }
-      out = opt.json ? r : Object.entries(r.fields).map(([k, v]) => `${k}=${v}`).join('\n');
+      out = opt.json ? r : `${Object.entries(r.fields).map(([k, v]) => `${k}=${v}`).join('\n')}\nrule: ${RULES.done}`;
       break;
     }
     case 'watch': {
@@ -1095,11 +1164,31 @@ async function main() {
       const shown = opt.all ? all : all.filter(q => !q.answeredAt);
       const pending = all.filter(q => !q.answeredAt).length;
       out = opt.json ? { threadId: pos[0], pending, questions: shown }
-        : { pending, asked: all.length, message: shown.length ? formatQuestions(shown) : null };
+        : { pending, asked: all.length, message: shown.length ? formatQuestions(shown) : null, rule: pending ? RULES.questions : null };
       process.exitCode = pending ? 5 : 0;
       break;
     }
-    case 'send': out = await send(pos[0], textArg(opt), { steer: !!opt.steer, wait: !!opt.wait, timeoutMs, open: !opt['no-open'] }); break;
+    case 'send': {
+      if (opt.queue && opt.steer) throw new Fail('queue-or-steer', 'pass --queue (new work) or --steer (input for this turn), not both');
+      const text = textArg(opt);
+      try { out = await send(pos[0], text, { steer: !!opt.steer, wait: !!opt.wait, timeoutMs, open: !opt['no-open'] }); }
+      catch (e) {
+        if (!(opt.queue && e.code === 'thread-busy')) throw e;
+        out = enqueue(pos[0], text, turnState(locate(pos[0]).rollout_path).turnId);
+      }
+      out = { ...out, rule: RULES[out.mode === 'start' ? 'start' : out.mode] ?? null };
+      break;
+    }
+    case 'queue': {
+      const items = readQueue(pos[0]);
+      if (pos[1] === 'rm') { writeQueue(pos[0], items.filter(x => x.id !== pos[2])); out = { removed: pos[2], queued: items.length - 1 }; break; }
+      if (pos[1] === 'clear') { writeQueue(pos[0], []); out = { cleared: items.length }; break; }
+      if (items.length) startDeliverer(pos[0]);
+      out = items.length ? items.map(x => ({ queueId: x.id, queuedAt: x.queuedAt, afterTurn: x.afterTurn,
+        message: x.text.replace(/\s+/g, ' ').slice(0, 160) })) : { queued: 0 };
+      break;
+    }
+    case 'deliver': await deliver(pos[0]); return;
     case 'open': out = { threadId: pos[0], ...(await ensureLoaded((locate(pos[0]), pos[0]))) }; break;
     case 'access': out = await access(pos[0], pos[1], { open: !opt['no-open'] }); break;
     case 'new': {
@@ -1108,7 +1197,7 @@ async function main() {
       if (!opt['no-open']) {
         try { loaded = await ensureLoaded(created.threadId); } catch (e) { loadError = e.code || e.message; }
       }
-      out = { ...created, loadedInApp: !!loaded.ownerId, ownerClientId: loaded.ownerId, loadError };
+      out = { ...created, loadedInApp: !!loaded.ownerId, ownerClientId: loaded.ownerId, loadError, rule: RULES.created };
       break;
     }
     case 'list': {
@@ -1133,12 +1222,12 @@ function toText(out) {
   if (out === null || typeof out !== 'object') return String(out);
   const kv = [], texts = [];
   for (const [k, v] of Object.entries(out)) {
-    if (OMIT.has(k) || v === null || v === undefined || v === '') continue;
+    if (k === 'rule' || OMIT.has(k) || v === null || v === undefined || v === '') continue;
     if (TEXT_FIELDS.includes(k)) { texts.push(String(v)); continue; }
     if (Array.isArray(v)) { texts.push(v.map(x => (typeof x === 'object' ? toText(x) : String(x))).join('\n---\n')); continue; }
     kv.push(`${k}=${typeof v === 'object' ? JSON.stringify(v) : v}`);
   }
-  return [kv.join(' '), ...texts].filter(Boolean).join('\n');
+  return [kv.join(' '), ...texts, out.rule ? `rule: ${out.rule}` : null].filter(Boolean).join('\n');
 }
 
 main().catch(e => { console.error(JSON.stringify({ error: e.code || 'error', message: e.message })); process.exit(1); });

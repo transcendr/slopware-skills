@@ -33,10 +33,12 @@ Multiple Codex instances: set `CODEX_HOME` to the instance's home (for example `
 | Command | Purpose |
 |---|---|
 | `node $CT list [--limit N] [--cwd DIR]` | Recent threads (id, title, cwd, updated) |
-| `node $CT status <id>` | `status` (idle/active), current `turnId`, `lastAgentMessage`, `loadedInApp`, `loadedInDaemon` |
+| `node $CT status <id>` | `status` (idle/active), current `turnId`, `runningFor`, `queued`, `lastAgentMessage`, `loadedInApp`, `loadedInDaemon` |
 | `node $CT new --cwd DIR --text "..." [--timeout SEC] [-- <codex exec args>]` | Create a thread with the CLI, run its first turn, then load it in the app. Returns `threadId` and `finalMessage` |
 | `node $CT send <id> --text "..." [--wait] [--timeout SEC]` | Start a turn in an idle thread through the app. `--wait` blocks until it finishes and returns `lastAgentMessage` |
-| `node $CT send <id> --text "..." --steer` | Add a message to the turn that is running now |
+| `node $CT send <id> --text "..." --queue` | New follow-up work: starts a turn if the thread is idle; otherwise queues it and delivers it as a new turn when the running turn ends, one per turn |
+| `node $CT send <id> --text "..." --steer` | Input for the running turn's own work only: answer its question or correct it |
+| `node $CT queue <id> [rm QUEUE_ID \| clear]` | List, remove or clear queued follow-ups (`~/.codex/codex-app-link-queue/`) |
 | `node $CT wait <id> [--timeout SEC] [--settle SEC] [--stall SEC] [--until-question] [--expect REGEX]` | Block until the **thread** is done (see "Waiting for results"). Prints `result`: `done`, `stalled`, `timeout`, `question` or `paused` (exit 0, 3, 4, 5 or 6), plus `lastAgentMessage` |
 | `node $CT read <id> [--last N]` | Final replies of the last N turns |
 | `node $CT result <id> [--marker RESULT] [--turns N]` | The latest `RESULT` block in recent replies (in or out of a code fence), parsed into `key=value` lines. Exit 6 if there is none |
@@ -144,7 +146,8 @@ For a single message to a thread, the commands above are enough.
 ## Rules
 
 - Do not message a thread you did not create unless the user named it and asked you to. The user may be working in it.
-- `send` refuses (`thread-busy`) while a turn is running. Use `wait` first. Use `--steer` only when the new instruction must change the running turn.
+- `send` refuses (`thread-busy`) while a turn is running. **New follow-up work goes through `--queue`**, never `--steer`: steering new work keeps a turn alive for hours, re-reads its whole context on every request and burns usage. Use `--steer` freely, but only for input to the running turn's own work: answering its question or correcting it.
+- Commands print `rule: ...` lines with the protocol that applies to what you do next (new turn, steer, queued, active, questions, done, stalled, created). Read them; don't filter them out.
 - Never run a CLI process on a thread (`codex resume`, `codex exec resume`) while the app owns it. Only one Codex process may hold a thread.
 - New threads inherit `~/.codex/config.toml` defaults (model, sandbox, approvals). Pass `codex exec` flags after `--` to change them, for example `-- --skip-git-repo-check` outside a git repo, or `-- -s workspace-write`.
 - Clean up test threads by archiving them in the app. `codex archive <id>` returned "failed to archive session", with no further detail, for threads the app had loaded (2026-10-06; cause unconfirmed).
@@ -169,7 +172,7 @@ The socket protocol is private and undocumented. It was verified on 2026-10-06 a
 | A thread's commands fail with `EPERM`, no network, or no Simulator after the app restarted | The app reloaded it under a restricted profile. Run `access <id> full`, then check the next turn: the rollout's `turn_context` shows `sandbox_policy` `danger-full-access` |
 | `not-loaded-in-instance` | No running app owns the `CODEX_HOME` instance's socket. Start that instance (or open the thread in it) and retry |
 | `thread-not-indexed` | Wrong ID, or the thread was created on another machine |
-| `thread-busy` | A turn is running. `wait`, or `send --steer` |
+| `thread-busy` | A turn is running. New work: `send --queue`. Answer or correction for this turn: `send --steer` |
 | `thread-follower-start-turn-timeout`, or `not-loaded-in-app` on a thread that loads late | The turn often **did** start anyway. Run `status <id>` before retrying; resending would deliver the message twice |
 | `request-version-mismatch` / `no-handler-for-request` | The app's private protocol changed. See "How it works" |
 | `new` returns `exitCode: 1` and no `finalMessage` | The first turn failed. Read the rollout's `task_complete` event; often an unsupported model or a CLI version mismatch |
