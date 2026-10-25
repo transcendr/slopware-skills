@@ -661,6 +661,9 @@ const RULES = {
   done: 'read the full reply and RESULT before acting, and check its claims against the evidence.',
   stalled: "stalled: inspect and act in this turn; don't just wait again.",
   created: 'new thread: track it with a name, and give it one handoff with its timebox.',
+  result: 'read the full RESULT before acting and check its claims against the evidence; then send the next work as a new turn (send --queue).',
+  idle: 'turn ended: read the reply in full; send the next work as a new turn (send --queue).',
+  overdue: 'overdue: act in this turn. Judge liveness (no output past the expected time is a stall), correct it by steer or stop it, and queue any new work; never carry it forward.',
 };
 const busyHint = turnId => `turn ${turnId} is running. New work: --queue (delivered when it ends). --steer only to answer or correct this turn.`;
 
@@ -1097,12 +1100,14 @@ const USAGE = `codex-thread <command>     (<thread> = a thread ID or a name from
                                            where the last watch stopped
   track   add <id> --name NAME [--role ROLE] [--note TEXT] | rm <name> | list   [--registry FILE]
                                            the project's thread registry (<git root>/.codex-app-link.json)
-  send    <thread> (--text T | --file F | --stdin) [--steer] [--wait] [--timeout SEC] [--no-open]
+  send    <thread> (--text T | --file F | --stdin) [--queue | --steer] [--wait] [--timeout SEC] [--no-open]
   new     --cwd DIR (--text T | --file F) [--no-open] [--timeout SEC] [-- <extra codex exec args>]
   open    <thread>                         make the app load the thread (background deep link)
   access  <thread> full [--no-open]        set the thread's access like the composer's selector (Full access);
                                            applies from the next turn, or to the running turn
   list    [--limit N] [--cwd DIR]          recent threads from the local index
+  queue   <thread> [rm QUEUE_ID | clear]   queued follow-ups for a busy thread (send --queue adds one)
+  rules   [--json]                         the protocol reminders commands print as rule: lines
   version                                  plugin version and this script's path`;
 
 async function main() {
@@ -1189,6 +1194,7 @@ async function main() {
       break;
     }
     case 'deliver': await deliver(pos[0]); return;
+    case 'rules': out = opt.json ? RULES : Object.entries(RULES).map(([k, v]) => `${k}: ${v}`).join('\n'); break;
     case 'open': out = { threadId: pos[0], ...(await ensureLoaded((locate(pos[0]), pos[0]))) }; break;
     case 'access': out = await access(pos[0], pos[1], { open: !opt['no-open'] }); break;
     case 'new': {
