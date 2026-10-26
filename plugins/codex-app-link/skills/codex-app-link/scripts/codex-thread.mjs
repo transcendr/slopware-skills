@@ -1126,7 +1126,7 @@ async function main() {
   const regFile = registryPath(opt);
   const reg = loadRegistry(regFile);
   configureAutomation(reg, opt);
-  if (['status', 'read', 'wait', 'questions', 'result', 'send', 'open', 'access', 'queue', 'deliver'].includes(cmd)) pos[0] = resolveRef(pos[0], reg);
+  if (['status', 'read', 'wait', 'questions', 'result', 'send', 'open', 'access', 'queue', 'deliver', 'fork'].includes(cmd)) pos[0] = resolveRef(pos[0], reg);
   let out;
   switch (cmd) {
     case 'status': out = await status(pos[0]); break;
@@ -1203,6 +1203,15 @@ async function main() {
       break;
     }
     case 'deliver': await deliver(pos[0]); return;
+    case 'fork': {
+      // A fork is a new thread with the source's history, started by a process that reads the current
+      // config (model, context window, auto-compaction limit). The source keeps running until stopped.
+      const r = await withDaemon(d => d.request('thread/fork', { threadId: pos[0] }), 60000);
+      const forkId = r.thread?.id ?? r.threadId ?? null;
+      out = { source: pos[0], fork: forkId, raw: forkId ? undefined : JSON.stringify(r).slice(0, 400),
+        rule: 'fork: archive or stop the source so two threads never do the same work; track the fork under the old name.' };
+      break;
+    }
     case 'rules': out = opt.json ? RULES : Object.entries(RULES).map(([k, v]) => `${k}: ${v}`).join('\n'); break;
     case 'open': out = { threadId: pos[0], ...(await ensureLoaded((locate(pos[0]), pos[0]))) }; break;
     case 'access': out = await access(pos[0], pos[1], { open: !opt['no-open'] }); break;
