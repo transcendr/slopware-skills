@@ -709,9 +709,18 @@ async function deliver(threadId) {
       if (w.result !== 'done') continue;
       const items = readQueue(threadId);
       if (!items.length) return;
-      try { await send(threadId, items[0].text, {}); }
-      catch (e) { if (e.code === 'thread-busy') continue; throw e; }
-      writeQueue(threadId, readQueue(threadId).filter(x => x.id !== items[0].id));
+      const item = items[0];
+      // Claim before sending: the app can start the turn and still fail or time out its reply, and
+      // an item left queued would then be delivered twice.
+      const before = turnState(locate(threadId).rollout_path).turnId;
+      writeQueue(threadId, items.slice(1));
+      try { await send(threadId, item.text, {}); }
+      catch (e) {
+        const started = turnState(locate(threadId).rollout_path).turnId !== before;
+        if (!started) writeQueue(threadId, [item, ...readQueue(threadId)]);
+        if (e.code === 'thread-busy' || started) continue;
+        throw e;
+      }
     }
   } finally { try { if (Number(fs.readFileSync(lock, 'utf8')) === process.pid) fs.unlinkSync(lock); } catch { /* gone */ } }
 }
