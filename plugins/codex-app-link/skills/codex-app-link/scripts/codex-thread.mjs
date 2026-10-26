@@ -676,6 +676,7 @@ const RULES = {
   result: 'read the full RESULT before acting and check its claims against the evidence; then send the next work as a new turn (send --queue).',
   idle: 'turn ended: read the reply in full; send the next work as a new turn (send --queue).',
   broken: 'broken session: the coordinator replaces it in this turn (up to the 7-session limit) and moves its jobs to healthy sessions; never just exclude it.',
+  stranded: 'stranded: tell the coordinator to send that job once to its free session now (a new turn), then check it starts.',
   shared: 'SHARED-REPLY: one reply followed several open questions; check it answers each one, and answer any it does not, one reply per question.',
   overdue: 'overdue: act in this turn. Judge liveness (no output past the expected time is a stall), correct it by steer or stop it, and queue any new work; never carry it forward.',
 };
