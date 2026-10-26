@@ -1214,7 +1214,13 @@ async function main() {
     }
     case 'queue': {
       const items = readQueue(pos[0]);
-      if (pos[1] === 'rm') { writeQueue(pos[0], items.filter(x => x.id !== pos[2])); out = { removed: pos[2], queued: items.length - 1 }; break; }
+      if (pos[1] === 'rm') {
+        const kept = items.filter(x => x.id !== pos[2]);
+        writeQueue(pos[0], kept);
+        out = kept.length < items.length ? { removed: pos[2], queued: kept.length }
+          : { removed: null, reason: 'not queued (already delivered or never queued)', queued: kept.length };
+        break;
+      }
       if (pos[1] === 'clear') { writeQueue(pos[0], []); out = { cleared: items.length }; break; }
       if (items.length) startDeliverer(pos[0]);
       out = items.length ? items.map(x => ({ queueId: x.id, queuedAt: x.queuedAt, afterTurn: x.afterTurn,
