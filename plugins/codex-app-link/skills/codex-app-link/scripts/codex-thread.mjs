@@ -389,7 +389,7 @@ function userText(p) {
 // sinceMs, once every collected question knows the turn it was asked in.
 function questionsIn(rolloutPath, sinceMs = 0) {
   const asked = [];
-  let answer = null; // earliest qualifying user message after the current position
+  const replies = []; // qualifying user messages, newest first
   for (const line of linesFromEnd(rolloutPath)) {
     // Only three kinds of record matter here; skip parsing everything else (turns can be tens of MB).
     if (!line.includes('request_user_input') && !line.includes('"role":"user"') && !line.includes('"role": "user"')
@@ -413,15 +413,27 @@ function questionsIn(rolloutPath, sinceMs = 0) {
         options: (q.options || []).map(o => (typeof o === 'string' ? o : o.label ?? o.title ?? JSON.stringify(o))),
       }));
       asked.push({ callId: p.call_id, askedAt: rec.timestamp, turnId: undefined, async: p.name.endsWith('_async'),
-        questions: items, answeredAt: answer?.at ?? null, answer: answer?.text ?? null });
+        questions: items, answeredAt: null, answer: null });
     } else if (p.type === 'message' && p.role === 'user') {
       const text = userText(p);
       if (!text || INJECTED_USER.test(text) || automationKind(text)) continue;
-      answer = { at: rec.timestamp, text: text.slice(0, 400) };
+      replies.push({ at: rec.timestamp, text: text.slice(0, 400) });
     }
   }
   for (const q of asked) if (q.turnId === undefined) q.turnId = null;
-  return asked.reverse();
+  // The transcript doesn't link a reply to a question. Each question takes the earliest reply after it;
+  // when one reply follows two or more open questions, each is marked sharedReply so the caller checks
+  // that the reply really covers it.
+  const ordered = asked.reverse();
+  const inOrder = replies.reverse();
+  for (const q of ordered) {
+    const r = inOrder.find(x => Date.parse(x.at) > Date.parse(q.askedAt));
+    if (r) { q.answeredAt = r.at; q.answer = r.text; }
+  }
+  const byReply = {};
+  for (const q of ordered) if (q.answeredAt) (byReply[q.answeredAt] ??= []).push(q);
+  for (const group of Object.values(byReply)) if (group.length > 1) for (const q of group) q.sharedReply = true;
+  return ordered;
 }
 
 function pendingQuestions(rolloutPath, sinceMs = 0) {
@@ -448,7 +460,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 function formatQuestions(list) {
   return list.map(q => {
-    const head = `[${q.askedAt}${q.answeredAt ? ` answered ${q.answeredAt}` : ' PENDING'}]`;
+    const head = `[${q.askedAt}${q.answeredAt ? ` answered ${q.answeredAt}${q.sharedReply ? ' SHARED-REPLY' : ''}` : ' PENDING'}]`;
     const body = q.questions.map(x => `Q: ${x.title}${x.options.length ? `\n  options: ${x.options.join(' | ')}` : ''}`).join('\n');
     return `${head}\n${body}${q.answer ? `\n  answer: ${q.answer.replace(/\s+/g, ' ').slice(0, 200)}` : ''}`;
   }).join('\n---\n');
@@ -663,6 +675,8 @@ const RULES = {
   created: 'new thread: track it with a name, and give it one handoff with its timebox.',
   result: 'read the full RESULT before acting and check its claims against the evidence; then send the next work as a new turn (send --queue).',
   idle: 'turn ended: read the reply in full; send the next work as a new turn (send --queue).',
+  broken: 'broken session: the coordinator replaces it in this turn (up to the 7-session limit) and moves its jobs to healthy sessions; never just exclude it.',
+  shared: 'SHARED-REPLY: one reply followed several open questions; check it answers each one, and answer any it does not, one reply per question.',
   overdue: 'overdue: act in this turn. Judge liveness (no output past the expected time is a stall), correct it by steer or stop it, and queue any new work; never carry it forward.',
 };
 const busyHint = turnId => `turn ${turnId} is running. New work: --queue (delivered when it ends). --steer only to answer or correct this turn.`;
@@ -1116,6 +1130,8 @@ const USAGE = `codex-thread <command>     (<thread> = a thread ID or a name from
                                            applies from the next turn, or to the running turn
   list    [--limit N] [--cwd DIR]          recent threads from the local index
   queue   <thread> [rm QUEUE_ID | clear]   queued follow-ups for a busy thread (send --queue adds one)
+  interrupt <thread>                       stop the running turn (as the app's stop button)
+  fork    <thread>                         new thread with this one's history (daemon thread/fork)
   rules   [--json]                         the protocol reminders commands print as rule: lines
   version                                  plugin version and this script's path`;
 
@@ -1126,7 +1142,7 @@ async function main() {
   const regFile = registryPath(opt);
   const reg = loadRegistry(regFile);
   configureAutomation(reg, opt);
-  if (['status', 'read', 'wait', 'questions', 'result', 'send', 'open', 'access', 'queue', 'deliver', 'fork'].includes(cmd)) pos[0] = resolveRef(pos[0], reg);
+  if (['status', 'read', 'wait', 'questions', 'result', 'send', 'open', 'access', 'queue', 'deliver', 'fork', 'interrupt'].includes(cmd)) pos[0] = resolveRef(pos[0], reg);
   let out;
   switch (cmd) {
     case 'status': out = await status(pos[0]); break;
@@ -1177,8 +1193,10 @@ async function main() {
       const all = questionsIn(t.rollout_path, since);
       const shown = opt.all ? all : all.filter(q => !q.answeredAt);
       const pending = all.filter(q => !q.answeredAt).length;
-      out = opt.json ? { threadId: pos[0], pending, questions: shown }
-        : { pending, asked: all.length, message: shown.length ? formatQuestions(shown) : null, rule: pending ? RULES.questions : null };
+      out = opt.json ? { threadId: pos[0], pending, sharedReplies: all.filter(q => q.sharedReply).length, questions: shown }
+        : { pending, asked: all.length, sharedReplies: all.filter(q => q.sharedReply).length || null,
+          message: shown.length ? formatQuestions(shown) : null,
+          rule: pending ? RULES.questions : all.some(q => q.sharedReply) ? RULES.shared : null };
       process.exitCode = pending ? 5 : 0;
       break;
     }
@@ -1203,6 +1221,24 @@ async function main() {
       break;
     }
     case 'deliver': await deliver(pos[0]); return;
+    case 'interrupt': {
+      // Stop the running turn, as the app's stop button does. Only the expected (current) turn is stopped.
+      const tt = locate(pos[0]);
+      const s = turnState(tt.rollout_path);
+      if (s.status !== 'active') { out = { interrupted: false, reason: 'no running turn', turnId: s.turnId }; break; }
+      let appOwner = null;
+      try { appOwner = await withIpc(ipc => owner(ipc, pos[0]), 3000); } catch { /* not app-owned */ }
+      if (appOwner) {
+        const r = await withIpc(ipc => ipc.request('thread-follower-interrupt-turn',
+          { conversationId: pos[0], mode: 'user-stop', expectedTurnId: s.turnId }, appOwner), 15000);
+        out = { interrupted: true, turnId: r.result?.result?.interruptedTurnId ?? s.turnId };
+      } else if (await daemonHolds(pos[0])) {
+        await withDaemon(d => d.request('turn/interrupt', { threadId: pos[0], turnId: s.turnId }), 15000);
+        out = { interrupted: true, turnId: s.turnId, via: 'daemon' };
+      } else throw new Fail('not-loaded', 'neither the app nor the daemon holds this thread');
+      out.rule = 'interrupted: say why in your next message to the thread, sent as a new turn.';
+      break;
+    }
     case 'fork': {
       // A fork is a new thread with the source's history, started by a process that reads the current
       // config (model, context window, auto-compaction limit). The source keeps running until stopped.
