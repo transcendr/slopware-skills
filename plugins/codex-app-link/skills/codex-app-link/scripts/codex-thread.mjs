@@ -25,6 +25,8 @@ function query(sql, ...params) {
 
 const CODEX_HOME = process.env.CODEX_HOME || path.join(os.homedir(), '.codex');
 const SOCKET = path.join(CODEX_HOME, 'ipc', 'ipc.sock');
+// Longest message text printed in compact output (watch events, question answers).
+const MESSAGE_LIMIT = 2000;
 // `open codex://...` is handled by the default Codex instance (~/.codex), whatever
 // CODEX_HOME says; other instances are reached by process instead (openInInstance).
 const DEFAULT_HOME = path.join(os.homedir(), '.codex');
@@ -417,7 +419,7 @@ function questionsIn(rolloutPath, sinceMs = 0) {
     } else if (p.type === 'message' && p.role === 'user') {
       const text = userText(p);
       if (!text || INJECTED_USER.test(text) || automationKind(text)) continue;
-      replies.push({ at: rec.timestamp, text: text.slice(0, 400) });
+      replies.push({ at: rec.timestamp, text: text.slice(0, MESSAGE_LIMIT) });
     }
   }
   for (const q of asked) if (q.turnId === undefined) q.turnId = null;
@@ -462,7 +464,7 @@ function formatQuestions(list) {
   return list.map(q => {
     const head = `[${q.askedAt}${q.answeredAt ? ` answered ${q.answeredAt}${q.sharedReply ? ' SHARED-REPLY' : ''}` : ' PENDING'}]`;
     const body = q.questions.map(x => `Q: ${x.title}${x.options.length ? `\n  options: ${x.options.join(' | ')}` : ''}`).join('\n');
-    return `${head}\n${body}${q.answer ? `\n  answer: ${q.answer.replace(/\s+/g, ' ').slice(0, 200)}` : ''}`;
+    return `${head}\n${body}${q.answer ? `\n  answer: ${q.answer.replace(/\s+/g, ' ').slice(0, MESSAGE_LIMIT)}` : ''}`;
   }).join('\n---\n');
 }
 
@@ -931,12 +933,12 @@ async function watch(ids, reg, { expect = null, settleMs = 45_000, stallMs = 45 
   const emit = (t, kind, detail = '') => {
     const ts = new Date().toISOString().slice(11, 19);
     const rule = WATCH_RULES[kind] ? ` | rule: ${WATCH_RULES[kind]}` : '';
-    console.log(`${ts} ${kind} ${nameOf(t.id, reg)}${detail ? ` ${String(detail).replace(/\s+/g, ' ').slice(0, 380)}` : ''}${rule}`);
+    console.log(`${ts} ${kind} ${nameOf(t.id, reg)}${detail ? ` ${String(detail).replace(/\s+/g, ' ').slice(0, MESSAGE_LIMIT)}` : ''}${rule}`);
   };
   // Every matching line is a result: one reply can close several pieces of work.
   const emitResults = (t, msg) => {
     const lines = msg.split('\n').filter(l => expectRe.test(l));
-    for (const line of lines.length ? lines : [msg.slice(0, 300)]) emit(t, 'RESULT', line);
+    for (const line of lines.length ? lines : [msg.slice(0, MESSAGE_LIMIT)]) emit(t, 'RESULT', line);
   };
   const deadline = timeoutMs ? Date.now() + timeoutMs : Infinity;
   for (;;) {
@@ -1060,9 +1062,9 @@ async function watch(ids, reg, { expect = null, settleMs = 45_000, stallMs = 45 
       if (!t.active && t.idleSince && !t.classified && now - t.idleSince >= settleMs) {
         t.classified = true;
         const msg = t.lastMessage || '';
-        if (!expectRe) emit(t, 'DONE', msg.slice(0, 300));
+        if (!expectRe) emit(t, 'DONE', msg.slice(0, MESSAGE_LIMIT));
         else if (expectRe.test(msg)) { if (!(t.reported || []).includes(msg)) emitResults(t, msg); }
-        else emit(t, 'PAUSED', msg.slice(0, 300));
+        else emit(t, 'PAUSED', msg.slice(0, MESSAGE_LIMIT));
       }
       if (t.active && !t.stallWarned && now - fs.statSync(t.file).mtimeMs >= stallMs) {
         t.stallWarned = true;

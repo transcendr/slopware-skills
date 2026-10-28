@@ -8,7 +8,8 @@ files = glob.glob(os.path.join(home, "sessions", "**", f"*{tid}*.jsonl"), recurs
 path = max(files, key=os.path.getmtime)
 f = open(path); f.seek(0, 2)
 last_write, warned = time.time(), False
-def out(s): print(s[:400].replace("\n", " "), flush=True)
+MESSAGE_LIMIT = 2000  # longest printed line; long assistant notes must arrive whole
+def out(s): print(s[:MESSAGE_LIMIT].replace("\n", " "), flush=True)
 while True:
     line = f.readline()
     if not line:
@@ -37,4 +38,4 @@ while True:
         out(f"{ts} TURN_END {t}")
     else:
         if t and "approval" in t.lower():
-            out(f"{ts} APPROVAL_WAIT {t}: {json.dumps(p)[:250]}")
+            out(f"{ts} APPROVAL_WAIT {t}: {json.dumps(p)}")
