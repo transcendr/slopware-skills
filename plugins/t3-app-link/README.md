@@ -75,3 +75,36 @@ node --test plugins/t3-app-link/tests/*.test.mjs
 The result parser, rule text, output formatter and registry conventions were
 forked from codex-app-link at `3372f52`. The protocol-2 transport was adapted from
 Jevpact's `t3-rpc.js`; it is vendored so this skill installs independently.
+
+## Output differences from codex-app-link
+
+Watch lines use `HH:MM:SS KIND name detail | rule: ...`. JSON retains the full
+message, run and request IDs; compact lines omit long IDs. A request handle is a
+full SHA-256 digest in base64url form, prefixed `q:`. Run `questions <thread>` to
+get its full requestId and exact answer keys. Claude keys are question text;
+Codex keys are question IDs. The printed `answers` object has the shape accepted
+by `t3_pending_request respond`. Answers and times come from T3's retained
+request/item data, with an async-answer-message fallback and an explicit
+unavailable reason if none is retained.
+
+Intentional native T3 differences:
+
+- STARTED and TURN_END show native run status rather than Codex rollout turn IDs
+  or `task_complete`/`turn_aborted` names.
+- APPROVAL is also the progress approval-wait signal; no duplicate APPROVAL_WAIT
+  alias is emitted. The user reviews it in T3.
+- MISSING and FOUND describe connection or thread availability, rather than
+  rollout-file existence. HISTORY_START reports recovery without a held anchor.
+- MAINTENANCE uses structured T3 data. COMPACTED carries no compact detail;
+  JSON retains its item ID.
+- `--progress` emits NOTE, TURN_END and SILENT. `--silent SEC` defaults to the
+  progress script's 240 seconds. RESULT lines are not repeated as NOTE.
+
+Compact details use the same 2,000-character MESSAGE_LIMIT. QUESTION puts every
+question and its options first, followed by the request handle and rule. If a
+request arrives before its text, emission waits for the item, with a fallback
+after one watch polling interval (five seconds by default). JSON is not truncated.
+
+A Claude lead must use Monitor for per-line wakes; the skill gives the verified
+call. Background Bash and Codex background-command exit notifications may wait
+until the current turn ends. Neither is a promise of immediate mid-turn delivery.

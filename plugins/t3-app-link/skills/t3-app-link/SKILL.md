@@ -52,15 +52,33 @@ The registry is `<git-root>/.t3-app-link.json`, or `--registry FILE` /
 `T3_APP_LINK_REGISTRY`. All thread arguments accept its names. It is separate
 from `.codex-app-link.json`; thread IDs do not cross systems. `environmentId`
 can bind the registry or individual entries to the expected T3 environment.
+Watch lines use a stable hashed request handle; `questions` prints its full ID.
+Question text normally arrives with the next stream item. If absent, it is held
+for one watch polling interval (five seconds by default), then emitted with a
+pointer to `questions`. Text arriving sooner is emitted immediately.
+
 The CLI refuses self-tracking when `T3CODE_THREAD_ID`, `T3_THREAD_ID` or
 `T3_APP_LINK_SELF` identifies the lead; set `T3_APP_LINK_SELF` if the host does not
 supply its T3 thread ID.
 
 ## Wake and re-arm
 
-Claude leads run one background `watch`, with `--progress` when progress notes
-matter, and act on its output. When the host provides it, `t3_background_wait`
-keeps the lead marked Working during bounded background work.
+Claude leads use the Monitor tool, which wakes the lead on each output line. A
+background Bash command wakes only on exit. Use this exact tool shape, replacing
+the paths with the installed skill and private cursor paths:
+
+```javascript
+Monitor({
+  command: "node /installed/t3-app-link/scripts/t3-thread.mjs watch --tracked --expect '^RESULT ' --cursor /private/path/watch.json --progress",
+  description: "T3 worker events"
+})
+```
+
+Each event is one line. Act on the notification. If Monitor ends or times out,
+re-arm the same command with the same cursor; never start another watcher while
+the first still owns it. When the host provides it, `t3_background_wait` marks
+bounded Monitor work as awaited. Monitor's `timeout_ms` is optional; use an
+explicit duration only when the task or tool contract supplies it.
 
 Codex leads run this as a background shell command:
 
@@ -69,7 +87,9 @@ node "$TT" watch --tracked --expect '^RESULT ' --cursor /private/path/watch.json
 ```
 
 Codex wakes on command exit. `--until-event` prints the first QUESTION, APPROVAL,
-RESULT, PAUSED or STALLED and exits. Read it, act, then run the same command again.
+RESULT, PAUSED or STALLED and exits. A busy Codex lead may receive the exit
+notification only after its current turn ends; this route does not guarantee
+mid-turn delivery. Read it, act, then run the same command again.
 A thread with no saved cursor state starts at its first snapshot, without paging
 older history. It reports currently pending questions and approvals, but no old
 results or compactions. An idle baseline does not produce DONE or PAUSED; only a
@@ -82,7 +102,7 @@ or replace it during an assignment. Keep it private and out of Git.
 
 | Event | Required response |
 | --- | --- |
-| QUESTION | Read `questions <name>`, then answer the request through `t3_pending_request respond`. |
+| QUESTION | Run `questions <name>` for the full requestId and exact answer keys, then use `t3_pending_request respond`. Claude keys are question text; Codex keys are question IDs. Copy the printed `answers` shape. |
 | APPROVAL | Ask the user to review the permission request in T3. |
 | RESULT | Read the full reply and parsed `result`, then verify the claims. A RESULT may arrive mid-turn. |
 | PAUSED | The settle window ended without the expected final reply. Read it and resume unfinished work with `t3_thread_send`. |
@@ -95,6 +115,11 @@ or replace it during an assignment. Keep it private and out of Git.
 `wait <name>` returns only after the thread stays idle for 45 seconds by default;
 chained turns reset the settle window. `--until-question` also returns on a formal
 question. With `--expect`, a final reply that does not match is `paused`, exit 6.
+`watch --progress` also emits TURN_END and SILENT. `--silent SEC` defaults to
+240 seconds, matching codex-progress.py; it warns once per quiet interval.
+RESULT lines are excluded from NOTE. Compact details are limited to the same
+2,000 characters as codex-app-link; `--json` retains all event fields.
+
 Defaults match codex-app-link: settle 45 seconds, stall 2700 seconds, timeout
 10800 seconds. A stall means no detailed thread event, not proof of a dead worker.
 

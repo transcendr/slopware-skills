@@ -45,6 +45,8 @@ test('cursor round trip retains pending actionable events across until-event re-
   r.accept(frame(2,'runtime-request.updated',{id:'q',kind:'user_input',status:'pending'}));
   assert.equal(r.state.pending.shift().event,'RESULT');
   const restored=new Reducer(JSON.parse(JSON.stringify(r.state)),{expect:'^RESULT '});
+  assert.equal(Object.keys(restored.state.deferredRequests).length,1);
+  restored.flushQuestions(restored.state.deferredRequests.q.at+5000);
   assert.deepEqual(eventKinds(restored),['QUESTION']);
   restored.state.pending=[];
   restored.accept(frame(3,'message.updated',{id:'m',role:'assistant',runId:'r',text:'RESULT status=done',streaming:false}));
@@ -216,13 +218,15 @@ test('01a first idle watch ignores historical events, never pages, and cannot se
   assert.deepEqual(eventKinds(reducer),[]);
   reducer.accept(frame(101,'run.created',{id:'new-run',ordinal:15,status:'running'}));
   reducer.accept(frame(102,'message.updated',{id:'new-result',runId:'new-run',role:'assistant',text:'RESULT handoff=new status=done',streaming:false}));
-  assert.deepEqual(eventKinds(reducer),['STARTED','RESULT','NOTE']);
+  assert.deepEqual(eventKinds(reducer),['STARTED','RESULT']);
 });
 
 test('01a baseline emits only currently pending formal requests and uses public approval wording',async()=>{
   const initial=pastSnapshot();initial.projection.runtimeRequests=[{id:'answered',kind:'user_input',status:'resolved'},{id:'pending-question',kind:'user_input',status:'pending'},{id:'pending-approval',kind:'command',status:'pending'}];
   const {reducer}=await subscribeFixture({threads:{}},{watching:true,expect:'^RESULT '},initial);
-  assert.deepEqual(eventKinds(reducer),['QUESTION','APPROVAL']);
+  assert.deepEqual(eventKinds(reducer),['APPROVAL']);
+  reducer.flushQuestions(reducer.state.deferredRequests['pending-question'].at+5000);
+  assert.deepEqual(eventKinds(reducer),['APPROVAL','QUESTION']);
   assert.equal(reducer.state.pending.find(e=>e.event==='APPROVAL').message,'The user must review this approval in T3.');
 });
 

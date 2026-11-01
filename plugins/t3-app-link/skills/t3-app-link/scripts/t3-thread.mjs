@@ -159,7 +159,7 @@ export const RULES = {
   steer: "t3_thread_send mode steer is input for THIS turn's work only. Answer formal questions with t3_pending_request respond; queue new follow-up work with t3_thread_send mode queue.",
   queued: 'queued: delivered as a new turn when the running turn ends; t3_queue action list shows it and action cancel removes a queuedRunId.',
   active: 'active turn: queue new work with t3_thread_send mode queue; use mode steer only to correct this turn. Answer formal questions with t3_pending_request respond. Past its timebox: act on it now.',
-  questions: 'answer with t3_pending_request respond: an answer is input for this turn.',
+  questions: 'run questions <thread> for the full requestId and answer keys; answer with t3_pending_request respond.',
   done: 'read the full reply and RESULT before acting, and check its claims against the evidence.',
   stalled: "stalled: inspect and act in this turn; don't just wait again.",
   created: 'new thread: track it with a name, and give it one handoff with its timebox.',
@@ -229,6 +229,8 @@ const COLLECTIONS = { 'run.created': 'runs', 'run.updated': 'runs', 'message.upd
   'checkpoint.updated': 'checkpoints', 'checkpoint.captured': 'checkpoints',
   'context-handoff.updated': 'contextHandoffs', 'context-transfer.created': 'contextTransfers',
   'context-transfer.updated': 'contextTransfers' };
+const MESSAGE_LIMIT = 2000; // Matches codex-app-link and codex-progress.
+export const requestHandle = id => 'q:' + createHash('sha256').update(String(id)).digest('base64url');
 const hash = value => createHash('sha256').update(String(value)).digest('hex');
 const fail = (code, message = code) => Object.assign(new Error(message), { code });
 const ordered = records => Object.values(records ?? {}).sort((a, b) =>
@@ -240,9 +242,10 @@ export function freshState(id) {
 }
 
 export class Reducer {
-  constructor(state, { expect, progress = false } = {}) {
+  constructor(state, { expect, progress = false, silentMs = 240000, questionDelayMs = 5000 } = {}) {
     delete state.position; // Discard the obsolete page-relative offset in older cursors.
-    this.state = state; this.expect = expect == null ? null : new RegExp(expect, 'm'); this.progress = progress;
+    this.state = state; this.expect = expect == null ? null : new RegExp(expect, 'm'); this.progress = progress; this.silentMs = silentMs; this.questionDelayMs = questionDelayMs;
+    state.deferredRequests ??= {};
   }
   emit(event, key, data = {}) {
     const s = this.state;
@@ -258,11 +261,13 @@ export class Reducer {
     (s.records[collection] ??= {})[record.id] = record;
     if (collection === 'runs') {
       this.emit('STARTED', `run:${record.id}`, { turnId: record.id, status: record.status });
+      if (this.progress && !ACTIVE.has(record.status)) this.emit('TURN_END', `end:${record.id}`, { turnId: record.id, status: record.status });
     } else if (collection === 'messages') {
       if (record.maintenance) this.emit('MAINTENANCE', `maintenance:${record.id}`, { maintenance: record.maintenance });
       if (record.role === 'assistant') this.message(record);
     } else if (collection === 'runtimeRequests') {
       if (record.status === 'pending') this.request(record);
+      else delete s.deferredRequests[record.id];
     } else if (collection === 'turnItems') {
       if (record.type === 'compaction' && record.status === 'completed')
         this.emit('COMPACTED', `compaction:${record.id}`, { itemId: record.id });
@@ -272,11 +277,21 @@ export class Reducer {
       }
     }
   }
-  request(record) {
-    const item = Object.values(this.state.records.turnItems ?? {}).find(i => i.requestId === record.id);
+  request(record, fallback = false) {
+    const s = this.state, item = Object.values(s.records.turnItems ?? {}).find(i => i.requestId === record.id);
+    const questions = record.questions ?? item?.questions ?? [];
+    if (record.kind === 'user_input' && !questions.length && !fallback && !this.baselining) {
+      s.deferredRequests[record.id] ??= { record, at: this.now ?? Date.now() };
+      return;
+    }
+    delete s.deferredRequests[record.id];
     this.emit(record.kind === 'user_input' ? 'QUESTION' : 'APPROVAL', `request:${record.id}`,
-      { requestId: record.id, kind: record.kind, questions: record.questions ?? item?.questions ?? [],
-        message: record.kind === 'user_input' ? 'Read with questions; answer with t3_pending_request respond.' : 'The user must review this approval in T3.' });
+      { requestId: record.id, handle: requestHandle(record.id), kind: record.kind, questions,
+        message: record.kind === 'user_input' ? (questions.length ? '' : 'Question text unavailable; run questions for the full request.') : 'The user must review this approval in T3.' });
+  }
+  flushQuestions(now = Date.now()) {
+    for (const deferred of Object.values(this.state.deferredRequests))
+      if (now - deferred.at >= this.questionDelayMs) this.request(deferred.record, true);
   }
   message(record) {
     const s = this.state, text = record.text ?? '';
@@ -284,8 +299,9 @@ export class Reducer {
       for (const line of text.split('\n')) if (new RegExp(this.expect.source, this.expect.flags).test(line))
         this.emit('RESULT', `result:${record.id}:${hash(line)}`, { messageId: record.id, turnId: record.runId, message: line });
     }
-    if (this.progress && !record.streaming && text)
-      this.emit('NOTE', `note:${record.id}:${hash(text)}`, { messageId: record.id, message: text });
+    const note = text.split('\n').filter(line => !this.expect?.test(line)).join('\n').trim();
+    if (this.progress && !record.streaming && note)
+      this.emit('NOTE', `note:${record.id}:${hash(note)}`, { messageId: record.id, message: note });
     s.lastAgentMessage = text;
   }
   baseline(frame, now = Date.now()) {
@@ -299,7 +315,7 @@ export class Reducer {
     }
   }
   accept(frame, now = Date.now()) {
-    const s = this.state;
+    const s = this.state; this.now = now;
     if (frame.kind === 'synchronized') { s.initialized = true; return; }
     if (frame.kind === 'snapshot') {
       if (frame.projection?.thread?.id !== s.id) throw fail('t3-thread-identity-mismatch');
@@ -368,8 +384,10 @@ export class Reducer {
       rule: this.active() ? RULES.active : null };
   }
   tick(now, settleMs, stallMs) {
-    const s = this.state;
+    const s = this.state; this.flushQuestions(now);
     if (!s.initialized || s.missing) return;
+    if (this.progress && now - s.lastEventAt >= this.silentMs)
+      this.emit('SILENT', `silent:${s.lastEventAt}`, { seconds: Math.floor((now - s.lastEventAt) / 1000), message: 'no provider or run activity; may be reasoning or blocked' });
     if (this.active()) {
       if (now - s.lastEventAt >= stallMs) this.emit('STALLED', `stall:${s.lastEventAt}`);
     } else if (s.settleArmed !== false && s.idleSince != null && now - s.idleSince >= settleMs) {
@@ -527,7 +545,12 @@ export class Monitor {
     }));
     this.shells = new Map(); this.work = Promise.resolve(); this.subscriptions = new Set(); this.connected = false;
   }
-  enqueue(fn) { this.work = this.work.then(fn).then(() => this.changed?.()).catch(e => { this.error = e; this.changed?.(); }); }
+  enqueue(fn) { this.work = this.work.then(fn).then(() => { this.scheduleQuestions(); this.changed?.(); }).catch(e => { this.error = e; this.changed?.(); }); }
+  scheduleQuestions() {
+    clearTimeout(this.questionTimer);
+    const due = [...this.reducers.values()].flatMap(r => Object.values(r.state.deferredRequests).map(q => q.at + r.questionDelayMs));
+    if (!this.closed && due.length) this.questionTimer = setTimeout(() => this.enqueue(() => { for (const r of this.reducers.values()) r.flushQuestions(); }), Math.max(0, Math.min(...due) - Date.now()));
+  }
   async open() {
     const runtime = jsonFile(runtimePath());
     this.rpc = new T3Rpc({ origin: this.options.origin ?? runtime.origin, token: privateToken() });
@@ -577,7 +600,7 @@ export class Monitor {
         if (frame.kind === 'snapshot' && this.options.watching && s.sequence == null) {
           reducer.baseline(frame);
         } else {
-          if (frame.kind === 'snapshot') await recoverHistory(this.rpc, reducer, frame);
+          if (frame.kind === 'snapshot' && this.options.history !== false) await recoverHistory(this.rpc, reducer, frame);
           reducer.accept(frame);
         }
       }), onDisconnect: error => this.disconnect(error),
@@ -592,7 +615,7 @@ export class Monitor {
     }
     this.changed?.();
   }
-  close() { this.closed = true; this.rpc?.close(); }
+  close() { this.closed = true; clearTimeout(this.questionTimer); this.rpc?.close(); }
 }
 
 function seconds(opt, key, fallback) {
@@ -601,9 +624,49 @@ function seconds(opt, key, fallback) {
   return n * 1000;
 }
 const exitFor = event => ({ STALLED: 3, QUESTION: 5, PAUSED: 6 })[event] ?? 0;
-function eventText(event, reg) {
+const oneLine = text => String(text ?? '').replace(/\s+/g, ' ').trim();
+const optionLabels = question => (question.options ?? []).map(option => typeof option === 'string' ? option : option.label ?? String(option));
+export function eventText(event, reg) {
   const name = reg.threads.find(t => t.id === event.threadId)?.name ?? event.threadId;
-  return `${event.event} ${name} ${toText({ ...event, event: null, at: null }).replace(/\n/g, ' | ')}`.trim();
+  let detail = '';
+  switch (event.event) {
+    case 'QUESTION': detail = (event.questions ?? []).map(q => `${q.question ?? q.title ?? ''}${optionLabels(q).length ? ` [options: ${optionLabels(q).join(' | ')}]` : ''}`).join(' ; ') || event.message;
+      detail += ` request=${event.handle ?? requestHandle(event.requestId)}`; break;
+    case 'APPROVAL': detail = `${event.kind ?? 'permission'} ${event.message ?? 'The user must review this approval in T3.'} request=${event.handle ?? requestHandle(event.requestId)}`; break;
+    case 'STARTED': case 'TURN_END': detail = event.status ? `status=${event.status}` : ''; break;
+    case 'RESULT': case 'NOTE': detail = event.message; break;
+    case 'PAUSED': case 'DONE': detail = event.lastAgentMessage; break;
+    case 'STALLED': detail = event.message ?? 'no provider or run activity; verify the thread before acting'; break;
+    case 'SILENT': detail = `${event.seconds}s: ${event.message}`; break;
+    case 'MISSING': detail = event.message ?? 'T3 thread unavailable or connection lost; inspect T3'; break;
+    case 'FOUND': detail = event.message ?? 'T3 thread available again; cursor recovery resumed'; break;
+    case 'MAINTENANCE': detail = typeof event.maintenance === 'object' ? JSON.stringify(event.maintenance) : event.maintenance; break;
+    case 'COMPACTED': break;
+    default: detail = event.message ?? event.type ?? '';
+  }
+  const rule = event.rule ? ` | rule: ${event.rule}` : '';
+  return `${String(event.at ?? new Date().toISOString()).slice(11,19)} ${event.event}${name ? ` ${name}` : ''}${detail ? ` ${oneLine(detail).slice(0,MESSAGE_LIMIT)}` : ''}${rule}`;
+}
+
+export function questionRecords(state) {
+  return Object.values(state.records.runtimeRequests ?? {}).filter(r => r.kind === 'user_input').map(r => {
+    const item = Object.values(state.records.turnItems ?? {}).find(i => i.requestId === r.id);
+    const asyncAnswer = Object.values(state.records.messages ?? {}).find(m => m.id === `async-answer:${r.id}`);
+    const answers = r.answers ?? item?.questionAnswer?.answers;
+    return { ...r, handle: requestHandle(r.id), askedAt: r.createdAt ?? item?.startedAt,
+      answeredAt: r.resolvedAt ?? item?.completedAt ?? null, questions: item?.questions ?? [],
+      answers: answers ?? null, answer: answers ? JSON.stringify(answers) : asyncAnswer?.text ?? null,
+      answerSource: answers ? (r.answers ? 'runtime-request' : 'question-item') : asyncAnswer ? 'async-answer-message' : null,
+      answerUnavailable: r.status === 'resolved' && !answers && !asyncAnswer ? 'T3 retained no answer in the request, question item, or async-answer message.' : null };
+  });
+}
+export function formatQuestions(list) {
+  return list.map(q => {
+    const head = `[${q.askedAt}${q.answeredAt ? ` answered ${q.answeredAt}` : ' PENDING'}]`;
+    const body = q.questions.map(x => `Q: ${x.question ?? x.title ?? ''}${optionLabels(x).length ? `\n  options: ${optionLabels(x).join(' | ')}` : ''}\n  answer key: ${JSON.stringify(x.id ?? x.question)}`).join('\n');
+    const shape = Object.fromEntries(q.questions.map(x => [x.id ?? x.question, { answers: ['<selected option>'] }]));
+    return `${head}\nrequestId: ${q.id}\nhandle: ${q.handle}\n${body || 'Q: text not retained by T3'}${q.answer ? `\n  answer: ${oneLine(q.answer).slice(0,MESSAGE_LIMIT)}` : q.answerUnavailable ? `\n  answer unavailable: ${q.answerUnavailable}` : ''}\nanswers: ${JSON.stringify(shape)}`;
+  }).join('\n---\n');
 }
 
 export async function runMonitor(ids, opt, reg, waiting = false) {
@@ -611,7 +674,7 @@ export async function runMonitor(ids, opt, reg, waiting = false) {
   let monitor, timer, deadline, retry, finish;
   const saved = cursorFile ? jsonFile(cursorFile, { threads: {} }) : { threads: {} };
   const settle = seconds(opt, 'settle', 45), stall = seconds(opt, 'stall', 2700), timeout = seconds(opt, 'timeout', 10800);
-  const options = { ...opt, progress: !!opt.progress, watching: !waiting };
+  const options = { ...opt, progress: !!opt.progress, watching: !waiting, history: !waiting, silentMs: seconds(opt, 'silent', 240), questionDelayMs: seconds(opt, 'poll', 5) };
   const release = lockCursor(cursorFile);
   const save = () => { if (cursorFile) atomicJson(cursorFile, saved); };
   let done = false;
@@ -710,7 +773,7 @@ const USAGE = `t3-thread setup|status|read|list|wait|questions|result|watch|trac
 status|read|wait|questions|result <thread ID or tracked name> [--json]
 read --last N=1; result --marker RESULT --turns N=10; questions --all --since ISO
 wait --settle SEC=45 --stall SEC=2700 --timeout SEC=10800 --until-question --expect REGEX
-watch (<id>... | --tracked) --expect REGEX --cursor FILE --progress --until-event
+watch (<id>... | --tracked) --expect REGEX --cursor FILE --progress [--silent SEC=240] --until-event
 track add <id> --name NAME [--role ROLE] [--note TEXT] [--environment ID] | rm <name> | list
 list --limit N=10 --cwd DIR; --registry FILE selects .t3-app-link.json
 send|new|queue|interrupt|access redirect to native T3 tools and exit 2.`;
@@ -778,10 +841,11 @@ export async function main(args = process.argv.slice(2)) {
   if (cmd === 'questions') {
     const since = opt.since ? Date.parse(opt.since) : 0;
     if (Number.isNaN(since)) throw fail('invalid-since');
-    const questions = Object.values(s.records.runtimeRequests ?? {}).filter(r => r.kind === 'user_input' && Date.parse(r.createdAt) >= since)
-      .map(r => ({ ...r, questions: Object.values(s.records.turnItems ?? {}).find(i => i.requestId === r.id)?.questions ?? [] }));
+    const questions = questionRecords(s).filter(q => Date.parse(q.askedAt) >= since);
     const pending = questions.filter(r => r.status === 'pending').length;
-    print({ pending, asked: questions.length, questions: opt.all ? questions : questions.filter(r => r.status === 'pending'), rule: pending ? RULES.questions : null });
+    const shown = opt.all ? questions : questions.filter(r => r.status === 'pending');
+    print(opt.json ? { threadId: ids[0], pending, asked: questions.length, questions: shown } :
+      { pending, asked: questions.length, message: shown.length ? formatQuestions(shown) : null, rule: pending ? RULES.questions : null });
     process.exitCode = pending ? 5 : 0;
   }
 }

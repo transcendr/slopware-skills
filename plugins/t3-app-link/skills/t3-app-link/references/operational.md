@@ -15,7 +15,7 @@ stderr with exit 1. Dispatch redirects and usage errors exit 2.
 | `read <thread> --last N` | Replies from the last N turns, default 1. |
 | `list --limit N --cwd DIR` | Recent threads, default 10; optional workspace filter. |
 | `wait <thread>` | Wait for continuous thread idleness. `--settle 45`, `--stall 2700`, `--timeout 10800`, in seconds. `--until-question` returns on a question; `--expect REGEX` distinguishes a pause. |
-| `questions <thread> --all --since ISO` | Formal questions, pending by default. Includes known answers/status and options. Exit 5 if any shown-period questions remain pending. |
+| `questions <thread> --all --since ISO` | Formal questions, pending by default. Includes real answers/times, full request IDs, options and exact answer keys. Exit 5 if any shown-period questions remain pending. |
 | `result <thread> --marker RESULT --turns N` | Parse the latest matching block from recent replies, default 10. Exit 6 when absent. |
 | `watch (<thread>… or --tracked)` | One multi-thread stream. Accepts `--expect REGEX`, `--cursor FILE`, `--progress`, `--until-event` and the same timing flags as wait. |
 | `track add <id> --name NAME --role ROLE --note TEXT --environment ID` | Store a project roster entry. Role, note and environment are optional. |
@@ -32,7 +32,10 @@ before a detailed subscription starts.
 Wait exits: 0 done, 3 stalled, 4 timeout, 5 question, 6 paused. Watch with
 `--until-event` uses 5 for QUESTION, 3 for STALLED, 6 for PAUSED, and 0 for RESULT
 or APPROVAL. Ordinary watch continues until stopped or its timeout (exit 4).
-`--progress` adds NOTE events from assistant messages. The polling flag controls
+`--progress` adds NOTE, TURN_END and SILENT. `--silent SEC` defaults to 240;
+RESULT lines are excluded from NOTE. Details are limited to 2,000 characters;
+JSON retains full fields. Questions use a stable handle on watch lines and full
+IDs plus `answers` shapes in `questions`. The polling flag controls
 timer checks, not network polling; data comes through one WebSocket.
 
 ## Dispatch, wait and verify
@@ -40,7 +43,10 @@ timer checks, not network polling; data comes through one WebSocket.
 Send an authorized handoff using `t3_thread_send`. Use mode `queue` for new work
 on a busy thread and `steer` for a correction to its current task. Start one
 background watch over the roster. Codex managers use `--until-event` and re-arm
-with the same cursor after acting. Claude managers consume background output.
+with the same cursor after acting. Claude managers use Monitor for per-line notifications, with the exact call in
+SKILL.md. Background Bash wakes only on exit. Re-arm Monitor after it ends, using
+the same cursor. Codex exit notifications can be held until the lead ends its
+current turn.
 
 For a single bounded wait:
 
@@ -48,6 +54,7 @@ For a single bounded wait:
 node "$TT" wait worker --expect '^RESULT ' --until-question
 ```
 
+The wait uses the current bounded snapshot without paging history.
 The wait follows the whole thread. Do not wait on one run ID or wrap status in a
 shell loop. Queued and chained runs keep it active; the settle clock starts again
 after the final run ends. On timeout, inspect the current state before retrying.

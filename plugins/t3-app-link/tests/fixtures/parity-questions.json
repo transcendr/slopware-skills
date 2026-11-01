@@ -1,0 +1,607 @@
+[
+  {
+    "provider": "codex",
+    "frames": [
+      {
+        "at": 1793504719739,
+        "frame": {
+          "kind": "event",
+          "sequence": 19890,
+          "event": {
+            "id": "fixture-1",
+            "threadId": "thread",
+            "runId": "fixture-2",
+            "nodeId": "fixture-3",
+            "driver": "codex",
+            "providerInstanceId": "fixture-4",
+            "occurredAt": "2026-11-01T03:45:19.734Z",
+            "type": "turn-item.updated",
+            "payload": {
+              "id": "fixture-5",
+              "threadId": "thread",
+              "runId": "fixture-2",
+              "nodeId": "fixture-3",
+              "providerThreadId": "fixture-6",
+              "providerTurnId": "fixture-7",
+              "nativeItemRef": {
+                "driver": "codex",
+                "nativeId": "fixture-8",
+                "strength": "strong"
+              },
+              "parentItemId": null,
+              "ordinal": 1000002,
+              "status": "waiting",
+              "title": null,
+              "startedAt": "2026-11-01T03:45:19.730Z",
+              "completedAt": null,
+              "updatedAt": "2026-11-01T03:45:19.730Z",
+              "type": "user_input_request",
+              "requestId": "fixture-9",
+              "questions": [
+                {
+                  "id": "0",
+                  "header": "Question",
+                  "question": "Continue codex-probe probe?",
+                  "options": [
+                    {
+                      "label": "Continue",
+                      "description": "Continue"
+                    },
+                    {
+                      "label": "Pause",
+                      "description": "Pause"
+                    }
+                  ]
+                },
+                {
+                  "id": "1",
+                  "header": "Question",
+                  "question": "Which marker for codex-probe?",
+                  "options": [
+                    {
+                      "label": "Alpha",
+                      "description": "Alpha"
+                    },
+                    {
+                      "label": "Beta",
+                      "description": "Beta"
+                    }
+                  ]
+                }
+              ],
+              "responseMode": "message"
+            }
+          }
+        }
+      },
+      {
+        "at": 1793504719740,
+        "frame": {
+          "kind": "event",
+          "sequence": 19891,
+          "event": {
+            "id": "fixture-10",
+            "threadId": "thread",
+            "runId": "fixture-2",
+            "nodeId": "fixture-3",
+            "driver": "codex",
+            "providerInstanceId": "fixture-4",
+            "occurredAt": "2026-11-01T03:45:19.736Z",
+            "type": "runtime-request.updated",
+            "payload": {
+              "id": "fixture-9",
+              "nodeId": "fixture-3",
+              "providerTurnId": "fixture-7",
+              "nativeRequestRef": {
+                "driver": "codex",
+                "nativeId": "fixture-11",
+                "strength": "strong"
+              },
+              "kind": "user_input",
+              "status": "pending",
+              "responseCapability": {
+                "type": "message"
+              },
+              "createdAt": "2026-11-01T03:45:19.730Z",
+              "resolvedAt": null
+            }
+          }
+        }
+      },
+      {
+        "at": 1793505008868,
+        "frame": {
+          "kind": "event",
+          "sequence": 20045,
+          "event": {
+            "id": "fixture-12",
+            "threadId": "thread",
+            "runId": "fixture-2",
+            "nodeId": "fixture-3",
+            "occurredAt": "2026-11-01T03:50:08.855Z",
+            "type": "runtime-request.updated",
+            "payload": {
+              "id": "fixture-9",
+              "nodeId": "fixture-3",
+              "providerTurnId": "fixture-7",
+              "nativeRequestRef": {
+                "driver": "codex",
+                "nativeId": "fixture-11",
+                "strength": "strong"
+              },
+              "kind": "user_input",
+              "status": "resolved",
+              "responseCapability": {
+                "type": "message"
+              },
+              "createdAt": "2026-11-01T03:45:19.730Z",
+              "resolvedAt": "2026-11-01T03:50:08.855Z",
+              "answers": {
+                "0": [
+                  "Continue"
+                ],
+                "1": [
+                  "Alpha"
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        "at": 1793505008869,
+        "frame": {
+          "kind": "event",
+          "sequence": 20047,
+          "event": {
+            "id": "fixture-13",
+            "threadId": "thread",
+            "runId": "fixture-2",
+            "nodeId": "fixture-3",
+            "occurredAt": "2026-11-01T03:50:08.855Z",
+            "type": "turn-item.updated",
+            "payload": {
+              "id": "fixture-5",
+              "threadId": "thread",
+              "runId": "fixture-2",
+              "nodeId": "fixture-3",
+              "providerThreadId": "fixture-6",
+              "providerTurnId": "fixture-7",
+              "nativeItemRef": {
+                "driver": "codex",
+                "nativeId": "fixture-8",
+                "strength": "strong"
+              },
+              "parentItemId": null,
+              "ordinal": 1000002,
+              "status": "completed",
+              "title": null,
+              "startedAt": "2026-11-01T03:45:19.730Z",
+              "completedAt": "2026-11-01T03:50:08.855Z",
+              "updatedAt": "2026-11-01T03:50:08.855Z",
+              "type": "user_input_request",
+              "requestId": "fixture-9",
+              "questions": [
+                {
+                  "id": "0",
+                  "header": "Question",
+                  "question": "Continue codex-probe probe?",
+                  "options": [
+                    {
+                      "label": "Continue",
+                      "description": "Continue"
+                    },
+                    {
+                      "label": "Pause",
+                      "description": "Pause"
+                    }
+                  ]
+                },
+                {
+                  "id": "1",
+                  "header": "Question",
+                  "question": "Which marker for codex-probe?",
+                  "options": [
+                    {
+                      "label": "Alpha",
+                      "description": "Alpha"
+                    },
+                    {
+                      "label": "Beta",
+                      "description": "Beta"
+                    }
+                  ]
+                }
+              ],
+              "questionAnswer": {
+                "requestId": "fixture-9",
+                "questionTextById": {
+                  "0": "Continue codex-probe probe?",
+                  "1": "Which marker for codex-probe?"
+                },
+                "answers": {
+                  "0": [
+                    "Continue"
+                  ],
+                  "1": [
+                    "Alpha"
+                  ]
+                },
+                "attachmentsByQuestionId": {}
+              },
+              "responseMode": "message"
+            }
+          }
+        }
+      },
+      {
+        "at": 1793505008869,
+        "frame": {
+          "kind": "event",
+          "sequence": 20048,
+          "event": {
+            "id": "fixture-14",
+            "threadId": "thread",
+            "runId": "fixture-2",
+            "nodeId": "fixture-15",
+            "providerInstanceId": "fixture-4",
+            "occurredAt": "2026-11-01T03:50:08.857Z",
+            "type": "message.updated",
+            "payload": {
+              "createdBy": "user",
+              "creationSource": "server",
+              "id": "fixture-16",
+              "threadId": "thread",
+              "runId": "fixture-2",
+              "nodeId": "fixture-15",
+              "role": "user",
+              "text": "Continue codex-probe probe?\nContinue\n\nWhich marker for codex-probe?\nAlpha",
+              "attachments": [],
+              "streaming": false,
+              "createdAt": "2026-11-01T03:50:08.857Z",
+              "updatedAt": "2026-11-01T03:50:08.857Z"
+            }
+          }
+        }
+      },
+      {
+        "at": 1793505010457,
+        "frame": {
+          "kind": "event",
+          "sequence": 20118,
+          "event": {
+            "id": "fixture-17",
+            "threadId": "thread",
+            "runId": "fixture-2",
+            "nodeId": "fixture-18",
+            "driver": "codex",
+            "providerInstanceId": "fixture-4",
+            "occurredAt": "2026-11-01T03:50:10.451Z",
+            "type": "message.updated",
+            "payload": {
+              "createdBy": "agent",
+              "creationSource": "provider",
+              "id": "fixture-19",
+              "threadId": "thread",
+              "runId": "fixture-2",
+              "nodeId": "fixture-18",
+              "role": "assistant",
+              "text": "codex-probe continued with marker Alpha.",
+              "attachments": [],
+              "streaming": false,
+              "createdAt": "2026-11-01T03:50:10.202Z",
+              "updatedAt": "2026-11-01T03:50:10.449Z"
+            }
+          }
+        }
+      },
+      {
+        "at": 1793505010618,
+        "frame": {
+          "kind": "event",
+          "sequence": 20132,
+          "event": {
+            "id": "fixture-20",
+            "threadId": "thread",
+            "runId": "fixture-2",
+            "nodeId": "fixture-21",
+            "driver": "codex",
+            "providerInstanceId": "fixture-4",
+            "occurredAt": "2026-11-01T03:50:10.615Z",
+            "type": "message.updated",
+            "payload": {
+              "createdBy": "agent",
+              "creationSource": "provider",
+              "id": "fixture-22",
+              "threadId": "thread",
+              "runId": "fixture-2",
+              "nodeId": "fixture-21",
+              "role": "assistant",
+              "text": "RESULT probe=codex-probe status=done",
+              "attachments": [],
+              "streaming": false,
+              "createdAt": "2026-11-01T03:50:10.449Z",
+              "updatedAt": "2026-11-01T03:50:10.613Z"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "provider": "claudeAgent",
+    "frames": [
+      {
+        "at": 1793504719925,
+        "frame": {
+          "kind": "event",
+          "sequence": 19900,
+          "event": {
+            "id": "fixture-23",
+            "threadId": "thread",
+            "runId": "fixture-24",
+            "nodeId": "fixture-25",
+            "driver": "claudeAgent",
+            "providerInstanceId": "fixture-26",
+            "occurredAt": "2026-11-01T03:45:19.921Z",
+            "type": "runtime-request.updated",
+            "payload": {
+              "id": "fixture-27",
+              "nodeId": "fixture-25",
+              "providerTurnId": "fixture-28",
+              "nativeRequestRef": {
+                "driver": "claudeAgent",
+                "nativeId": "fixture-29",
+                "strength": "strong"
+              },
+              "kind": "user_input",
+              "status": "pending",
+              "responseCapability": {
+                "type": "live",
+                "providerSessionId": "fixture-30"
+              },
+              "createdAt": "2026-11-01T03:45:19.919Z",
+              "resolvedAt": null
+            }
+          }
+        }
+      },
+      {
+        "at": 1793504719925,
+        "frame": {
+          "kind": "event",
+          "sequence": 19901,
+          "event": {
+            "id": "fixture-31",
+            "threadId": "thread",
+            "runId": "fixture-24",
+            "nodeId": "fixture-25",
+            "driver": "claudeAgent",
+            "providerInstanceId": "fixture-26",
+            "occurredAt": "2026-11-01T03:45:19.922Z",
+            "type": "turn-item.updated",
+            "payload": {
+              "id": "fixture-32",
+              "threadId": "thread",
+              "runId": "fixture-24",
+              "nodeId": "fixture-25",
+              "providerThreadId": "fixture-33",
+              "providerTurnId": "fixture-28",
+              "nativeItemRef": {
+                "driver": "claudeAgent",
+                "nativeId": "fixture-29",
+                "strength": "strong"
+              },
+              "parentItemId": null,
+              "ordinal": 1000003,
+              "status": "waiting",
+              "title": null,
+              "startedAt": "2026-11-01T03:45:19.919Z",
+              "completedAt": null,
+              "updatedAt": "2026-11-01T03:45:19.919Z",
+              "type": "user_input_request",
+              "requestId": "fixture-27",
+              "questions": [
+                {
+                  "id": "Continue claude-probe probe?",
+                  "header": "Continue",
+                  "question": "Continue claude-probe probe?",
+                  "options": [
+                    {
+                      "label": "Continue",
+                      "description": "Continue the claude-probe probe"
+                    },
+                    {
+                      "label": "Pause",
+                      "description": "Pause the claude-probe probe"
+                    }
+                  ],
+                  "multiSelect": false
+                },
+                {
+                  "id": "Which marker for claude-probe?",
+                  "header": "Marker",
+                  "question": "Which marker for claude-probe?",
+                  "options": [
+                    {
+                      "label": "Alpha",
+                      "description": "Use marker Alpha"
+                    },
+                    {
+                      "label": "Beta",
+                      "description": "Use marker Beta"
+                    }
+                  ],
+                  "multiSelect": false
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "at": 1793505009084,
+        "frame": {
+          "kind": "event",
+          "sequence": 20057,
+          "event": {
+            "id": "fixture-34",
+            "threadId": "thread",
+            "runId": "fixture-24",
+            "nodeId": "fixture-25",
+            "driver": "claudeAgent",
+            "providerInstanceId": "fixture-26",
+            "occurredAt": "2026-11-01T03:50:09.074Z",
+            "type": "runtime-request.updated",
+            "payload": {
+              "id": "fixture-27",
+              "nodeId": "fixture-25",
+              "providerTurnId": "fixture-28",
+              "nativeRequestRef": {
+                "driver": "claudeAgent",
+                "nativeId": "fixture-29",
+                "strength": "strong"
+              },
+              "kind": "user_input",
+              "status": "resolved",
+              "responseCapability": {
+                "type": "live",
+                "providerSessionId": "fixture-30"
+              },
+              "createdAt": "2026-11-01T03:45:19.919Z",
+              "resolvedAt": "2026-11-01T03:50:09.074Z",
+              "answers": {
+                "Continue claude-probe probe?": [
+                  "Continue"
+                ],
+                "Which marker for claude-probe?": [
+                  "Alpha"
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        "at": 1793505009084,
+        "frame": {
+          "kind": "event",
+          "sequence": 20059,
+          "event": {
+            "id": "fixture-35",
+            "threadId": "thread",
+            "runId": "fixture-24",
+            "nodeId": "fixture-25",
+            "driver": "claudeAgent",
+            "providerInstanceId": "fixture-26",
+            "occurredAt": "2026-11-01T03:50:09.074Z",
+            "type": "turn-item.updated",
+            "payload": {
+              "id": "fixture-32",
+              "threadId": "thread",
+              "runId": "fixture-24",
+              "nodeId": "fixture-25",
+              "providerThreadId": "fixture-33",
+              "providerTurnId": "fixture-28",
+              "nativeItemRef": {
+                "driver": "claudeAgent",
+                "nativeId": "fixture-29",
+                "strength": "strong"
+              },
+              "parentItemId": null,
+              "ordinal": 1000003,
+              "status": "completed",
+              "title": null,
+              "startedAt": "2026-11-01T03:45:19.919Z",
+              "completedAt": "2026-11-01T03:50:09.074Z",
+              "updatedAt": "2026-11-01T03:50:09.074Z",
+              "type": "user_input_request",
+              "requestId": "fixture-27",
+              "questions": [
+                {
+                  "id": "Continue claude-probe probe?",
+                  "header": "Continue",
+                  "question": "Continue claude-probe probe?",
+                  "options": [
+                    {
+                      "label": "Continue",
+                      "description": "Continue the claude-probe probe"
+                    },
+                    {
+                      "label": "Pause",
+                      "description": "Pause the claude-probe probe"
+                    }
+                  ],
+                  "multiSelect": false
+                },
+                {
+                  "id": "Which marker for claude-probe?",
+                  "header": "Marker",
+                  "question": "Which marker for claude-probe?",
+                  "options": [
+                    {
+                      "label": "Alpha",
+                      "description": "Use marker Alpha"
+                    },
+                    {
+                      "label": "Beta",
+                      "description": "Use marker Beta"
+                    }
+                  ],
+                  "multiSelect": false
+                }
+              ],
+              "questionAnswer": {
+                "requestId": "fixture-27",
+                "questionTextById": {
+                  "Continue claude-probe probe?": "Continue claude-probe probe?",
+                  "Which marker for claude-probe?": "Which marker for claude-probe?"
+                },
+                "answers": {
+                  "Continue claude-probe probe?": [
+                    "Continue"
+                  ],
+                  "Which marker for claude-probe?": [
+                    "Alpha"
+                  ]
+                },
+                "attachmentsByQuestionId": {}
+              }
+            }
+          }
+        }
+      },
+      {
+        "at": 1793505010443,
+        "frame": {
+          "kind": "event",
+          "sequence": 20114,
+          "event": {
+            "id": "fixture-36",
+            "threadId": "thread",
+            "runId": "fixture-24",
+            "nodeId": "fixture-37",
+            "driver": "claudeAgent",
+            "providerInstanceId": "fixture-26",
+            "occurredAt": "2026-11-01T03:50:10.434Z",
+            "type": "message.updated",
+            "payload": {
+              "createdBy": "agent",
+              "creationSource": "provider",
+              "id": "fixture-38",
+              "threadId": "thread",
+              "runId": "fixture-24",
+              "nodeId": "fixture-37",
+              "role": "assistant",
+              "text": "Progress note: you chose Continue and Alpha, so the claude-probe probe is proceeding with marker Alpha.\n\nRESULT probe=claude-probe status=done",
+              "attachments": [],
+              "streaming": false,
+              "createdAt": "2026-11-01T03:50:10.430Z",
+              "updatedAt": "2026-11-01T03:50:10.430Z"
+            }
+          }
+        }
+      }
+    ]
+  }
+]
