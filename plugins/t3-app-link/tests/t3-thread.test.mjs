@@ -195,3 +195,100 @@ test('read/result count final replies by turns and omit commentary from active t
   state.records={runs:{active:{id:'active',status:'running'}},messages:{a:{id:'a',runId:'r1',role:'assistant',createdAt:'2026-01-01T00:00:00Z',text:'Commentary'},b:{id:'b',runId:'r1',role:'assistant',createdAt:'2026-01-01T00:00:01Z',text:'RESULT status=done'},c:{id:'c',runId:'r2',role:'assistant',createdAt:'2026-01-01T00:00:02Z',text:'Paused'},d:{id:'d',runId:'active',role:'assistant',createdAt:'2026-01-01T00:00:03Z',text:'Still working'}}};
   assert.deepEqual(completedReplies(state).map(m=>m.text),['RESULT status=done','Paused']);
 });
+
+// Handoff 01a regressions: fresh watches start at the current state, not old history.
+async function subscribeFixture(saved, options, first) {
+  const monitor=new Monitor(['thread'],saved,options,{threads:[]});
+  let historyCalls=0;
+  monitor.rpc={subscribe:async(tag,payload,handlers)=>{handlers.onFrame(first);handlers.onFrame({kind:'synchronized'});return()=>{};},history:async()=>{historyCalls++;return{items:[],hasMoreHistory:false};}};
+  await monitor.subscribe('thread');await monitor.work;
+  if(monitor.error)throw monitor.error;
+  return {monitor,reducer:monitor.reducers.get('thread'),historyCalls};
+}
+const pastSnapshot = () => ({...snapshot({runs:[{id:'old-run',ordinal:14,status:'completed'}],messages:[{id:'old-result',runId:'old-run',role:'assistant',text:'RESULT handoff=old status=done',streaming:false}],turnItems:[{id:'old-compaction',type:'compaction',status:'completed'}]},100),hasMoreHistory:true,historyCursor:'older'});
+
+test('01a first idle watch ignores historical events, never pages, and cannot settle baseline idle',async()=>{
+  const {reducer,historyCalls}=await subscribeFixture({threads:{}},{watching:true,expect:'^RESULT ',progress:true},pastSnapshot());
+  assert.equal(historyCalls,0);
+  assert.deepEqual(eventKinds(reducer),[]);
+  reducer.tick(Date.now()+45000,45000,2700000);
+  assert.deepEqual(eventKinds(reducer),[]);
+  reducer.accept(frame(101,'run.created',{id:'new-run',ordinal:15,status:'running'}));
+  reducer.accept(frame(102,'message.updated',{id:'new-result',runId:'new-run',role:'assistant',text:'RESULT handoff=new status=done',streaming:false}));
+  assert.deepEqual(eventKinds(reducer),['STARTED','RESULT','NOTE']);
+});
+
+test('01a baseline emits only currently pending formal requests and uses public approval wording',async()=>{
+  const initial=pastSnapshot();initial.projection.runtimeRequests=[{id:'answered',kind:'user_input',status:'resolved'},{id:'pending-question',kind:'user_input',status:'pending'},{id:'pending-approval',kind:'command',status:'pending'}];
+  const {reducer}=await subscribeFixture({threads:{}},{watching:true,expect:'^RESULT '},initial);
+  assert.deepEqual(eventKinds(reducer),['QUESTION','APPROVAL']);
+  assert.equal(reducer.state.pending.find(e=>e.event==='APPROVAL').message,'The user must review this approval in T3.');
+});
+
+test('01a wait still settles an already-idle thread',async()=>{
+  const {reducer}=await subscribeFixture({threads:{}},{watching:false},snapshot());
+  reducer.tick(Date.now()+45000,45000,2700000);
+  assert.equal(eventKinds(reducer).at(-1),'DONE');
+});
+
+test('01a streaming RESULT is ignored until the complete message and emitted once',()=>{
+  const r=initialized({expect:'^RESULT '});
+  r.accept(frame(1,'message.updated',{id:'m',role:'assistant',text:'RESULT handoff=01 sta',streaming:true}));
+  assert.deepEqual(eventKinds(r),[]);
+  r.accept(frame(2,'message.updated',{id:'m',role:'assistant',text:'RESULT handoff=01 status=done',streaming:false}));
+  r.accept(frame(3,'message.updated',{id:'m',role:'assistant',text:'RESULT handoff=01 status=done',streaming:false}));
+  assert.equal(r.state.pending.length,1);assert.equal(r.state.pending[0].message,'RESULT handoff=01 status=done');
+});
+
+test('01a viewing a thread is understood and does not reset its stall clock',()=>{
+  const r=initialized();r.accept(frame(1,'run.created',{id:'run',status:'running'}),0);r.state.pending=[];
+  r.accept(frame(2,'thread.visited',{threadId:'thread',visitedAt:'2026-11-01T00:00:00Z'}),2600);
+  assert.equal(r.state.lastEventAt,0);assert.equal(r.state.sequence,2);assert.deepEqual(eventKinds(r),[]);
+  r.tick(2700,45,2700);assert.deepEqual(eventKinds(r),['STALLED']);
+});
+
+test('01a public rules route actions to native T3 tools and omit unsupported states',()=>{
+  const script=new URL('../skills/t3-app-link/scripts/t3-thread.mjs',import.meta.url).pathname;
+  const rules=JSON.parse(spawnSync(process.execPath,[script,'rules','--json'],{encoding:'utf8'}).stdout);
+  assert.match(rules.questions,/t3_pending_request respond/);
+  assert.match(rules.active,/t3_thread_send.*queue/);
+  assert.match(rules.steer,/t3_thread_send.*steer/);
+  assert.match(rules.queued,/t3_queue/);
+  assert.doesNotMatch(Object.values(rules).join('\n'),/send --|queue <thread>|Bryan/);
+  for(const key of ['broken','stranded','shared','overdue'])assert.equal(rules[key],undefined);
+});
+
+test('01a approval text addresses the user rather than a named person',()=>{
+  const r=initialized();r.accept(frame(1,'runtime-request.updated',{id:'approval',kind:'command',status:'pending'}));
+  assert.equal(r.state.pending[0].message,'The user must review this approval in T3.');
+});
+
+test('01a full thread.visited payload also leaves provider liveness unchanged',()=>{
+  const r=initialized();r.accept(frame(1,'run.created',{id:'run',status:'running'}),0);r.state.pending=[];
+  r.accept(frame(2,'thread.visited',{id:'thread',lastVisitedAt:'2026-11-01T00:00:00Z'}),2600);
+  assert.equal(r.state.lastEventAt,0);assert.deepEqual(eventKinds(r),[]);
+});
+
+test('01a active baseline can settle a run that ends after watching starts',async()=>{
+  const initial=pastSnapshot();initial.projection.runs=[{id:'run',ordinal:15,status:'running'}];
+  const {reducer}=await subscribeFixture({threads:{}},{watching:true,expect:'^RESULT '},initial);
+  assert.deepEqual(eventKinds(reducer),[]);
+  reducer.accept(frame(101,'run.updated',{id:'run',ordinal:15,status:'completed'}),10);
+  reducer.tick(55,45,2700);assert.deepEqual(eventKinds(reducer),['PAUSED']);
+});
+
+test('01a resumed watch recovers new history instead of applying another baseline',async()=>{
+  const initial=initialized({expect:'^RESULT '});initial.state.sequence=10;
+  const saved={threads:{thread:JSON.parse(JSON.stringify(initial.state))}};
+  const next=snapshot({runs:[{id:'new',ordinal:2,status:'completed'}],messages:[{id:'new-result',runId:'new',role:'assistant',text:'RESULT status=done',streaming:false}]},100);
+  next.historyCursor='gap';next.hasMoreHistory=true;
+  const {reducer,historyCalls}=await subscribeFixture(saved,{watching:true,expect:'^RESULT '},next);
+  assert.equal(historyCalls,1);assert.deepEqual(eventKinds(reducer),['STARTED','RESULT']);
+});
+
+test('01a an update to an already-completed baseline run is not a new run ending',async()=>{
+  const {reducer}=await subscribeFixture({threads:{}},{watching:true,expect:'^RESULT '},pastSnapshot());
+  reducer.accept(frame(101,'run.updated',{id:'old-run',ordinal:14,status:'completed'}));
+  reducer.tick(Date.now()+45000,45000,2700000);
+  assert.deepEqual(eventKinds(reducer),[]);
+});

@@ -55,7 +55,11 @@ APPROVAL and RESULT exit 0.
 A cursor stores thread state, sequence numbers, reported identities and queued
 events. It contains thread content: keep it private and out of Git. One watcher
 may hold a cursor at a time. Re-arm with the same cursor, roster and expectation.
-Small gaps replay from T3; snapshot fallback pages history to the saved boundary.
+A fresh watch baselines the current snapshot without reading older history or
+reporting old events, except for currently pending questions and approvals.
+Baseline idleness does not produce DONE or PAUSED. On re-arm, small gaps replay
+from T3; snapshot fallback pages history to the saved boundary. RESULT matching
+waits for non-streaming message text.
 This recovers observable state, not transient updates that T3 has already coalesced.
 `MAINTENANCE` requires T3's structured maintenance field; stock-app compatibility
 has not been verified.

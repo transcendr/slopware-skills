@@ -155,20 +155,16 @@ export class T3Rpc {
 }
 
 export const RULES = {
-  start: 'new turn: one handoff or follow-up per turn; the RESULT ends it. New work for a busy thread: send --queue.',
-  steer: "steer is input for THIS turn's work only (answer its question, correct it). New follow-up work: send --queue, never --steer.",
-  queued: 'queued: delivered as a new turn when the running turn ends; `queue <thread>` lists it, `queue <thread> rm <id>` removes it.',
-  active: 'active turn: queue new work (send --queue); steer only to answer or correct it. Past its timebox: act on it now.',
-  questions: 'answer with send --steer: an answer is input for this turn.',
+  start: 'new turn: one handoff or follow-up per turn; the RESULT ends it. New work for a busy thread: t3_thread_send mode queue.',
+  steer: "t3_thread_send mode steer is input for THIS turn's work only. Answer formal questions with t3_pending_request respond; queue new follow-up work with t3_thread_send mode queue.",
+  queued: 'queued: delivered as a new turn when the running turn ends; t3_queue action list shows it and action cancel removes a queuedRunId.',
+  active: 'active turn: queue new work with t3_thread_send mode queue; use mode steer only to correct this turn. Answer formal questions with t3_pending_request respond. Past its timebox: act on it now.',
+  questions: 'answer with t3_pending_request respond: an answer is input for this turn.',
   done: 'read the full reply and RESULT before acting, and check its claims against the evidence.',
   stalled: "stalled: inspect and act in this turn; don't just wait again.",
   created: 'new thread: track it with a name, and give it one handoff with its timebox.',
-  result: 'read the full RESULT before acting and check its claims against the evidence; then send the next work as a new turn (send --queue).',
-  idle: 'turn ended: read the reply in full; send the next work as a new turn (send --queue).',
-  broken: 'broken session: the coordinator replaces it in this turn (up to the 7-session limit) and moves its jobs to healthy sessions; never just exclude it.',
-  stranded: 'stranded: tell the coordinator to send that job once to its free session now (a new turn), then check it starts.',
-  shared: 'SHARED-REPLY: one reply followed several open questions; check it answers each one, and answer any it does not, one reply per question.',
-  overdue: 'overdue: act in this turn. Judge liveness (no output past the expected time is a stall), correct it by steer or stop it, and queue any new work; never carry it forward.',
+  result: 'read the full RESULT before acting and check its claims against the evidence; then send new work with t3_thread_send mode queue.',
+  idle: 'turn ended: read the reply in full; send the next work with t3_thread_send mode queue.',
 };
 
 const KEY_START = /\s+(?=[A-Za-z_][\w.-]*=)/;
@@ -251,6 +247,7 @@ export class Reducer {
     const s = this.state;
     if (s.reported[key]) return;
     s.reported[key] = true;
+    if (this.baselining) return;
     const rule = ({ QUESTION: RULES.questions, STALLED: RULES.stalled, PAUSED: RULES.done, DONE: RULES.done })[event];
     s.pending.push({ event, threadId: s.id, at: new Date().toISOString(), ...data, ...(rule ? { rule } : {}) });
   }
@@ -278,11 +275,11 @@ export class Reducer {
     const item = Object.values(this.state.records.turnItems ?? {}).find(i => i.requestId === record.id);
     this.emit(record.kind === 'user_input' ? 'QUESTION' : 'APPROVAL', `request:${record.id}`,
       { requestId: record.id, kind: record.kind, questions: record.questions ?? item?.questions ?? [],
-        message: record.kind === 'user_input' ? 'Read with questions; answer with t3_pending_request respond.' : 'Bryan must review this approval in T3.' });
+        message: record.kind === 'user_input' ? 'Read with questions; answer with t3_pending_request respond.' : 'The user must review this approval in T3.' });
   }
   message(record) {
     const s = this.state, text = record.text ?? '';
-    if (this.expect) {
+    if (this.expect && !record.streaming) {
       for (const line of text.split('\n')) if (new RegExp(this.expect.source, this.expect.flags).test(line))
         this.emit('RESULT', `result:${record.id}:${hash(line)}`, { messageId: record.id, turnId: record.runId, message: line });
     }
@@ -290,12 +287,22 @@ export class Reducer {
       this.emit('NOTE', `note:${record.id}:${hash(text)}`, { messageId: record.id, message: text });
     s.lastAgentMessage = text;
   }
+  baseline(frame, now = Date.now()) {
+    this.baselining = true;
+    try { this.accept(frame, now); } finally { this.baselining = false; }
+    this.state.settleArmed = this.active();
+    for (const request of Object.values(this.state.records.runtimeRequests ?? {})) {
+      if (request.status !== 'pending') continue;
+      delete this.state.reported[`request:${request.id}`];
+      this.request(request);
+    }
+  }
   accept(frame, now = Date.now()) {
     const s = this.state;
     if (frame.kind === 'synchronized') { s.initialized = true; return; }
-    s.lastEventAt = now;
     if (frame.kind === 'snapshot') {
       if (frame.projection?.thread?.id !== s.id) throw fail('t3-thread-identity-mismatch');
+      s.lastEventAt ??= now;
       s.thread = frame.projection.thread;
       // A bounded snapshot supersedes liveness; evicted runs must not stay active.
       s.records.runs = {};
@@ -312,6 +319,21 @@ export class Reducer {
       if (frame.sequence <= (s.sequence ?? -1)) return;
       if (frame.event.threadId && frame.event.threadId !== s.id) throw fail('t3-thread-identity-mismatch');
       const { type, payload } = frame.event;
+      if (type === 'thread.visited') {
+        const id = payload?.id ?? payload?.threadId;
+        if (id !== s.id) throw fail('t3-thread-identity-mismatch');
+        if (payload.id) s.thread = payload;
+        s.sequence = frame.sequence;
+        return;
+      }
+      if (type.startsWith('provider-') || type.startsWith('run.') || type.startsWith('run-attempt.') ||
+          ['runtime-request.updated', 'node.updated', 'subagent.updated', 'plan.updated'].includes(type) ||
+          (type === 'message.updated' && payload?.role === 'assistant') ||
+          (type === 'turn-item.updated' && !['user_message', 'notification'].includes(payload?.type))) s.lastEventAt = now;
+      if (type === 'run.created' || type === 'run.updated') {
+        const previous = s.records.runs?.[payload?.id];
+        if (!previous || ACTIVE.has(previous.status) || ACTIVE.has(payload?.status)) s.settleArmed = true;
+      }
       if (COLLECTIONS[type]) this.store(COLLECTIONS[type], payload);
       else if (type.startsWith('thread.') && payload?.id === s.id) s.thread = payload;
       else if (!['thread.pull-request-link-updated', 'provider-session.detached', 'run.background-work-cancelled', 'checkpoint.rollback-requested'].includes(type)) this.emit('UNPARSED', `unknown:${frame.sequence}`, { type });
@@ -350,7 +372,7 @@ export class Reducer {
     if (!s.initialized || s.missing) return;
     if (this.active()) {
       if (now - s.lastEventAt >= stallMs) this.emit('STALLED', `stall:${s.lastEventAt}`);
-    } else if (s.idleSince != null && now - s.idleSince >= settleMs) {
+    } else if (s.settleArmed !== false && s.idleSince != null && now - s.idleSince >= settleMs) {
       const run = ordered(s.records.runs).at(-1), key = run?.id ?? 'idle';
       const messages = ordered(s.records.messages).filter(m => m.role === 'assistant' && (!run || m.runId === run.id));
       const matched = this.expect && new RegExp(this.expect.source, 'm').test(messages.at(-1)?.text ?? '');
@@ -528,8 +550,12 @@ export class Monitor {
     await this.rpc.subscribe('orchestration.subscribeThread', { threadId: id, acceptBoundedSnapshot: true, requestCompletionMarker: true,
       ...(s.sequence != null ? { afterSequence: s.sequence } : {}) }, {
       onFrame: frame => this.enqueue(async () => {
-        if (frame.kind === 'snapshot') await recoverHistory(this.rpc, reducer, frame);
-        reducer.accept(frame);
+        if (frame.kind === 'snapshot' && this.options.watching && s.sequence == null) {
+          reducer.baseline(frame);
+        } else {
+          if (frame.kind === 'snapshot') await recoverHistory(this.rpc, reducer, frame);
+          reducer.accept(frame);
+        }
       }), onDisconnect: error => this.disconnect(error),
     });
   }
@@ -561,7 +587,7 @@ export async function runMonitor(ids, opt, reg, waiting = false) {
   let monitor, timer, deadline, retry, finish;
   const saved = cursorFile ? jsonFile(cursorFile, { threads: {} }) : { threads: {} };
   const settle = seconds(opt, 'settle', 45), stall = seconds(opt, 'stall', 2700), timeout = seconds(opt, 'timeout', 10800);
-  const options = { ...opt, progress: !!opt.progress };
+  const options = { ...opt, progress: !!opt.progress, watching: !waiting };
   const release = lockCursor(cursorFile);
   const save = () => { if (cursorFile) atomicJson(cursorFile, saved); };
   let done = false;

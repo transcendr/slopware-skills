@@ -36,7 +36,7 @@ are in the plugin README; commands and exits are in
 Use `t3_thread_launch` for a new thread, or `t3_thread_send` for an authorized
 existing thread. New work for a busy thread uses mode `queue`; mode `steer` supplies
 answers or corrections for its current work. Formal questions use
-`t3_pending_request respond`, not an inferred shared reply. Approvals need Bryan
+`t3_pending_request respond`, not an inferred shared reply. Approvals need the user
 in T3; the monitor cannot approve them.
 
 Give the worker its outcome, evidence, authority and any authorized timebox.
@@ -70,6 +70,12 @@ node "$TT" watch --tracked --expect '^RESULT ' --cursor /private/path/watch.json
 
 Codex wakes on command exit. `--until-event` prints the first QUESTION, APPROVAL,
 RESULT, PAUSED or STALLED and exits. Read it, act, then run the same command again.
+A thread with no saved cursor state starts at its first snapshot, without paging
+older history. It reports currently pending questions and approvals, but no old
+results or compactions. An idle baseline does not produce DONE or PAUSED; only a
+run ending after watching begins can settle into one. `wait` still settles an
+already-idle thread. RESULT detection waits for non-streaming message text.
+
 Keep one watcher per cursor. The cursor retains unprinted events and reported
 identities, so a re-arm continues without repeating reported events. Do not delete
 or replace it during an assignment. Keep it private and out of Git.
@@ -77,7 +83,7 @@ or replace it during an assignment. Keep it private and out of Git.
 | Event | Required response |
 | --- | --- |
 | QUESTION | Read `questions <name>`, then answer the request through `t3_pending_request respond`. |
-| APPROVAL | Ask Bryan to review the permission request in T3. |
+| APPROVAL | Ask the user to review the permission request in T3. |
 | RESULT | Read the full reply and parsed `result`, then verify the claims. A RESULT may arrive mid-turn. |
 | PAUSED | The settle window ended without the expected final reply. Read it and resume unfinished work with `t3_thread_send`. |
 | STALLED | Inspect T3 activity before acting. Long reasoning or commands may be silent. |
@@ -97,7 +103,7 @@ Message only threads you created or the user explicitly authorized. Monitoring
 never grants permission to dispatch, merge, publish or deploy. Do not run another
 provider CLI against a T3-owned thread. Use T3 links and tools.
 
-Small stream gaps replay by sequence. Large gaps receive a bounded snapshot;
+On re-arm, small stream gaps replay by sequence. Large gaps receive a bounded snapshot;
 the monitor pages older history back to its cursor. T3 coalesces updates, so
 monitoring reports changes in recoverable state rather than promising every
 transient transition. `MAINTENANCE` uses the structured message field and requires

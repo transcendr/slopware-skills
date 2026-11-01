@@ -20,7 +20,7 @@ stderr with exit 1. Dispatch redirects and usage errors exit 2.
 | `watch (<thread>… or --tracked)` | One multi-thread stream. Accepts `--expect REGEX`, `--cursor FILE`, `--progress`, `--until-event` and the same timing flags as wait. |
 | `track add <id> --name NAME --role ROLE --note TEXT --environment ID` | Store a project roster entry. Role, note and environment are optional. |
 | `track rm <name or id>` / `track list` | Remove or list roster entries. |
-| `rules` / `version` | Print the inherited rule text, or plugin version and script/registry paths. |
+| `rules` / `version` | Print the T3 rule text, or plugin version and script/registry paths. |
 | `send`, `new`, `queue`, `interrupt`, `access` | Exit 2 and print the native T3 tool call. Never dispatch. |
 
 `--registry FILE` overrides the project roster. `T3_APP_LINK_REGISTRY` provides
@@ -55,7 +55,7 @@ On a stall, inspect native T3 activity: silence alone does not prove failure.
 
 On QUESTION, use `questions worker`, then native `t3_pending_request read` and
 `respond` with the request ID and its question IDs. These formal answers do not
-approve permission requests. An APPROVAL event requires Bryan in T3.
+approve permission requests. An APPROVAL event requires the user in T3.
 
 Read the complete final reply and RESULT. Verify each claim necessary to the
 assignment in the repository or running system. Publication and merge still
@@ -67,6 +67,12 @@ those created for the test through `t3_thread_organize`, action `archive`.
 One live process owns a cursor lock. A second process using it fails with
 `cursor-in-use`; a dead owner's lock can be reclaimed. Interrupting the watcher
 saves state and releases the lock. A hard kill resumes from the last saved state.
+
+A first watch takes the current snapshot as its baseline and does not page
+history or report old events. Pending questions and approvals are the exception.
+Baseline idleness does not produce DONE or PAUSED; a subsequent run must end
+first. `wait` retains its already-idle settle behavior. Matching RESULT text must
+be non-streaming. Viewing a thread does not reset its stall clock.
 
 The cursor contains reported identities and queued events as well as sequences.
 An until-event exit retains later events for the next invocation. Resume with
