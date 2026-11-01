@@ -1,0 +1,4053 @@
+[
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "snapshot",
+      "snapshotSequence": 17068,
+      "historyCursor": null,
+      "hasMoreHistory": false,
+      "projection": {
+        "thread": {
+          "id": "fixture-cd04b756384c7c09",
+          "createdAt": "2026-11-01T02:41:12.080Z",
+          "updatedAt": "2026-11-01T02:41:12.086Z"
+        },
+        "runs": [],
+        "attempts": [],
+        "nodes": [],
+        "subagents": [],
+        "providerSessions": [],
+        "providerThreads": [],
+        "providerTurns": [],
+        "runtimeRequests": [],
+        "messages": [],
+        "turnItems": []
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "synchronized"
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "snapshot",
+      "snapshotSequence": 17079,
+      "historyCursor": null,
+      "hasMoreHistory": false,
+      "projection": {
+        "thread": {
+          "id": "fixture-3fdf9198df91ef6c",
+          "createdAt": "2026-11-01T02:41:16.058Z",
+          "updatedAt": "2026-11-01T02:41:16.061Z"
+        },
+        "runs": [],
+        "attempts": [],
+        "nodes": [],
+        "subagents": [],
+        "providerSessions": [],
+        "providerThreads": [],
+        "providerTurns": [],
+        "runtimeRequests": [],
+        "messages": [],
+        "turnItems": []
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "synchronized"
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17159,
+      "event": {
+        "type": "thread.metadata-updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-cd04b756384c7c09",
+          "createdAt": "2026-11-01T02:41:12.080Z",
+          "updatedAt": "2026-11-01T02:41:12.086Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17160,
+      "event": {
+        "type": "provider-thread.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-615a52eb0bac0ae6",
+          "status": "not_loaded",
+          "pendingBackgroundTasks": [],
+          "createdAt": "2026-11-01T02:43:44.735Z",
+          "updatedAt": "2026-11-01T02:43:44.735Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17161,
+      "event": {
+        "type": "run.created",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-8c269150d3eb78ed",
+          "threadId": "fixture-cd04b756384c7c09",
+          "ordinal": 1,
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "status": "starting",
+          "startedAt": null,
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17162,
+      "event": {
+        "type": "run-attempt.created",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-7744eed55a06800d",
+          "runId": "fixture-8c269150d3eb78ed",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": null,
+          "status": "pending",
+          "startedAt": null,
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17163,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-9fb0b237b3159fa3",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8c269150d3eb78ed",
+          "kind": "root_turn",
+          "status": "pending",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": null,
+          "startedAt": null,
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17164,
+      "event": {
+        "type": "checkpoint-scope.created",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-cbb2c54a3f129f58",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8c269150d3eb78ed",
+          "nodeId": "fixture-9fb0b237b3159fa3",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "kind": "root_run",
+          "createdAt": "2026-11-01T02:43:44.735Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17165,
+      "event": {
+        "type": "message.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-2c822b85ba87dbf3",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8c269150d3eb78ed",
+          "nodeId": "fixture-9fb0b237b3159fa3",
+          "role": "user",
+          "text": "Sanitised probe message.",
+          "streaming": false,
+          "createdAt": "2026-11-01T02:43:44.735Z",
+          "updatedAt": "2026-11-01T02:43:44.735Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17166,
+      "event": {
+        "type": "turn-item.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-bc116bd758159eea",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8c269150d3eb78ed",
+          "nodeId": "fixture-9fb0b237b3159fa3",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": null,
+          "ordinal": 1000001,
+          "status": "completed",
+          "startedAt": "2026-11-01T02:43:44.735Z",
+          "completedAt": "2026-11-01T02:43:44.735Z",
+          "updatedAt": "2026-11-01T02:43:44.735Z",
+          "type": "user_message",
+          "messageId": "fixture-2c822b85ba87dbf3",
+          "text": "Sanitised probe message."
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17169,
+      "event": {
+        "type": "provider-session.attached",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-174275dfe029140e",
+          "status": "ready",
+          "createdAt": "2026-11-01T02:11:25.858Z",
+          "updatedAt": "2026-11-01T02:11:25.858Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17170,
+      "event": {
+        "type": "thread.metadata-updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-3fdf9198df91ef6c",
+          "createdAt": "2026-11-01T02:41:16.058Z",
+          "updatedAt": "2026-11-01T02:41:16.061Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17171,
+      "event": {
+        "type": "provider-thread.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-a77f8c9f8456f240",
+          "status": "not_loaded",
+          "pendingBackgroundTasks": [],
+          "createdAt": "2026-11-01T02:43:44.754Z",
+          "updatedAt": "2026-11-01T02:43:44.754Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17172,
+      "event": {
+        "type": "run.created",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-0de321a1beee06f0",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "ordinal": 1,
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "status": "starting",
+          "startedAt": null,
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17173,
+      "event": {
+        "type": "run-attempt.created",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-ba045a4905528b9a",
+          "runId": "fixture-0de321a1beee06f0",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "providerTurnId": null,
+          "status": "pending",
+          "startedAt": null,
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17174,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-ea4145c25756db84",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": "fixture-0de321a1beee06f0",
+          "kind": "root_turn",
+          "status": "pending",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "providerTurnId": null,
+          "startedAt": null,
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17175,
+      "event": {
+        "type": "checkpoint-scope.created",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-24b8660c40ef62c0",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": "fixture-0de321a1beee06f0",
+          "nodeId": "fixture-ea4145c25756db84",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "kind": "root_run",
+          "createdAt": "2026-11-01T02:43:44.754Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17176,
+      "event": {
+        "type": "message.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-7ebea8216f8cbe8c",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": "fixture-0de321a1beee06f0",
+          "nodeId": "fixture-ea4145c25756db84",
+          "role": "user",
+          "text": "Sanitised probe message.",
+          "streaming": false,
+          "createdAt": "2026-11-01T02:43:44.754Z",
+          "updatedAt": "2026-11-01T02:43:44.754Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17177,
+      "event": {
+        "type": "turn-item.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-98e27b91cccca37a",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": "fixture-0de321a1beee06f0",
+          "nodeId": "fixture-ea4145c25756db84",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "providerTurnId": null,
+          "ordinal": 1000001,
+          "status": "completed",
+          "startedAt": "2026-11-01T02:43:44.754Z",
+          "completedAt": "2026-11-01T02:43:44.754Z",
+          "updatedAt": "2026-11-01T02:43:44.754Z",
+          "type": "user_message",
+          "messageId": "fixture-7ebea8216f8cbe8c",
+          "text": "Sanitised probe message."
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17183,
+      "event": {
+        "type": "provider-session.attached",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-f2b2d6cfa1f6b484",
+          "status": "ready",
+          "createdAt": "2026-11-01T02:43:44.804Z",
+          "updatedAt": "2026-11-01T02:43:44.804Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17184,
+      "event": {
+        "type": "provider-session.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-f2b2d6cfa1f6b484",
+          "status": "ready",
+          "createdAt": "2026-11-01T02:43:44.804Z",
+          "updatedAt": "2026-11-01T02:43:44.804Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17185,
+      "event": {
+        "type": "provider-thread.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-a77f8c9f8456f240",
+          "status": "active",
+          "pendingBackgroundTasks": [],
+          "createdAt": "2026-11-01T02:43:44.754Z",
+          "updatedAt": "2026-11-01T02:43:44.812Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17186,
+      "event": {
+        "type": "run.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-0de321a1beee06f0",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "ordinal": 1,
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "status": "running",
+          "startedAt": "2026-11-01T02:43:44.812Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17187,
+      "event": {
+        "type": "run-attempt.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-ba045a4905528b9a",
+          "runId": "fixture-0de321a1beee06f0",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "providerTurnId": null,
+          "status": "running",
+          "startedAt": "2026-11-01T02:43:44.812Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17188,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-ea4145c25756db84",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": "fixture-0de321a1beee06f0",
+          "kind": "root_turn",
+          "status": "running",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "providerTurnId": null,
+          "startedAt": "2026-11-01T02:43:44.812Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17189,
+      "event": {
+        "type": "provider-session.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-174275dfe029140e",
+          "status": "ready",
+          "createdAt": "2026-11-01T02:11:25.858Z",
+          "updatedAt": "2026-11-01T02:11:25.858Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17190,
+      "event": {
+        "type": "provider-thread.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-615a52eb0bac0ae6",
+          "status": "active",
+          "pendingBackgroundTasks": [],
+          "createdAt": "2026-11-01T02:43:44.735Z",
+          "updatedAt": "2026-11-01T02:43:44.834Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17191,
+      "event": {
+        "type": "run.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-8c269150d3eb78ed",
+          "threadId": "fixture-cd04b756384c7c09",
+          "ordinal": 1,
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "status": "running",
+          "startedAt": "2026-11-01T02:43:44.834Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17192,
+      "event": {
+        "type": "run-attempt.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-7744eed55a06800d",
+          "runId": "fixture-8c269150d3eb78ed",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": null,
+          "status": "running",
+          "startedAt": "2026-11-01T02:43:44.834Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17193,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-9fb0b237b3159fa3",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8c269150d3eb78ed",
+          "kind": "root_turn",
+          "status": "running",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": null,
+          "startedAt": "2026-11-01T02:43:44.834Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17194,
+      "event": {
+        "type": "provider-turn.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-cd4cf92d9f3e6659",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "nodeId": "fixture-9fb0b237b3159fa3",
+          "ordinal": 1,
+          "status": "running",
+          "startedAt": "2026-11-01T02:43:44.944Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17195,
+      "event": {
+        "type": "provider-turn.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-d73ba6a24b946b43",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "nodeId": "fixture-ea4145c25756db84",
+          "ordinal": 1,
+          "status": "running",
+          "startedAt": "2026-11-01T02:43:44.867Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17196,
+      "event": {
+        "type": "provider-thread.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-a77f8c9f8456f240",
+          "status": "active",
+          "pendingBackgroundTasks": [],
+          "createdAt": "2026-11-01T02:43:44.754Z",
+          "updatedAt": "2026-11-01T02:43:45.590Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17197,
+      "event": {
+        "type": "provider-turn.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-d73ba6a24b946b43",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "nodeId": "fixture-ea4145c25756db84",
+          "ordinal": 1,
+          "status": "running",
+          "startedAt": "2026-11-01T02:43:44.867Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17200,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-751fe38e4998d661",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": "fixture-0de321a1beee06f0",
+          "kind": "tool_call",
+          "status": "running",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "providerTurnId": "fixture-d73ba6a24b946b43",
+          "startedAt": "2026-11-01T02:43:48.393Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17201,
+      "event": {
+        "type": "turn-item.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-3a5b619f095d5b4d",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": "fixture-0de321a1beee06f0",
+          "nodeId": "fixture-751fe38e4998d661",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "providerTurnId": "fixture-d73ba6a24b946b43",
+          "ordinal": 1000002,
+          "status": "running",
+          "startedAt": "2026-11-01T02:43:48.393Z",
+          "completedAt": null,
+          "updatedAt": "2026-11-01T02:43:48.393Z",
+          "type": "dynamic_tool"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17202,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-90551dead0704bd4",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": "fixture-0de321a1beee06f0",
+          "kind": "user_input_request",
+          "status": "waiting",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "providerTurnId": "fixture-d73ba6a24b946b43",
+          "startedAt": "2026-11-01T02:43:48.404Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17203,
+      "event": {
+        "type": "runtime-request.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-acc85c6cb1bcc4c0",
+          "nodeId": "fixture-90551dead0704bd4",
+          "providerTurnId": "fixture-d73ba6a24b946b43",
+          "kind": "user_input",
+          "status": "pending",
+          "createdAt": "2026-11-01T02:43:48.404Z",
+          "resolvedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17204,
+      "event": {
+        "type": "turn-item.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-76c5e60b26177316",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": "fixture-0de321a1beee06f0",
+          "nodeId": "fixture-90551dead0704bd4",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "providerTurnId": "fixture-d73ba6a24b946b43",
+          "ordinal": 1000003,
+          "status": "waiting",
+          "startedAt": "2026-11-01T02:43:48.404Z",
+          "completedAt": null,
+          "updatedAt": "2026-11-01T02:43:48.404Z",
+          "type": "user_input_request",
+          "requestId": "fixture-acc85c6cb1bcc4c0",
+          "questions": [
+            {
+              "id": "0",
+              "header": "Probe",
+              "question": "Continue the fixture probe?",
+              "options": [
+                {
+                  "label": "Continue",
+                  "description": "Continue"
+                },
+                {
+                  "label": "Pause",
+                  "description": "Pause"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17205,
+      "event": {
+        "type": "provider-turn.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-d73ba6a24b946b43",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "nodeId": "fixture-ea4145c25756db84",
+          "ordinal": 1,
+          "status": "running",
+          "startedAt": "2026-11-01T02:43:44.867Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17215,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-d28ad5132450d637",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8c269150d3eb78ed",
+          "kind": "user_input_request",
+          "status": "waiting",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": "fixture-cd4cf92d9f3e6659",
+          "startedAt": "2026-11-01T02:43:50.839Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17216,
+      "event": {
+        "type": "turn-item.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-9d70fa90248c2c50",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8c269150d3eb78ed",
+          "nodeId": "fixture-d28ad5132450d637",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": "fixture-cd4cf92d9f3e6659",
+          "ordinal": 1000002,
+          "status": "waiting",
+          "startedAt": "2026-11-01T02:43:50.839Z",
+          "completedAt": null,
+          "updatedAt": "2026-11-01T02:43:50.839Z",
+          "type": "user_input_request",
+          "requestId": "fixture-3a477b57b7750cd6",
+          "questions": [
+            {
+              "id": "0",
+              "header": "Probe",
+              "question": "Continue the fixture probe?",
+              "options": [
+                {
+                  "label": "Continue",
+                  "description": "Continue"
+                },
+                {
+                  "label": "Pause",
+                  "description": "Pause"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17217,
+      "event": {
+        "type": "runtime-request.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-3a477b57b7750cd6",
+          "nodeId": "fixture-d28ad5132450d637",
+          "providerTurnId": "fixture-cd4cf92d9f3e6659",
+          "kind": "user_input",
+          "status": "pending",
+          "createdAt": "2026-11-01T02:43:50.839Z",
+          "resolvedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17218,
+      "event": {
+        "type": "provider-turn.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-cd4cf92d9f3e6659",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "nodeId": "fixture-9fb0b237b3159fa3",
+          "ordinal": 1,
+          "status": "running",
+          "startedAt": "2026-11-01T02:43:44.944Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17270,
+      "event": {
+        "type": "runtime-request.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-acc85c6cb1bcc4c0",
+          "nodeId": "fixture-90551dead0704bd4",
+          "providerTurnId": "fixture-d73ba6a24b946b43",
+          "kind": "user_input",
+          "status": "resolved",
+          "createdAt": "2026-11-01T02:43:48.404Z",
+          "resolvedAt": "2026-11-01T02:44:19.662Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17271,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-90551dead0704bd4",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": "fixture-0de321a1beee06f0",
+          "kind": "user_input_request",
+          "status": "completed",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "providerTurnId": "fixture-d73ba6a24b946b43",
+          "startedAt": "2026-11-01T02:43:48.404Z",
+          "completedAt": "2026-11-01T02:44:19.662Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17272,
+      "event": {
+        "type": "turn-item.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-76c5e60b26177316",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": "fixture-0de321a1beee06f0",
+          "nodeId": "fixture-90551dead0704bd4",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "providerTurnId": "fixture-d73ba6a24b946b43",
+          "ordinal": 1000003,
+          "status": "completed",
+          "startedAt": "2026-11-01T02:43:48.404Z",
+          "completedAt": "2026-11-01T02:44:19.662Z",
+          "updatedAt": "2026-11-01T02:44:19.662Z",
+          "type": "user_input_request",
+          "requestId": "fixture-acc85c6cb1bcc4c0",
+          "questions": [
+            {
+              "id": "0",
+              "header": "Probe",
+              "question": "Continue the fixture probe?",
+              "options": [
+                {
+                  "label": "Continue",
+                  "description": "Continue"
+                },
+                {
+                  "label": "Pause",
+                  "description": "Pause"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17275,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-751fe38e4998d661",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": "fixture-0de321a1beee06f0",
+          "kind": "tool_call",
+          "status": "completed",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "providerTurnId": "fixture-d73ba6a24b946b43",
+          "startedAt": "2026-11-01T02:43:48.393Z",
+          "completedAt": "2026-11-01T02:44:19.684Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17276,
+      "event": {
+        "type": "turn-item.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-3a5b619f095d5b4d",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": "fixture-0de321a1beee06f0",
+          "nodeId": "fixture-751fe38e4998d661",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "providerTurnId": "fixture-d73ba6a24b946b43",
+          "ordinal": 1000002,
+          "status": "completed",
+          "startedAt": "2026-11-01T02:43:48.393Z",
+          "completedAt": "2026-11-01T02:44:19.684Z",
+          "updatedAt": "2026-11-01T02:44:19.684Z",
+          "type": "dynamic_tool"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17280,
+      "event": {
+        "type": "provider-turn.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-d73ba6a24b946b43",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "nodeId": "fixture-ea4145c25756db84",
+          "ordinal": 1,
+          "status": "running",
+          "startedAt": "2026-11-01T02:43:44.867Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17281,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-8e7cfec3a5438442",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": "fixture-0de321a1beee06f0",
+          "kind": "assistant_message",
+          "status": "completed",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "providerTurnId": "fixture-d73ba6a24b946b43",
+          "startedAt": "2026-11-01T02:44:20.898Z",
+          "completedAt": "2026-11-01T02:44:20.898Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17282,
+      "event": {
+        "type": "message.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-6cd996f5b44ba611",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": "fixture-0de321a1beee06f0",
+          "nodeId": "fixture-8e7cfec3a5438442",
+          "role": "assistant",
+          "text": "RESULT probe=fixture status=done",
+          "streaming": false,
+          "createdAt": "2026-11-01T02:44:20.898Z",
+          "updatedAt": "2026-11-01T02:44:20.898Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17283,
+      "event": {
+        "type": "turn-item.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-db6f172868717174",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": "fixture-0de321a1beee06f0",
+          "nodeId": "fixture-8e7cfec3a5438442",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "providerTurnId": "fixture-d73ba6a24b946b43",
+          "ordinal": 1000004,
+          "status": "completed",
+          "startedAt": "2026-11-01T02:44:20.898Z",
+          "completedAt": "2026-11-01T02:44:20.898Z",
+          "updatedAt": "2026-11-01T02:44:20.898Z",
+          "type": "assistant_message",
+          "messageId": "fixture-6cd996f5b44ba611",
+          "text": "RESULT probe=fixture status=done",
+          "streaming": false
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17284,
+      "event": {
+        "type": "provider-turn.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-d73ba6a24b946b43",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "nodeId": "fixture-ea4145c25756db84",
+          "ordinal": 1,
+          "status": "running",
+          "startedAt": "2026-11-01T02:43:44.867Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17285,
+      "event": {
+        "type": "provider-turn.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-d73ba6a24b946b43",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "nodeId": "fixture-ea4145c25756db84",
+          "ordinal": 1,
+          "status": "completed",
+          "startedAt": "2026-11-01T02:43:44.867Z",
+          "completedAt": "2026-11-01T02:44:20.907Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17286,
+      "event": {
+        "type": "provider-thread.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-a77f8c9f8456f240",
+          "status": "active",
+          "pendingBackgroundTasks": [],
+          "createdAt": "2026-11-01T02:43:44.754Z",
+          "updatedAt": "2026-11-01T02:44:20.907Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17287,
+      "event": {
+        "type": "run-attempt.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-ba045a4905528b9a",
+          "runId": "fixture-0de321a1beee06f0",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "providerTurnId": null,
+          "status": "completed",
+          "startedAt": "2026-11-01T02:43:44.812Z",
+          "completedAt": "2026-11-01T02:44:20.915Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17288,
+      "event": {
+        "type": "run.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-0de321a1beee06f0",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "ordinal": 1,
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "status": "waiting",
+          "startedAt": "2026-11-01T02:43:44.812Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17289,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-ea4145c25756db84",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": "fixture-0de321a1beee06f0",
+          "kind": "root_turn",
+          "status": "waiting",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "providerTurnId": null,
+          "startedAt": "2026-11-01T02:43:44.812Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17290,
+      "event": {
+        "type": "provider-thread.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-a77f8c9f8456f240",
+          "status": "idle",
+          "pendingBackgroundTasks": [],
+          "createdAt": "2026-11-01T02:43:44.754Z",
+          "updatedAt": "2026-11-01T02:44:20.915Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17293,
+      "event": {
+        "type": "checkpoint.captured",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-18aad9d0142966b8",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": null,
+          "nodeId": "fixture-ea4145c25756db84",
+          "status": "missing"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17294,
+      "event": {
+        "type": "checkpoint.captured",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-9842a155deb077ce",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": "fixture-0de321a1beee06f0",
+          "nodeId": "fixture-ea4145c25756db84",
+          "status": "missing"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17295,
+      "event": {
+        "type": "turn-item.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-0ff45e880ae55b5e",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": "fixture-0de321a1beee06f0",
+          "nodeId": "fixture-ea4145c25756db84",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "providerTurnId": null,
+          "ordinal": 1000005,
+          "status": "completed",
+          "startedAt": "2026-11-01T02:44:20.935Z",
+          "completedAt": "2026-11-01T02:44:20.935Z",
+          "updatedAt": "2026-11-01T02:44:20.935Z",
+          "type": "checkpoint"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17296,
+      "event": {
+        "type": "run.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-0de321a1beee06f0",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "ordinal": 1,
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "status": "completed",
+          "startedAt": "2026-11-01T02:43:44.812Z",
+          "completedAt": "2026-11-01T02:44:20.935Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17297,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-ea4145c25756db84",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": "fixture-0de321a1beee06f0",
+          "kind": "root_turn",
+          "status": "completed",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "providerTurnId": null,
+          "startedAt": "2026-11-01T02:43:44.812Z",
+          "completedAt": "2026-11-01T02:44:20.935Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17317,
+      "event": {
+        "type": "runtime-request.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-3a477b57b7750cd6",
+          "nodeId": "fixture-d28ad5132450d637",
+          "providerTurnId": "fixture-cd4cf92d9f3e6659",
+          "kind": "user_input",
+          "status": "resolved",
+          "createdAt": "2026-11-01T02:43:50.839Z",
+          "resolvedAt": "2026-11-01T02:44:43.598Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17318,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-d28ad5132450d637",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8c269150d3eb78ed",
+          "kind": "user_input_request",
+          "status": "completed",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": "fixture-cd4cf92d9f3e6659",
+          "startedAt": "2026-11-01T02:43:50.839Z",
+          "completedAt": "2026-11-01T02:44:43.598Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17319,
+      "event": {
+        "type": "turn-item.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-9d70fa90248c2c50",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8c269150d3eb78ed",
+          "nodeId": "fixture-d28ad5132450d637",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": "fixture-cd4cf92d9f3e6659",
+          "ordinal": 1000002,
+          "status": "completed",
+          "startedAt": "2026-11-01T02:43:50.839Z",
+          "completedAt": "2026-11-01T02:44:43.598Z",
+          "updatedAt": "2026-11-01T02:44:43.598Z",
+          "type": "user_input_request",
+          "requestId": "fixture-3a477b57b7750cd6",
+          "questions": [
+            {
+              "id": "0",
+              "header": "Probe",
+              "question": "Continue the fixture probe?",
+              "options": [
+                {
+                  "label": "Continue",
+                  "description": "Continue"
+                },
+                {
+                  "label": "Pause",
+                  "description": "Pause"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17320,
+      "event": {
+        "type": "message.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-fafd93127f29b6c5",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8c269150d3eb78ed",
+          "nodeId": "fixture-9fb0b237b3159fa3",
+          "role": "user",
+          "text": "Sanitised probe message.",
+          "streaming": false,
+          "createdAt": "2026-11-01T02:44:43.601Z",
+          "updatedAt": "2026-11-01T02:44:43.601Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17321,
+      "event": {
+        "type": "turn-item.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-aaf6f39762b7aed3",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8c269150d3eb78ed",
+          "nodeId": "fixture-9fb0b237b3159fa3",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": "fixture-cd4cf92d9f3e6659",
+          "ordinal": 1000003,
+          "status": "completed",
+          "startedAt": "2026-11-01T02:44:43.601Z",
+          "completedAt": "2026-11-01T02:44:43.601Z",
+          "updatedAt": "2026-11-01T02:44:43.601Z",
+          "type": "user_message",
+          "messageId": "fixture-fafd93127f29b6c5",
+          "text": "Sanitised probe message."
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17324,
+      "event": {
+        "type": "provider-turn.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-cd4cf92d9f3e6659",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "nodeId": "fixture-9fb0b237b3159fa3",
+          "ordinal": 1,
+          "status": "running",
+          "startedAt": "2026-11-01T02:43:44.944Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17327,
+      "event": {
+        "type": "run.created",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-8e3190704cc8ff3f",
+          "threadId": "fixture-cd04b756384c7c09",
+          "ordinal": 2,
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "status": "queued",
+          "startedAt": null,
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17328,
+      "event": {
+        "type": "run-attempt.created",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-6c76e0f3edf569c2",
+          "runId": "fixture-8e3190704cc8ff3f",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": null,
+          "status": "pending",
+          "startedAt": null,
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17329,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-fd40d0f4c3f93097",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8e3190704cc8ff3f",
+          "kind": "root_turn",
+          "status": "pending",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": null,
+          "startedAt": null,
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17330,
+      "event": {
+        "type": "checkpoint-scope.created",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-cbb2c54a3f129f58",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8e3190704cc8ff3f",
+          "nodeId": "fixture-fd40d0f4c3f93097",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "kind": "root_run",
+          "createdAt": "2026-11-01T02:44:43.633Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17331,
+      "event": {
+        "type": "message.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-7b2138fede903e0e",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8e3190704cc8ff3f",
+          "nodeId": "fixture-fd40d0f4c3f93097",
+          "role": "user",
+          "text": "Sanitised probe message.",
+          "streaming": false,
+          "createdAt": "2026-11-01T02:44:43.633Z",
+          "updatedAt": "2026-11-01T02:44:43.633Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17337,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-ae6bdd64b9ba10cc",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8c269150d3eb78ed",
+          "kind": "assistant_message",
+          "status": "completed",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": "fixture-cd4cf92d9f3e6659",
+          "startedAt": "2026-11-01T02:44:47.443Z",
+          "completedAt": "2026-11-01T02:44:47.683Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17338,
+      "event": {
+        "type": "message.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-dcbb82489fbcdf3b",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8c269150d3eb78ed",
+          "nodeId": "fixture-ae6bdd64b9ba10cc",
+          "role": "assistant",
+          "text": "Sanitised probe message.",
+          "streaming": false,
+          "createdAt": "2026-11-01T02:44:47.443Z",
+          "updatedAt": "2026-11-01T02:44:47.683Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17339,
+      "event": {
+        "type": "turn-item.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-d1f79c1975b85156",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8c269150d3eb78ed",
+          "nodeId": "fixture-ae6bdd64b9ba10cc",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": "fixture-cd4cf92d9f3e6659",
+          "ordinal": 1000004,
+          "status": "completed",
+          "startedAt": "2026-11-01T02:44:47.443Z",
+          "completedAt": "2026-11-01T02:44:47.683Z",
+          "updatedAt": "2026-11-01T02:44:47.683Z",
+          "type": "assistant_message",
+          "messageId": "fixture-dcbb82489fbcdf3b",
+          "text": "Sanitised probe message.",
+          "streaming": false
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17340,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-f58892129657a646",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8c269150d3eb78ed",
+          "kind": "assistant_message",
+          "status": "completed",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": "fixture-cd4cf92d9f3e6659",
+          "startedAt": "2026-11-01T02:44:47.683Z",
+          "completedAt": "2026-11-01T02:44:47.751Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17341,
+      "event": {
+        "type": "message.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-7413c068c534a112",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8c269150d3eb78ed",
+          "nodeId": "fixture-f58892129657a646",
+          "role": "assistant",
+          "text": "RESULT probe=fixture status=done",
+          "streaming": false,
+          "createdAt": "2026-11-01T02:44:47.683Z",
+          "updatedAt": "2026-11-01T02:44:47.751Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17342,
+      "event": {
+        "type": "turn-item.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-844b43b1c00f1302",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8c269150d3eb78ed",
+          "nodeId": "fixture-f58892129657a646",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": "fixture-cd4cf92d9f3e6659",
+          "ordinal": 1000005,
+          "status": "completed",
+          "startedAt": "2026-11-01T02:44:47.683Z",
+          "completedAt": "2026-11-01T02:44:47.751Z",
+          "updatedAt": "2026-11-01T02:44:47.751Z",
+          "type": "assistant_message",
+          "messageId": "fixture-7413c068c534a112",
+          "text": "RESULT probe=fixture status=done",
+          "streaming": false
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17343,
+      "event": {
+        "type": "provider-turn.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-cd4cf92d9f3e6659",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "nodeId": "fixture-9fb0b237b3159fa3",
+          "ordinal": 1,
+          "status": "running",
+          "startedAt": "2026-11-01T02:43:44.944Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17346,
+      "event": {
+        "type": "provider-turn.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-cd4cf92d9f3e6659",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "nodeId": "fixture-9fb0b237b3159fa3",
+          "ordinal": 1,
+          "status": "completed",
+          "startedAt": "2026-11-01T02:43:44.944Z",
+          "completedAt": "2026-11-01T02:44:47.000Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17347,
+      "event": {
+        "type": "run-attempt.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-7744eed55a06800d",
+          "runId": "fixture-8c269150d3eb78ed",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": null,
+          "status": "completed",
+          "startedAt": "2026-11-01T02:43:44.834Z",
+          "completedAt": "2026-11-01T02:44:47.775Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17348,
+      "event": {
+        "type": "run.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-8c269150d3eb78ed",
+          "threadId": "fixture-cd04b756384c7c09",
+          "ordinal": 1,
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "status": "waiting",
+          "startedAt": "2026-11-01T02:43:44.834Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17349,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-9fb0b237b3159fa3",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8c269150d3eb78ed",
+          "kind": "root_turn",
+          "status": "waiting",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": null,
+          "startedAt": "2026-11-01T02:43:44.834Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17350,
+      "event": {
+        "type": "provider-thread.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-615a52eb0bac0ae6",
+          "status": "idle",
+          "pendingBackgroundTasks": [],
+          "createdAt": "2026-11-01T02:43:44.735Z",
+          "updatedAt": "2026-11-01T02:44:47.775Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17351,
+      "event": {
+        "type": "checkpoint.captured",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-c5f465bce200567b",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": null,
+          "nodeId": "fixture-fd40d0f4c3f93097",
+          "status": "missing"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17352,
+      "event": {
+        "type": "checkpoint.captured",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-0aecdde2c24fbbdf",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8c269150d3eb78ed",
+          "nodeId": "fixture-9fb0b237b3159fa3",
+          "status": "missing"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17353,
+      "event": {
+        "type": "turn-item.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-99e319d572717460",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8c269150d3eb78ed",
+          "nodeId": "fixture-9fb0b237b3159fa3",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": null,
+          "ordinal": 1000006,
+          "status": "completed",
+          "startedAt": "2026-11-01T02:44:47.782Z",
+          "completedAt": "2026-11-01T02:44:47.782Z",
+          "updatedAt": "2026-11-01T02:44:47.782Z",
+          "type": "checkpoint"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17354,
+      "event": {
+        "type": "run.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-8c269150d3eb78ed",
+          "threadId": "fixture-cd04b756384c7c09",
+          "ordinal": 1,
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "status": "completed",
+          "startedAt": "2026-11-01T02:43:44.834Z",
+          "completedAt": "2026-11-01T02:44:47.782Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17355,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-9fb0b237b3159fa3",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8c269150d3eb78ed",
+          "kind": "root_turn",
+          "status": "completed",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": null,
+          "startedAt": "2026-11-01T02:43:44.834Z",
+          "completedAt": "2026-11-01T02:44:47.782Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17356,
+      "event": {
+        "type": "provider-thread.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-615a52eb0bac0ae6",
+          "status": "not_loaded",
+          "pendingBackgroundTasks": [],
+          "createdAt": "2026-11-01T02:43:44.735Z",
+          "updatedAt": "2026-11-01T02:44:47.798Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17357,
+      "event": {
+        "type": "turn-item.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-e39e1eba15ebaf21",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8e3190704cc8ff3f",
+          "nodeId": "fixture-fd40d0f4c3f93097",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": null,
+          "ordinal": 2000001,
+          "status": "completed",
+          "startedAt": "2026-11-01T02:44:47.798Z",
+          "completedAt": "2026-11-01T02:44:47.798Z",
+          "updatedAt": "2026-11-01T02:44:47.798Z",
+          "type": "user_message",
+          "messageId": "fixture-7b2138fede903e0e",
+          "text": "Sanitised probe message."
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17358,
+      "event": {
+        "type": "run.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-8e3190704cc8ff3f",
+          "threadId": "fixture-cd04b756384c7c09",
+          "ordinal": 2,
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "status": "starting",
+          "startedAt": null,
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17359,
+      "event": {
+        "type": "provider-session.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-174275dfe029140e",
+          "status": "ready",
+          "createdAt": "2026-11-01T02:11:25.858Z",
+          "updatedAt": "2026-11-01T02:11:25.858Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17360,
+      "event": {
+        "type": "provider-thread.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-615a52eb0bac0ae6",
+          "status": "active",
+          "pendingBackgroundTasks": [],
+          "createdAt": "2026-11-01T02:43:44.735Z",
+          "updatedAt": "2026-11-01T02:44:47.812Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17361,
+      "event": {
+        "type": "run.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-8e3190704cc8ff3f",
+          "threadId": "fixture-cd04b756384c7c09",
+          "ordinal": 2,
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "status": "running",
+          "startedAt": "2026-11-01T02:44:47.812Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17362,
+      "event": {
+        "type": "run-attempt.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-6c76e0f3edf569c2",
+          "runId": "fixture-8e3190704cc8ff3f",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": null,
+          "status": "running",
+          "startedAt": "2026-11-01T02:44:47.812Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17363,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-fd40d0f4c3f93097",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8e3190704cc8ff3f",
+          "kind": "root_turn",
+          "status": "running",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": null,
+          "startedAt": "2026-11-01T02:44:47.812Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17364,
+      "event": {
+        "type": "provider-turn.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-c8a9fb8e1beb6774",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "nodeId": "fixture-fd40d0f4c3f93097",
+          "ordinal": 2,
+          "status": "running",
+          "startedAt": "2026-11-01T02:44:47.834Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17365,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-692392a466426299",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8e3190704cc8ff3f",
+          "kind": "assistant_message",
+          "status": "completed",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": "fixture-c8a9fb8e1beb6774",
+          "startedAt": "2026-11-01T02:44:51.112Z",
+          "completedAt": "2026-11-01T02:44:51.179Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17366,
+      "event": {
+        "type": "message.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-a3c49775b23c3ebc",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8e3190704cc8ff3f",
+          "nodeId": "fixture-692392a466426299",
+          "role": "assistant",
+          "text": "Sanitised probe message.",
+          "streaming": false,
+          "createdAt": "2026-11-01T02:44:51.112Z",
+          "updatedAt": "2026-11-01T02:44:51.179Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17367,
+      "event": {
+        "type": "turn-item.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-82263539dbd90942",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8e3190704cc8ff3f",
+          "nodeId": "fixture-692392a466426299",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": "fixture-c8a9fb8e1beb6774",
+          "ordinal": 2000002,
+          "status": "completed",
+          "startedAt": "2026-11-01T02:44:51.112Z",
+          "completedAt": "2026-11-01T02:44:51.179Z",
+          "updatedAt": "2026-11-01T02:44:51.179Z",
+          "type": "assistant_message",
+          "messageId": "fixture-a3c49775b23c3ebc",
+          "text": "Sanitised probe message.",
+          "streaming": false
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17368,
+      "event": {
+        "type": "provider-turn.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-c8a9fb8e1beb6774",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "nodeId": "fixture-fd40d0f4c3f93097",
+          "ordinal": 2,
+          "status": "running",
+          "startedAt": "2026-11-01T02:44:47.834Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17369,
+      "event": {
+        "type": "provider-turn.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-c8a9fb8e1beb6774",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "nodeId": "fixture-fd40d0f4c3f93097",
+          "ordinal": 2,
+          "status": "completed",
+          "startedAt": "2026-11-01T02:44:47.834Z",
+          "completedAt": "2026-11-01T02:44:51.000Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17370,
+      "event": {
+        "type": "run-attempt.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-6c76e0f3edf569c2",
+          "runId": "fixture-8e3190704cc8ff3f",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": null,
+          "status": "completed",
+          "startedAt": "2026-11-01T02:44:47.812Z",
+          "completedAt": "2026-11-01T02:44:51.326Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17371,
+      "event": {
+        "type": "run.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-8e3190704cc8ff3f",
+          "threadId": "fixture-cd04b756384c7c09",
+          "ordinal": 2,
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "status": "waiting",
+          "startedAt": "2026-11-01T02:44:47.812Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17372,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-fd40d0f4c3f93097",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8e3190704cc8ff3f",
+          "kind": "root_turn",
+          "status": "waiting",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": null,
+          "startedAt": "2026-11-01T02:44:47.812Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17373,
+      "event": {
+        "type": "provider-thread.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-615a52eb0bac0ae6",
+          "status": "idle",
+          "pendingBackgroundTasks": [],
+          "createdAt": "2026-11-01T02:43:44.735Z",
+          "updatedAt": "2026-11-01T02:44:51.326Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17374,
+      "event": {
+        "type": "checkpoint.captured",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-c5f465bce200567b",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": null,
+          "nodeId": "fixture-fd40d0f4c3f93097",
+          "status": "missing"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17375,
+      "event": {
+        "type": "checkpoint.captured",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-0aecdde2c24fbbdf",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": null,
+          "nodeId": "fixture-fd40d0f4c3f93097",
+          "status": "missing"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17376,
+      "event": {
+        "type": "checkpoint.captured",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-dc9980bf4a4ad244",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8e3190704cc8ff3f",
+          "nodeId": "fixture-fd40d0f4c3f93097",
+          "status": "missing"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17377,
+      "event": {
+        "type": "turn-item.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-bfb7bb7ec44b706b",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8e3190704cc8ff3f",
+          "nodeId": "fixture-fd40d0f4c3f93097",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": null,
+          "ordinal": 2000003,
+          "status": "completed",
+          "startedAt": "2026-11-01T02:44:51.334Z",
+          "completedAt": "2026-11-01T02:44:51.334Z",
+          "updatedAt": "2026-11-01T02:44:51.334Z",
+          "type": "checkpoint"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17378,
+      "event": {
+        "type": "run.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-8e3190704cc8ff3f",
+          "threadId": "fixture-cd04b756384c7c09",
+          "ordinal": 2,
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "status": "completed",
+          "startedAt": "2026-11-01T02:44:47.812Z",
+          "completedAt": "2026-11-01T02:44:51.334Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17379,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-fd40d0f4c3f93097",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8e3190704cc8ff3f",
+          "kind": "root_turn",
+          "status": "completed",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": null,
+          "startedAt": "2026-11-01T02:44:47.812Z",
+          "completedAt": "2026-11-01T02:44:51.334Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17420,
+      "event": {
+        "type": "provider-thread.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-a77f8c9f8456f240",
+          "status": "idle",
+          "pendingBackgroundTasks": [],
+          "createdAt": "2026-11-01T02:43:44.754Z",
+          "updatedAt": "2026-11-01T02:46:03.496Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17421,
+      "event": {
+        "type": "run.created",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-f512fc4c360a405c",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "ordinal": 2,
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "status": "starting",
+          "startedAt": null,
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17422,
+      "event": {
+        "type": "run-attempt.created",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-2c52f0883140b779",
+          "runId": "fixture-f512fc4c360a405c",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "providerTurnId": null,
+          "status": "pending",
+          "startedAt": null,
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17423,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-7caae5c5ba933290",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": "fixture-f512fc4c360a405c",
+          "kind": "root_turn",
+          "status": "pending",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "providerTurnId": null,
+          "startedAt": null,
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17424,
+      "event": {
+        "type": "checkpoint-scope.created",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-24b8660c40ef62c0",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": "fixture-f512fc4c360a405c",
+          "nodeId": "fixture-7caae5c5ba933290",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "kind": "root_run",
+          "createdAt": "2026-11-01T02:46:03.496Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17425,
+      "event": {
+        "type": "message.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-9acb5d2a75b7fddd",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": "fixture-f512fc4c360a405c",
+          "nodeId": "fixture-7caae5c5ba933290",
+          "role": "user",
+          "text": "Sanitised probe message.",
+          "streaming": false,
+          "createdAt": "2026-11-01T02:46:03.496Z",
+          "updatedAt": "2026-11-01T02:46:03.496Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17426,
+      "event": {
+        "type": "turn-item.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-58b7de611a0d71cb",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": "fixture-f512fc4c360a405c",
+          "nodeId": "fixture-7caae5c5ba933290",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "providerTurnId": null,
+          "ordinal": 2000001,
+          "status": "completed",
+          "startedAt": "2026-11-01T02:46:03.496Z",
+          "completedAt": "2026-11-01T02:46:03.496Z",
+          "updatedAt": "2026-11-01T02:46:03.496Z",
+          "type": "user_message",
+          "messageId": "fixture-9acb5d2a75b7fddd",
+          "text": "Sanitised probe message."
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17430,
+      "event": {
+        "type": "provider-session.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-f2b2d6cfa1f6b484",
+          "status": "ready",
+          "createdAt": "2026-11-01T02:43:44.804Z",
+          "updatedAt": "2026-11-01T02:43:44.804Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17431,
+      "event": {
+        "type": "provider-thread.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-a77f8c9f8456f240",
+          "status": "active",
+          "pendingBackgroundTasks": [],
+          "createdAt": "2026-11-01T02:43:44.754Z",
+          "updatedAt": "2026-11-01T02:46:03.517Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17432,
+      "event": {
+        "type": "run.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-f512fc4c360a405c",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "ordinal": 2,
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "status": "running",
+          "startedAt": "2026-11-01T02:46:03.517Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17433,
+      "event": {
+        "type": "run-attempt.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-2c52f0883140b779",
+          "runId": "fixture-f512fc4c360a405c",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "providerTurnId": null,
+          "status": "running",
+          "startedAt": "2026-11-01T02:46:03.517Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17434,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-7caae5c5ba933290",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": "fixture-f512fc4c360a405c",
+          "kind": "root_turn",
+          "status": "running",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "providerTurnId": null,
+          "startedAt": "2026-11-01T02:46:03.517Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17435,
+      "event": {
+        "type": "provider-turn.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-dea2305340407cd9",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "nodeId": "fixture-7caae5c5ba933290",
+          "ordinal": 2,
+          "status": "running",
+          "startedAt": "2026-11-01T02:46:03.531Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17436,
+      "event": {
+        "type": "provider-thread.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-a77f8c9f8456f240",
+          "status": "active",
+          "pendingBackgroundTasks": [],
+          "createdAt": "2026-11-01T02:43:44.754Z",
+          "updatedAt": "2026-11-01T02:46:03.586Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17437,
+      "event": {
+        "type": "provider-turn.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-dea2305340407cd9",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "nodeId": "fixture-7caae5c5ba933290",
+          "ordinal": 2,
+          "status": "running",
+          "startedAt": "2026-11-01T02:46:03.531Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17438,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-ec6c99d7472d8bfc",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": "fixture-f512fc4c360a405c",
+          "kind": "assistant_message",
+          "status": "completed",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "providerTurnId": "fixture-dea2305340407cd9",
+          "startedAt": "2026-11-01T02:46:05.122Z",
+          "completedAt": "2026-11-01T02:46:05.122Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17439,
+      "event": {
+        "type": "message.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-547304d46d7e04b0",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": "fixture-f512fc4c360a405c",
+          "nodeId": "fixture-ec6c99d7472d8bfc",
+          "role": "assistant",
+          "text": "Sanitised probe message.",
+          "streaming": false,
+          "createdAt": "2026-11-01T02:46:05.122Z",
+          "updatedAt": "2026-11-01T02:46:05.122Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17440,
+      "event": {
+        "type": "turn-item.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-bb090a47b3635364",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": "fixture-f512fc4c360a405c",
+          "nodeId": "fixture-ec6c99d7472d8bfc",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "providerTurnId": "fixture-dea2305340407cd9",
+          "ordinal": 2000002,
+          "status": "completed",
+          "startedAt": "2026-11-01T02:46:05.122Z",
+          "completedAt": "2026-11-01T02:46:05.122Z",
+          "updatedAt": "2026-11-01T02:46:05.122Z",
+          "type": "assistant_message",
+          "messageId": "fixture-547304d46d7e04b0",
+          "text": "Sanitised probe message.",
+          "streaming": false
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17441,
+      "event": {
+        "type": "provider-turn.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-dea2305340407cd9",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "nodeId": "fixture-7caae5c5ba933290",
+          "ordinal": 2,
+          "status": "running",
+          "startedAt": "2026-11-01T02:46:03.531Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17442,
+      "event": {
+        "type": "provider-turn.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-dea2305340407cd9",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "nodeId": "fixture-7caae5c5ba933290",
+          "ordinal": 2,
+          "status": "completed",
+          "startedAt": "2026-11-01T02:46:03.531Z",
+          "completedAt": "2026-11-01T02:46:05.142Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17443,
+      "event": {
+        "type": "provider-thread.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-a77f8c9f8456f240",
+          "status": "active",
+          "pendingBackgroundTasks": [],
+          "createdAt": "2026-11-01T02:43:44.754Z",
+          "updatedAt": "2026-11-01T02:46:05.142Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17444,
+      "event": {
+        "type": "run-attempt.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-2c52f0883140b779",
+          "runId": "fixture-f512fc4c360a405c",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "providerTurnId": null,
+          "status": "completed",
+          "startedAt": "2026-11-01T02:46:03.517Z",
+          "completedAt": "2026-11-01T02:46:05.147Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17445,
+      "event": {
+        "type": "run.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-f512fc4c360a405c",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "ordinal": 2,
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "status": "waiting",
+          "startedAt": "2026-11-01T02:46:03.517Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17446,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-7caae5c5ba933290",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": "fixture-f512fc4c360a405c",
+          "kind": "root_turn",
+          "status": "waiting",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "providerTurnId": null,
+          "startedAt": "2026-11-01T02:46:03.517Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17447,
+      "event": {
+        "type": "provider-thread.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-a77f8c9f8456f240",
+          "status": "idle",
+          "pendingBackgroundTasks": [],
+          "createdAt": "2026-11-01T02:43:44.754Z",
+          "updatedAt": "2026-11-01T02:46:05.147Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17448,
+      "event": {
+        "type": "checkpoint.captured",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-18aad9d0142966b8",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": null,
+          "nodeId": "fixture-7caae5c5ba933290",
+          "status": "missing"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17449,
+      "event": {
+        "type": "checkpoint.captured",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-9842a155deb077ce",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": null,
+          "nodeId": "fixture-7caae5c5ba933290",
+          "status": "missing"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17450,
+      "event": {
+        "type": "checkpoint.captured",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-12ed324027f10f8f",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": "fixture-f512fc4c360a405c",
+          "nodeId": "fixture-7caae5c5ba933290",
+          "status": "missing"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17451,
+      "event": {
+        "type": "turn-item.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-bda237430a8ce31c",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": "fixture-f512fc4c360a405c",
+          "nodeId": "fixture-7caae5c5ba933290",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "providerTurnId": null,
+          "ordinal": 2000003,
+          "status": "completed",
+          "startedAt": "2026-11-01T02:46:05.156Z",
+          "completedAt": "2026-11-01T02:46:05.156Z",
+          "updatedAt": "2026-11-01T02:46:05.156Z",
+          "type": "checkpoint"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17452,
+      "event": {
+        "type": "run.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-f512fc4c360a405c",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "ordinal": 2,
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "status": "completed",
+          "startedAt": "2026-11-01T02:46:03.517Z",
+          "completedAt": "2026-11-01T02:46:05.156Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-3fdf9198df91ef6c",
+    "frame": {
+      "kind": "event",
+      "sequence": 17453,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-3fdf9198df91ef6c",
+        "payload": {
+          "id": "fixture-7caae5c5ba933290",
+          "threadId": "fixture-3fdf9198df91ef6c",
+          "runId": "fixture-f512fc4c360a405c",
+          "kind": "root_turn",
+          "status": "completed",
+          "providerThreadId": "fixture-a77f8c9f8456f240",
+          "providerTurnId": null,
+          "startedAt": "2026-11-01T02:46:03.517Z",
+          "completedAt": "2026-11-01T02:46:05.156Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17583,
+      "event": {
+        "type": "provider-thread.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-615a52eb0bac0ae6",
+          "status": "idle",
+          "pendingBackgroundTasks": [],
+          "createdAt": "2026-11-01T02:43:44.735Z",
+          "updatedAt": "2026-11-01T02:50:29.025Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17584,
+      "event": {
+        "type": "run.created",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-8e2e1b5c2579cacf",
+          "threadId": "fixture-cd04b756384c7c09",
+          "ordinal": 3,
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "status": "starting",
+          "startedAt": null,
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17585,
+      "event": {
+        "type": "run-attempt.created",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-b98cff89c9e002fc",
+          "runId": "fixture-8e2e1b5c2579cacf",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": null,
+          "status": "pending",
+          "startedAt": null,
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17586,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-2abde7f4c3ceb257",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8e2e1b5c2579cacf",
+          "kind": "root_turn",
+          "status": "pending",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": null,
+          "startedAt": null,
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17587,
+      "event": {
+        "type": "checkpoint-scope.created",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-cbb2c54a3f129f58",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8e2e1b5c2579cacf",
+          "nodeId": "fixture-2abde7f4c3ceb257",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "kind": "root_run",
+          "createdAt": "2026-11-01T02:50:29.025Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17588,
+      "event": {
+        "type": "message.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-8015377467888dac",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8e2e1b5c2579cacf",
+          "nodeId": "fixture-2abde7f4c3ceb257",
+          "role": "user",
+          "text": "Sanitised probe message.",
+          "streaming": false,
+          "createdAt": "2026-11-01T02:50:29.025Z",
+          "updatedAt": "2026-11-01T02:50:29.025Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17589,
+      "event": {
+        "type": "turn-item.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-a7c244a41293c7f9",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8e2e1b5c2579cacf",
+          "nodeId": "fixture-2abde7f4c3ceb257",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": null,
+          "ordinal": 3000001,
+          "status": "completed",
+          "startedAt": "2026-11-01T02:50:29.025Z",
+          "completedAt": "2026-11-01T02:50:29.025Z",
+          "updatedAt": "2026-11-01T02:50:29.025Z",
+          "type": "user_message",
+          "messageId": "fixture-8015377467888dac",
+          "text": "Sanitised probe message."
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17592,
+      "event": {
+        "type": "provider-session.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-174275dfe029140e",
+          "status": "ready",
+          "createdAt": "2026-11-01T02:11:25.858Z",
+          "updatedAt": "2026-11-01T02:11:25.858Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17593,
+      "event": {
+        "type": "provider-thread.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-615a52eb0bac0ae6",
+          "status": "active",
+          "pendingBackgroundTasks": [],
+          "createdAt": "2026-11-01T02:43:44.735Z",
+          "updatedAt": "2026-11-01T02:50:29.046Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17594,
+      "event": {
+        "type": "run.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-8e2e1b5c2579cacf",
+          "threadId": "fixture-cd04b756384c7c09",
+          "ordinal": 3,
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "status": "running",
+          "startedAt": "2026-11-01T02:50:29.046Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17595,
+      "event": {
+        "type": "run-attempt.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-b98cff89c9e002fc",
+          "runId": "fixture-8e2e1b5c2579cacf",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": null,
+          "status": "running",
+          "startedAt": "2026-11-01T02:50:29.046Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17596,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-2abde7f4c3ceb257",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8e2e1b5c2579cacf",
+          "kind": "root_turn",
+          "status": "running",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": null,
+          "startedAt": "2026-11-01T02:50:29.046Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17597,
+      "event": {
+        "type": "provider-turn.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-418153f396691f5e",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "nodeId": "fixture-2abde7f4c3ceb257",
+          "ordinal": 3,
+          "status": "running",
+          "startedAt": "2026-11-01T02:50:29.068Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17603,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-bf43befc4e965683",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8e2e1b5c2579cacf",
+          "kind": "user_input_request",
+          "status": "waiting",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": "fixture-418153f396691f5e",
+          "startedAt": "2026-11-01T02:50:30.892Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17604,
+      "event": {
+        "type": "turn-item.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-be579c07f425e3e2",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8e2e1b5c2579cacf",
+          "nodeId": "fixture-bf43befc4e965683",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": "fixture-418153f396691f5e",
+          "ordinal": 3000002,
+          "status": "waiting",
+          "startedAt": "2026-11-01T02:50:30.892Z",
+          "completedAt": null,
+          "updatedAt": "2026-11-01T02:50:30.892Z",
+          "type": "user_input_request",
+          "requestId": "fixture-f48dc9c094b5c256",
+          "questions": [
+            {
+              "id": "0",
+              "header": "Probe",
+              "question": "Continue the fixture probe?",
+              "options": [
+                {
+                  "label": "Continue",
+                  "description": "Continue"
+                },
+                {
+                  "label": "Pause",
+                  "description": "Pause"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17605,
+      "event": {
+        "type": "runtime-request.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-f48dc9c094b5c256",
+          "nodeId": "fixture-bf43befc4e965683",
+          "providerTurnId": "fixture-418153f396691f5e",
+          "kind": "user_input",
+          "status": "pending",
+          "createdAt": "2026-11-01T02:50:30.892Z",
+          "resolvedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17606,
+      "event": {
+        "type": "provider-turn.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-418153f396691f5e",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "nodeId": "fixture-2abde7f4c3ceb257",
+          "ordinal": 3,
+          "status": "running",
+          "startedAt": "2026-11-01T02:50:29.068Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17621,
+      "event": {
+        "type": "thread.visited",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-cd04b756384c7c09",
+          "createdAt": "2026-11-01T02:41:12.080Z",
+          "updatedAt": "2026-11-01T02:50:30.911Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17643,
+      "event": {
+        "type": "provider-turn.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-418153f396691f5e",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "nodeId": "fixture-2abde7f4c3ceb257",
+          "ordinal": 3,
+          "status": "running",
+          "startedAt": "2026-11-01T02:50:29.068Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17660,
+      "event": {
+        "type": "runtime-request.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-f48dc9c094b5c256",
+          "nodeId": "fixture-bf43befc4e965683",
+          "providerTurnId": "fixture-418153f396691f5e",
+          "kind": "user_input",
+          "status": "resolved",
+          "createdAt": "2026-11-01T02:50:30.892Z",
+          "resolvedAt": "2026-11-01T02:51:44.618Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17661,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-bf43befc4e965683",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8e2e1b5c2579cacf",
+          "kind": "user_input_request",
+          "status": "completed",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": "fixture-418153f396691f5e",
+          "startedAt": "2026-11-01T02:50:30.892Z",
+          "completedAt": "2026-11-01T02:51:44.618Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17662,
+      "event": {
+        "type": "turn-item.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-be579c07f425e3e2",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8e2e1b5c2579cacf",
+          "nodeId": "fixture-bf43befc4e965683",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": "fixture-418153f396691f5e",
+          "ordinal": 3000002,
+          "status": "completed",
+          "startedAt": "2026-11-01T02:50:30.892Z",
+          "completedAt": "2026-11-01T02:51:44.618Z",
+          "updatedAt": "2026-11-01T02:51:44.618Z",
+          "type": "user_input_request",
+          "requestId": "fixture-f48dc9c094b5c256",
+          "questions": [
+            {
+              "id": "0",
+              "header": "Probe",
+              "question": "Continue the fixture probe?",
+              "options": [
+                {
+                  "label": "Continue",
+                  "description": "Continue"
+                },
+                {
+                  "label": "Pause",
+                  "description": "Pause"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17663,
+      "event": {
+        "type": "message.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-00b349fd672969bd",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8e2e1b5c2579cacf",
+          "nodeId": "fixture-2abde7f4c3ceb257",
+          "role": "user",
+          "text": "Sanitised probe message.",
+          "streaming": false,
+          "createdAt": "2026-11-01T02:51:44.620Z",
+          "updatedAt": "2026-11-01T02:51:44.620Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17664,
+      "event": {
+        "type": "turn-item.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-f8d131c731876cb3",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8e2e1b5c2579cacf",
+          "nodeId": "fixture-2abde7f4c3ceb257",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": "fixture-418153f396691f5e",
+          "ordinal": 3000003,
+          "status": "completed",
+          "startedAt": "2026-11-01T02:51:44.620Z",
+          "completedAt": "2026-11-01T02:51:44.620Z",
+          "updatedAt": "2026-11-01T02:51:44.620Z",
+          "type": "user_message",
+          "messageId": "fixture-00b349fd672969bd",
+          "text": "Sanitised probe message."
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17670,
+      "event": {
+        "type": "provider-turn.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-418153f396691f5e",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "nodeId": "fixture-2abde7f4c3ceb257",
+          "ordinal": 3,
+          "status": "running",
+          "startedAt": "2026-11-01T02:50:29.068Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17671,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-3d2012bb1c620c3f",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8e2e1b5c2579cacf",
+          "kind": "assistant_message",
+          "status": "completed",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": "fixture-418153f396691f5e",
+          "startedAt": "2026-11-01T02:51:45.901Z",
+          "completedAt": "2026-11-01T02:51:45.924Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17672,
+      "event": {
+        "type": "message.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-c1f2ede9c63a5179",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8e2e1b5c2579cacf",
+          "nodeId": "fixture-3d2012bb1c620c3f",
+          "role": "assistant",
+          "text": "RESULT probe=fixture status=done",
+          "streaming": false,
+          "createdAt": "2026-11-01T02:51:45.901Z",
+          "updatedAt": "2026-11-01T02:51:45.924Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17673,
+      "event": {
+        "type": "turn-item.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-393d3696eaeefd1d",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8e2e1b5c2579cacf",
+          "nodeId": "fixture-3d2012bb1c620c3f",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": "fixture-418153f396691f5e",
+          "ordinal": 3000004,
+          "status": "completed",
+          "startedAt": "2026-11-01T02:51:45.901Z",
+          "completedAt": "2026-11-01T02:51:45.924Z",
+          "updatedAt": "2026-11-01T02:51:45.924Z",
+          "type": "assistant_message",
+          "messageId": "fixture-c1f2ede9c63a5179",
+          "text": "RESULT probe=fixture status=done",
+          "streaming": false
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17674,
+      "event": {
+        "type": "provider-turn.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-418153f396691f5e",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "nodeId": "fixture-2abde7f4c3ceb257",
+          "ordinal": 3,
+          "status": "running",
+          "startedAt": "2026-11-01T02:50:29.068Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17675,
+      "event": {
+        "type": "provider-turn.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-418153f396691f5e",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "nodeId": "fixture-2abde7f4c3ceb257",
+          "ordinal": 3,
+          "status": "completed",
+          "startedAt": "2026-11-01T02:50:29.068Z",
+          "completedAt": "2026-11-01T02:51:45.000Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17676,
+      "event": {
+        "type": "run-attempt.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-b98cff89c9e002fc",
+          "runId": "fixture-8e2e1b5c2579cacf",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": null,
+          "status": "completed",
+          "startedAt": "2026-11-01T02:50:29.046Z",
+          "completedAt": "2026-11-01T02:51:45.949Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17677,
+      "event": {
+        "type": "run.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-8e2e1b5c2579cacf",
+          "threadId": "fixture-cd04b756384c7c09",
+          "ordinal": 3,
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "status": "waiting",
+          "startedAt": "2026-11-01T02:50:29.046Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17678,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-2abde7f4c3ceb257",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8e2e1b5c2579cacf",
+          "kind": "root_turn",
+          "status": "waiting",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": null,
+          "startedAt": "2026-11-01T02:50:29.046Z",
+          "completedAt": null
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17679,
+      "event": {
+        "type": "provider-thread.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-615a52eb0bac0ae6",
+          "status": "idle",
+          "pendingBackgroundTasks": [],
+          "createdAt": "2026-11-01T02:43:44.735Z",
+          "updatedAt": "2026-11-01T02:51:45.949Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17682,
+      "event": {
+        "type": "checkpoint.captured",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-c5f465bce200567b",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": null,
+          "nodeId": "fixture-2abde7f4c3ceb257",
+          "status": "missing"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17683,
+      "event": {
+        "type": "checkpoint.captured",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-dc9980bf4a4ad244",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": null,
+          "nodeId": "fixture-2abde7f4c3ceb257",
+          "status": "missing"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17684,
+      "event": {
+        "type": "checkpoint.captured",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-d4dbc58b74b40364",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8e2e1b5c2579cacf",
+          "nodeId": "fixture-2abde7f4c3ceb257",
+          "status": "missing"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17685,
+      "event": {
+        "type": "turn-item.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-54b127d73920a575",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8e2e1b5c2579cacf",
+          "nodeId": "fixture-2abde7f4c3ceb257",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": null,
+          "ordinal": 3000005,
+          "status": "completed",
+          "startedAt": "2026-11-01T02:51:45.966Z",
+          "completedAt": "2026-11-01T02:51:45.966Z",
+          "updatedAt": "2026-11-01T02:51:45.966Z",
+          "type": "checkpoint"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17686,
+      "event": {
+        "type": "run.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-8e2e1b5c2579cacf",
+          "threadId": "fixture-cd04b756384c7c09",
+          "ordinal": 3,
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "status": "completed",
+          "startedAt": "2026-11-01T02:50:29.046Z",
+          "completedAt": "2026-11-01T02:51:45.966Z"
+        }
+      }
+    }
+  },
+  {
+    "id": "fixture-cd04b756384c7c09",
+    "frame": {
+      "kind": "event",
+      "sequence": 17687,
+      "event": {
+        "type": "node.updated",
+        "threadId": "fixture-cd04b756384c7c09",
+        "payload": {
+          "id": "fixture-2abde7f4c3ceb257",
+          "threadId": "fixture-cd04b756384c7c09",
+          "runId": "fixture-8e2e1b5c2579cacf",
+          "kind": "root_turn",
+          "status": "completed",
+          "providerThreadId": "fixture-615a52eb0bac0ae6",
+          "providerTurnId": null,
+          "startedAt": "2026-11-01T02:50:29.046Z",
+          "completedAt": "2026-11-01T02:51:45.966Z"
+        }
+      }
+    }
+  }
+]

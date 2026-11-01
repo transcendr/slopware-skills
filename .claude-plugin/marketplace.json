@@ -36,6 +36,12 @@
       "description": "Let Claude Code create, message, steer, wait on, and read Codex desktop-app threads.",
       "source": "./plugins/codex-app-link",
       "category": "productivity"
+    },
+    {
+      "name": "t3-app-link",
+      "description": "Read-only monitoring of Codex and Claude threads in T3.",
+      "source": "./plugins/t3-app-link",
+      "category": "productivity"
     }
   ]
 }

@@ -1,0 +1,34 @@
+{
+  "name": "t3-app-link",
+  "version": "0.1.0",
+  "description": "Monitor Codex and Claude threads in T3 with a read-only CLI; dispatch through native T3 tools.",
+  "author": {
+    "name": "Slopware Engineer",
+    "url": "https://x.com/aienginerd"
+  },
+  "homepage": "https://github.com/transcendr/slopware-skills",
+  "repository": "https://github.com/transcendr/slopware-skills",
+  "license": "CC-BY-4.0",
+  "keywords": [
+    "t3",
+    "codex",
+    "claude",
+    "orchestration",
+    "threads"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "T3 App Link",
+    "shortDescription": "Read-only monitoring for T3 threads",
+    "longDescription": "Monitor Codex and Claude threads in T3 with a read-only CLI; dispatch through native T3 tools.",
+    "developerName": "Slopware Engineer",
+    "category": "Productivity",
+    "capabilities": [
+      "Instructions"
+    ],
+    "websiteURL": "https://github.com/transcendr/slopware-skills",
+    "defaultPrompt": [
+      "Use T3 App Link to monitor my T3 work threads."
+    ]
+  }
+}

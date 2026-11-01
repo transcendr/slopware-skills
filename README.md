@@ -18,6 +18,7 @@ Portable, individually installable skills and plugins for AI coding agents by
 | [CODER Loop](plugins/coder-loop/README.md) | Codex skill and plugin | Optimize Codex development through bounded work, fresh evaluation, and evidence-scoped remediation. |
 | [Codex Voice Optimizer](plugins/codex-voice-optimizer/README.md) | Codex skill and plugin | Optimize Codex Voice for hands-free orchestration across owning work threads. |
 | [Codex App Link](plugins/codex-app-link/README.md) | Claude Code skill and plugin | Let Claude Code create, message, wait on, and read Codex desktop-app threads. |
+| [T3 App Link](plugins/t3-app-link/README.md) | Skill and plugin | Monitor Codex and Claude threads in T3; dispatch with native T3 tools. |
 
 Each package has its own documentation and remains independently installable.
 

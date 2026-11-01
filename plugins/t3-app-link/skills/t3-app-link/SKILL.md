@@ -1,0 +1,110 @@
+---
+name: t3-app-link
+description: Monitor Codex and Claude work threads inside T3 through a read-only CLI, with formal questions, RESULT detection, settling, stalls and resumable multi-thread watches. Use when managing T3 threads; use native T3 tools to dispatch or answer them.
+---
+
+# T3 App Link
+
+Coming from codex-app-link:
+
+| Existing command | In T3 |
+| --- | --- |
+| `send`, `send --queue`, `send --steer` | `t3_thread_send`, mode `auto`, `queue`, `steer` |
+| `new`, `queue`, `interrupt`, `access` | `t3_thread_launch`, `t3_queue`, `t3_thread_interrupt`, `t3_thread_configure` |
+| Answer a formal question | `t3_pending_request`, action `respond` |
+| `status`, `read`, `list`, `wait`, `questions`, `result`, `track`, `rules`, `version` | Same verbs in `scripts/t3-thread.mjs` |
+| `watch`, progress script | `watch`, `watch --progress` |
+
+The CLI only monitors. Its dispatch verbs print a native tool call and exit 2.
+No token with write access is needed. T3 is the only thread-data source.
+
+Resolve `TT` from this installed skill's directory each session:
+
+```bash
+TT=<skill-base-dir>/scripts/t3-thread.mjs
+node "$TT" setup
+node "$TT" version
+```
+
+Setup reuses the private read-only token, or issues one through T3's bundled CLI.
+It reads the current origin from T3's runtime file. Requirements and installation
+are in the plugin README; commands and exits are in
+[references/operational.md](references/operational.md).
+
+## Dispatch and track
+
+Use `t3_thread_launch` for a new thread, or `t3_thread_send` for an authorized
+existing thread. New work for a busy thread uses mode `queue`; mode `steer` supplies
+answers or corrections for its current work. Formal questions use
+`t3_pending_request respond`, not an inferred shared reply. Approvals need Bryan
+in T3; the monitor cannot approve them.
+
+Give the worker its outcome, evidence, authority and any authorized timebox.
+Ask it to finish with `RESULT key=value …`. Mention it using the native tool's
+returned `link`.
+
+```bash
+node "$TT" track add <id> --name worker --role implementation
+node "$TT" watch --tracked --expect '^RESULT ' --cursor /private/path/watch.json
+```
+
+The registry is `<git-root>/.t3-app-link.json`, or `--registry FILE` /
+`T3_APP_LINK_REGISTRY`. All thread arguments accept its names. It is separate
+from `.codex-app-link.json`; thread IDs do not cross systems. `environmentId`
+can bind the registry or individual entries to the expected T3 environment.
+The CLI refuses self-tracking when `T3CODE_THREAD_ID`, `T3_THREAD_ID` or
+`T3_APP_LINK_SELF` identifies the lead; set `T3_APP_LINK_SELF` if the host does not
+supply its T3 thread ID.
+
+## Wake and re-arm
+
+Claude leads run one background `watch`, with `--progress` when progress notes
+matter, and act on its output. When the host provides it, `t3_background_wait`
+keeps the lead marked Working during bounded background work.
+
+Codex leads run this as a background shell command:
+
+```bash
+node "$TT" watch --tracked --expect '^RESULT ' --cursor /private/path/watch.json --until-event
+```
+
+Codex wakes on command exit. `--until-event` prints the first QUESTION, APPROVAL,
+RESULT, PAUSED or STALLED and exits. Read it, act, then run the same command again.
+Keep one watcher per cursor. The cursor retains unprinted events and reported
+identities, so a re-arm continues without repeating reported events. Do not delete
+or replace it during an assignment. Keep it private and out of Git.
+
+| Event | Required response |
+| --- | --- |
+| QUESTION | Read `questions <name>`, then answer the request through `t3_pending_request respond`. |
+| APPROVAL | Ask Bryan to review the permission request in T3. |
+| RESULT | Read the full reply and parsed `result`, then verify the claims. A RESULT may arrive mid-turn. |
+| PAUSED | The settle window ended without the expected final reply. Read it and resume unfinished work with `t3_thread_send`. |
+| STALLED | Inspect T3 activity before acting. Long reasoning or commands may be silent. |
+| MISSING / FOUND | The thread disappeared, disconnected or returned. Confirm current T3 state before dispatching. |
+| UNPARSED | The stream contains an unknown event. Read the thread; monitoring may be incomplete. |
+| STARTED / COMPACTED / MAINTENANCE / DONE | Context about a run, compaction, structured maintenance or settled idle thread. |
+
+`wait <name>` returns only after the thread stays idle for 45 seconds by default;
+chained turns reset the settle window. `--until-question` also returns on a formal
+question. With `--expect`, a final reply that does not match is `paused`, exit 6.
+Defaults match codex-app-link: settle 45 seconds, stall 2700 seconds, timeout
+10800 seconds. A stall means no detailed thread event, not proof of a dead worker.
+
+## Authority and evidence
+
+Message only threads you created or the user explicitly authorized. Monitoring
+never grants permission to dispatch, merge, publish or deploy. Do not run another
+provider CLI against a T3-owned thread. Use T3 links and tools.
+
+Small stream gaps replay by sequence. Large gaps receive a bounded snapshot;
+the monitor pages older history back to its cursor. T3 coalesces updates, so
+monitoring reports changes in recoverable state rather than promising every
+transient transition. `MAINTENANCE` uses the structured message field and requires
+a patched T3 server. Never infer maintenance from configurable prose patterns.
+
+For project-level management, read the adapted references as needed:
+
+- [references/strategic.md](references/strategic.md): ownership, discovery and source authority.
+- [references/operational.md](references/operational.md): commands, dispatch, waiting and verification.
+- [references/companions.md](references/companions.md): optional MSW, MSL and Timebox use.
