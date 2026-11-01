@@ -77,8 +77,14 @@ be non-streaming. Viewing a thread does not reset its stall clock.
 The cursor contains reported identities and queued events as well as sequences.
 An until-event exit retains later events for the next invocation. Resume with
 the same roster, options and expectation. Small gaps use sequence replay; a
-snapshot fallback pages the history endpoint until the saved timeline position
-or a held item is reached. History failures leave the stream sequence unadvanced
+snapshot fallback walks rows from newest to oldest, paging until it reaches the
+first item already held in the saved records. Only newer rows are reported; older
+rows on the boundary page remain silent. Page positions are local to each page
+and are never used as offsets. If no held item is found, recovery continues to
+the start of available history and prints HISTORY_START. Keep the cursor records
+intact so their item identities remain available across re-arms.
+
+History failures leave the stream sequence unadvanced
 and fail the command rather than silently skipping history.
 
 Unknown stream events print UNPARSED. Protocol, authorization and history errors

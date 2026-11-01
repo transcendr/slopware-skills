@@ -236,11 +236,12 @@ const ordered = records => Object.values(records ?? {}).sort((a, b) =>
 
 export function freshState(id) {
   return { id, sequence: null, records: {}, reported: {}, pending: [], idleSince: null,
-    lastEventAt: Date.now(), position: null, initialized: false, missing: false };
+    lastEventAt: Date.now(), initialized: false, missing: false };
 }
 
 export class Reducer {
   constructor(state, { expect, progress = false } = {}) {
+    delete state.position; // Discard the obsolete page-relative offset in older cursors.
     this.state = state; this.expect = expect == null ? null : new RegExp(expect, 'm'); this.progress = progress;
   }
   emit(event, key, data = {}) {
@@ -352,7 +353,6 @@ export class Reducer {
     if (item.runId) this.emit('STARTED', `run:${item.runId}`, { turnId: item.runId, recovered: true });
     if (item.type === 'assistant_message') this.store('messages', { ...item, id: item.messageId ?? item.id, role: 'assistant' });
     else this.store('turnItems', item);
-    if (Number.isSafeInteger(row.position)) this.state.position = Math.max(this.state.position ?? -1, row.position);
   }
   active() {
     const s = this.state;
@@ -383,23 +383,47 @@ export class Reducer {
   }
 }
 
-// History cursors are opaque. Timeline positions provide a durable boundary across snapshots.
-export async function recoverHistory(rpc, reducer, frame, boundary = reducer.state.position) {
-  let cursor = frame.historyCursor;
-  const pages = [], visited = new Set();
+// History pages are chronological windows with page-relative positions. Only item identities resume them.
+export async function recoverHistory(rpc, reducer, frame) {
+  let cursor = frame.historyCursor, found = false;
+  const newer = [], visited = new Set();
   const held = new Set([...Object.keys(reducer.state.records.turnItems ?? {}), ...Object.keys(reducer.state.records.messages ?? {})]);
-  while (cursor && frame.hasMoreHistory !== false) {
+  const scan = rows => {
+    for (let i = rows.length - 1; i >= 0; i--) {
+      const item = rows[i].item ?? rows[i];
+      if (held.has(item.id) || held.has(item.messageId)) return i;
+      newer.push(rows[i]);
+    }
+    return -1;
+  };
+  const snapshotRows = frame.projection?.visibleTurnItems ?? [];
+  const snapshotBoundary = scan(snapshotRows);
+  found = snapshotBoundary >= 0;
+  while (!found && cursor && frame.hasMoreHistory !== false) {
     if (visited.has(cursor)) throw fail('t3-history-cursor-loop');
     visited.add(cursor);
     const page = await rpc.history(reducer.state.id, cursor);
     if (!Array.isArray(page.items)) throw fail('t3-invalid-history');
-    pages.push(...page.items.filter(row => boundary == null || row.position > boundary));
-    if (page.items.some(row => (boundary != null && row.position <= boundary) || held.has(row.item?.id) || held.has(row.item?.messageId)) || !page.hasMoreHistory) break;
+    found = scan(page.items) >= 0;
+    if (found || !page.hasMoreHistory) break;
     if (!page.nextCursor) throw fail('t3-history-incomplete');
     cursor = page.nextCursor;
   }
-  pages.sort((a, b) => a.position - b.position);
-  for (const row of pages) reducer.historyItem(row);
+  if (found && snapshotBoundary >= 0) {
+    // Hydration below must not report pre-baseline rows from the same snapshot window.
+    reducer.baselining = true;
+    try {
+      const messages = new Map((frame.projection.messages ?? []).map(message => [message.id, message]));
+      for (const row of snapshotRows.slice(0, snapshotBoundary)) {
+        reducer.historyItem(row);
+        const message = messages.get(row.item?.messageId);
+        if (message) reducer.store('messages', message);
+      }
+    } finally { reducer.baselining = false; }
+  }
+  if (!found) reducer.emit('HISTORY_START', `history-start:${frame.snapshotSequence ?? reducer.state.sequence}`,
+    { message: 'No held history item found; recovered to the start of available history.' });
+  for (const row of newer.reverse()) reducer.historyItem(row);
 }
 
 function parse(args) {

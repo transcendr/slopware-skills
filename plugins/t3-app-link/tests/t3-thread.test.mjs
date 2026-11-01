@@ -51,16 +51,17 @@ test('cursor round trip retains pending actionable events across until-event re-
   assert.deepEqual(eventKinds(restored),[]);
 });
 
-test('snapshot fallback pages back to saved timeline position and stops there',async()=>{
-  const r=initialized({expect:'^RESULT '});r.state.position=10;
-  const row=(position,text)=>({position,visibility:'local',item:{id:'i'+position,messageId:'m'+position,type:'assistant_message',runId:'run',text,streaming:false}});
-  const pages={a:{items:[row(30,'RESULT page=30')],hasMoreHistory:true,nextCursor:'b'},b:{items:[row(20,'RESULT page=20')],hasMoreHistory:true,nextCursor:'c'},c:{items:[row(10,'RESULT page=10')],hasMoreHistory:true,nextCursor:'unneeded'}};
+test('snapshot fallback follows held identities across page-relative positions',async()=>{
+  const r=initialized({expect:'^RESULT '});
+  r.accept(frame(1,'message.updated',{id:'held',role:'assistant',text:'Baseline'}));r.state.pending=[];
+  const row=(position,id,text)=>({position,visibility:'local',item:{id:'item-'+id,messageId:id,type:'assistant_message',runId:'run',text,streaming:false}});
+  const pages={a:{items:[row(0,'middle','RESULT page=middle'),row(1,'newest','RESULT page=newest')],hasMoreHistory:true,nextCursor:'b'},b:{items:[row(0,'held','Baseline'),row(1,'oldest-new','RESULT page=oldest-new')],hasMoreHistory:true,nextCursor:'unneeded'}};
   const calls=[];const rpc={history:async(id,cursor)=>{calls.push(cursor);return pages[cursor];}};
   await recoverHistory(rpc,r,{historyCursor:'a',hasMoreHistory:true});
-  assert.deepEqual(calls,['a','b','c']);
-  assert.deepEqual(r.state.pending.filter(e=>e.event==='RESULT').map(e=>e.message),['RESULT page=20','RESULT page=30']);
+  assert.deepEqual(calls,['a','b']);
+  assert.deepEqual(r.state.pending.filter(e=>e.event==='RESULT').map(e=>e.message),['RESULT page=oldest-new','RESULT page=middle','RESULT page=newest']);
   const restored=new Reducer(JSON.parse(JSON.stringify(r.state)),{expect:'^RESULT '});restored.state.pending=[];
-  await recoverHistory(rpc,restored,{historyCursor:'a',hasMoreHistory:true},10);
+  await recoverHistory(rpc,restored,{historyCursor:'a',hasMoreHistory:true});
   assert.deepEqual(restored.state.pending,[]);
 });
 
@@ -175,7 +176,7 @@ test('history recovery can stop at an item held from streamed events without a t
   const r=initialized({expect:'^RESULT '});
   r.accept(frame(1,'message.updated',{id:'old',role:'assistant',text:'Before gap'}));r.state.pending=[];
   let calls=0;
-  await recoverHistory({history:async()=>{calls++;return{items:[{position:2,item:{id:'new-item',messageId:'new',type:'assistant_message',text:'RESULT status=done'}},{position:1,item:{id:'old-item',messageId:'old',type:'assistant_message',text:'Before gap'}}],hasMoreHistory:true,nextCursor:'not-needed'};}},r,{historyCursor:'first',hasMoreHistory:true});
+  await recoverHistory({history:async()=>{calls++;return{items:[{position:0,item:{id:'old-item',messageId:'old',type:'assistant_message',text:'Before gap'}},{position:1,item:{id:'new-item',messageId:'new',type:'assistant_message',text:'RESULT status=done'}}],hasMoreHistory:true,nextCursor:'not-needed'};}},r,{historyCursor:'first',hasMoreHistory:true});
   assert.equal(calls,1);assert.deepEqual(eventKinds(r),['RESULT']);
 });
 
@@ -283,7 +284,7 @@ test('01a resumed watch recovers new history instead of applying another baselin
   const next=snapshot({runs:[{id:'new',ordinal:2,status:'completed'}],messages:[{id:'new-result',runId:'new',role:'assistant',text:'RESULT status=done',streaming:false}]},100);
   next.historyCursor='gap';next.hasMoreHistory=true;
   const {reducer,historyCalls}=await subscribeFixture(saved,{watching:true,expect:'^RESULT '},next);
-  assert.equal(historyCalls,1);assert.deepEqual(eventKinds(reducer),['STARTED','RESULT']);
+  assert.equal(historyCalls,1);assert.deepEqual(eventKinds(reducer),['HISTORY_START','STARTED','RESULT']);
 });
 
 test('01a an update to an already-completed baseline run is not a new run ending',async()=>{
@@ -291,4 +292,46 @@ test('01a an update to an already-completed baseline run is not a new run ending
   reducer.accept(frame(101,'run.updated',{id:'old-run',ordinal:14,status:'completed'}));
   reducer.tick(Date.now()+45000,45000,2700000);
   assert.deepEqual(eventKinds(reducer),[]);
+});
+
+
+test('01b rows older than the held item on the same page remain silent',async()=>{
+  const r=initialized({expect:'^RESULT '});
+  r.accept(frame(1,'turn-item.updated',{id:'held-tool',type:'command_execution',status:'completed'}));r.state.pending=[];
+  const rows=[{position:0,item:{id:'pre-baseline',messageId:'old-result',type:'assistant_message',text:'RESULT status=old'}},{position:1,item:{id:'held-tool',type:'command_execution',status:'completed'}},{position:2,item:{id:'new-item',messageId:'new-result',type:'assistant_message',text:'RESULT status=new'}}];
+  await recoverHistory({history:async()=>({items:rows,hasMoreHistory:true,nextCursor:'must-not-fetch'})},r,{historyCursor:'first',hasMoreHistory:true});
+  assert.deepEqual(r.state.pending.map(e=>e.message),['RESULT status=new']);
+  assert.equal(r.state.records.messages?.['old-result'],undefined);
+});
+
+test('01b missing held identity recovers to the start and reports that visibly',async()=>{
+  const r=initialized({expect:'^RESULT '});
+  const pages={a:{items:[{position:0,item:{id:'m2-item',messageId:'m2',type:'assistant_message',text:'RESULT n=2'}}],hasMoreHistory:true,nextCursor:'b'},b:{items:[{position:0,item:{id:'m1-item',messageId:'m1',type:'assistant_message',text:'RESULT n=1'}}],hasMoreHistory:false,nextCursor:null}};
+  const calls=[];
+  await recoverHistory({history:async(id,cursor)=>{calls.push(cursor);return pages[cursor];}},r,{historyCursor:'a',hasMoreHistory:true,snapshotSequence:5});
+  assert.deepEqual(calls,['a','b']);assert.ok(eventKinds(r).includes('HISTORY_START'));
+  assert.deepEqual(r.state.pending.filter(e=>e.event==='RESULT').map(e=>e.message),['RESULT n=1','RESULT n=2']);
+});
+
+test('01b old cursors load without retaining obsolete position state',()=>{
+  const state={...freshState('thread'),position:74};const r=new Reducer(state);
+  assert.equal(Object.hasOwn(r.state,'position'),false);
+});
+
+test('01b a held item inside the snapshot also excludes older rows and avoids history paging',async()=>{
+  const old=initialized({expect:'^RESULT '});old.accept(frame(1,'message.updated',{id:'held',role:'assistant',text:'Baseline'}));old.state.pending=[];
+  const message=(id,text)=>({id,role:'assistant',text,streaming:false});
+  const messages=[message('old','RESULT era=old'),message('held','Baseline'),message('new','RESULT era=new')];
+  const next=snapshot({messages,visibleTurnItems:messages.map((m,position)=>({position,item:{...m,id:'item-'+m.id,messageId:m.id,type:'assistant_message'}}))},100);
+  next.historyCursor='older';next.hasMoreHistory=true;
+  const {reducer,historyCalls}=await subscribeFixture({threads:{thread:old.state}},{watching:true,expect:'^RESULT '},next);
+  assert.equal(historyCalls,0);assert.deepEqual(reducer.state.pending.filter(e=>e.event==='RESULT').map(e=>e.message),['RESULT era=new']);
+});
+
+test('01b snapshot hydration still reports a held streaming message that finalized during the gap',async()=>{
+  const old=initialized({expect:'^RESULT '});old.accept(frame(1,'message.updated',{id:'held',role:'assistant',text:'RESULT status=do',streaming:true}));old.state.pending=[];
+  const message={id:'held',role:'assistant',text:'RESULT status=done',streaming:false};
+  const next=snapshot({messages:[message],visibleTurnItems:[{position:0,item:{...message,id:'item-held',messageId:'held',type:'assistant_message'}}]},100);
+  const {reducer,historyCalls}=await subscribeFixture({threads:{thread:old.state}},{watching:true,expect:'^RESULT '},next);
+  assert.equal(historyCalls,0);assert.deepEqual(reducer.state.pending.filter(e=>e.event==='RESULT').map(e=>e.message),['RESULT status=done']);
 });

@@ -88,6 +88,7 @@ or replace it during an assignment. Keep it private and out of Git.
 | PAUSED | The settle window ended without the expected final reply. Read it and resume unfinished work with `t3_thread_send`. |
 | STALLED | Inspect T3 activity before acting. Long reasoning or commands may be silent. |
 | MISSING / FOUND | The thread disappeared, disconnected or returned. Confirm current T3 state before dispatching. |
+| HISTORY_START | No held item was found while recovering a gap; recovery reached the start of available history. |
 | UNPARSED | The stream contains an unknown event. Read the thread; monitoring may be incomplete. |
 | STARTED / COMPACTED / MAINTENANCE / DONE | Context about a run, compaction, structured maintenance or settled idle thread. |
 
@@ -104,7 +105,9 @@ never grants permission to dispatch, merge, publish or deploy. Do not run anothe
 provider CLI against a T3-owned thread. Use T3 links and tools.
 
 On re-arm, small stream gaps replay by sequence. Large gaps receive a bounded snapshot;
-the monitor pages older history back to its cursor. T3 coalesces updates, so
+the monitor walks older history back to the first item held in its cursor,
+reporting only newer rows. If no held item is found, it recovers to the start and
+prints HISTORY_START. T3 coalesces updates, so
 monitoring reports changes in recoverable state rather than promising every
 transient transition. `MAINTENANCE` uses the structured message field and requires
 a patched T3 server. Never infer maintenance from configurable prose patterns.

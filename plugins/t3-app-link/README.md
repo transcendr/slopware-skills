@@ -58,7 +58,9 @@ may hold a cursor at a time. Re-arm with the same cursor, roster and expectation
 A fresh watch baselines the current snapshot without reading older history or
 reporting old events, except for currently pending questions and approvals.
 Baseline idleness does not produce DONE or PAUSED. On re-arm, small gaps replay
-from T3; snapshot fallback pages history to the saved boundary. RESULT matching
+from T3; snapshot fallback walks history back to the first held item identity,
+reporting only newer rows. If no held item is found, it reaches the start and
+prints HISTORY_START. RESULT matching
 waits for non-streaming message text.
 This recovers observable state, not transient updates that T3 has already coalesced.
 `MAINTENANCE` requires T3's structured maintenance field; stock-app compatibility
