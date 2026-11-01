@@ -86,10 +86,13 @@ Codex leads run this as a background shell command:
 node "$TT" watch --tracked --expect '^RESULT ' --cursor /private/path/watch.json --until-event
 ```
 
-Codex wakes on command exit. `--until-event` prints the first QUESTION, APPROVAL,
+Codex background command exits can wake an idle lead. `--until-event` prints the first QUESTION, APPROVAL,
 RESULT, PAUSED or STALLED and exits. A busy Codex lead may receive the exit
-notification only after its current turn ends; this route does not guarantee
-mid-turn delivery. Read it, act, then run the same command again.
+notification late or fail to receive it at subsequent tool boundaries; this route
+does not guarantee mid-turn delivery. Read it, act, then run the same command
+again. For an authorised update to a busy lead, an active coordinator can use
+native `t3_thread_send mode:steer`. The bundled `t3 thread send` only queues a new
+turn, so the monitor does not offer an automatic CLI notification flag.
 A thread with no saved cursor state starts at its first snapshot, without paging
 older history. It reports currently pending questions and approvals, but no old
 results or compactions. An idle baseline does not produce DONE or PAUSED; only a
@@ -102,7 +105,7 @@ or replace it during an assignment. Keep it private and out of Git.
 
 | Event | Required response |
 | --- | --- |
-| QUESTION | Run `questions <name>` for the full requestId and exact answer keys, then use `t3_pending_request respond`. Claude keys are question text; Codex keys are question IDs. Copy the printed `answers` shape. |
+| QUESTION | Run `questions <name>` for the full requestId and exact answer keys, check that it is pending, then use `t3_pending_request respond`. Claude keys are question text; Codex keys are question IDs. Copy the printed `answers` shape. |
 | APPROVAL | Ask the user to review the permission request in T3. |
 | RESULT | Read the full reply and parsed `result`, then verify the claims. A RESULT may arrive mid-turn. |
 | PAUSED | The settle window ended without the expected final reply. Read it and resume unfinished work with `t3_thread_send`. |
@@ -121,7 +124,9 @@ RESULT lines are excluded from NOTE. Compact details are limited to the same
 2,000 characters as codex-app-link; `--json` retains all event fields.
 
 Defaults match codex-app-link: settle 45 seconds, stall 2700 seconds, timeout
-10800 seconds. A stall means no detailed thread event, not proof of a dead worker.
+10800 seconds. A stall means no detailed thread event, not proof of a dead worker. The line
+identifies a command/tool T3 reports as running, pending input or background work
+when present. A running command may itself be hung. Inspect native activity.
 
 ## Authority and evidence
 
@@ -134,7 +139,9 @@ the monitor walks older history back to the first item held in its cursor,
 reporting only newer rows. If no held item is found, it recovers to the start and
 prints HISTORY_START. T3 coalesces updates, so
 monitoring reports changes in recoverable state rather than promising every
-transient transition. `MAINTENANCE` uses the structured message field and requires
+transient transition. Questions answered during the gap can be recovered as
+`status=resolved`; replay can also report their earlier pending state. Check
+`questions --all` before responding. `MAINTENANCE` uses the structured message field and requires
 a patched T3 server. Never infer maintenance from configurable prose patterns.
 
 For project-level management, read the adapted references as needed:

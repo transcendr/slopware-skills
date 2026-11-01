@@ -1,0 +1,112 @@
+[
+  {
+    "kind": "event",
+    "sequence": 21658,
+    "event": {
+      "id": "claude-compact-0",
+      "threadId": "thread",
+      "runId": "claude-compact-1",
+      "nodeId": "claude-compact-2",
+      "driver": "claudeAgent",
+      "providerInstanceId": "claude-compact-3",
+      "occurredAt": "2026-11-01T04:15:45.602Z",
+      "type": "turn-item.updated",
+      "payload": {
+        "id": "claude-compact-4",
+        "threadId": "thread",
+        "runId": "claude-compact-1",
+        "nodeId": "claude-compact-2",
+        "providerThreadId": "claude-compact-5",
+        "providerTurnId": "claude-compact-6",
+        "nativeItemRef": {
+          "driver": "claudeAgent",
+          "nativeId": "claude-compact-7",
+          "strength": "strong"
+        },
+        "parentItemId": null,
+        "ordinal": 7000002,
+        "status": "running",
+        "title": "Compacting context",
+        "startedAt": "2026-11-01T04:15:45.602Z",
+        "completedAt": null,
+        "updatedAt": "2026-11-01T04:15:45.602Z",
+        "type": "compaction",
+        "driver": "claudeAgent"
+      }
+    }
+  },
+  {
+    "kind": "event",
+    "sequence": 21675,
+    "event": {
+      "id": "claude-compact-8",
+      "threadId": "thread",
+      "runId": "claude-compact-1",
+      "nodeId": "claude-compact-2",
+      "driver": "claudeAgent",
+      "providerInstanceId": "claude-compact-3",
+      "occurredAt": "2026-11-01T04:15:58.759Z",
+      "type": "turn-item.updated",
+      "payload": {
+        "id": "claude-compact-4",
+        "threadId": "thread",
+        "runId": "claude-compact-1",
+        "nodeId": "claude-compact-2",
+        "providerThreadId": "claude-compact-5",
+        "providerTurnId": "claude-compact-6",
+        "nativeItemRef": {
+          "driver": "claudeAgent",
+          "nativeId": "claude-compact-7",
+          "strength": "strong"
+        },
+        "parentItemId": null,
+        "ordinal": 7000002,
+        "status": "completed",
+        "title": "Context compacted",
+        "startedAt": "2026-11-01T04:15:45.602Z",
+        "completedAt": "2026-11-01T04:15:58.759Z",
+        "updatedAt": "2026-11-01T04:15:58.759Z",
+        "type": "compaction",
+        "driver": "claudeAgent"
+      }
+    }
+  },
+  {
+    "kind": "event",
+    "sequence": 21678,
+    "event": {
+      "id": "claude-compact-9",
+      "threadId": "thread",
+      "runId": "claude-compact-1",
+      "nodeId": "claude-compact-2",
+      "driver": "claudeAgent",
+      "providerInstanceId": "claude-compact-3",
+      "occurredAt": "2026-11-01T04:15:58.777Z",
+      "type": "turn-item.updated",
+      "payload": {
+        "id": "claude-compact-4",
+        "threadId": "thread",
+        "runId": "claude-compact-1",
+        "nodeId": "claude-compact-2",
+        "providerThreadId": "claude-compact-5",
+        "providerTurnId": "claude-compact-6",
+        "nativeItemRef": {
+          "driver": "claudeAgent",
+          "nativeId": "claude-compact-7",
+          "strength": "strong"
+        },
+        "parentItemId": null,
+        "ordinal": 7000002,
+        "status": "completed",
+        "title": "Context compacted",
+        "startedAt": "2026-11-01T04:15:45.602Z",
+        "completedAt": "2026-11-01T04:15:58.759Z",
+        "updatedAt": "2026-11-01T04:15:58.771Z",
+        "type": "compaction",
+        "driver": "claudeAgent",
+        "beforeTokenCount": 36079,
+        "afterTokenCount": 9109
+      }
+    }
+  }
+]

@@ -1,0 +1,183 @@
+{
+  "run": {
+    "kind": "event",
+    "sequence": 20594,
+    "event": {
+      "id": "runtime-1",
+      "threadId": "thread",
+      "runId": "runtime-2",
+      "nodeId": "runtime-3",
+      "providerInstanceId": "runtime-4",
+      "occurredAt": "2026-11-01T03:57:03.313Z",
+      "type": "run.created",
+      "payload": {
+        "id": "runtime-2",
+        "threadId": "thread",
+        "ordinal": 2,
+        "providerInstanceId": "runtime-4",
+        "modelSelection": {
+          "instanceId": "runtime-4",
+          "model": "gpt-6.1-sol"
+        },
+        "providerThreadId": "runtime-5",
+        "userMessageId": "runtime-6",
+        "rootNodeId": "runtime-3",
+        "activeAttemptId": "runtime-7",
+        "status": "starting",
+        "queuePosition": null,
+        "requestedAt": "2026-11-01T03:57:03.313Z",
+        "startedAt": null,
+        "completedAt": null,
+        "checkpointId": null,
+        "contextHandoffId": null
+      }
+    }
+  },
+  "command": [
+    {
+      "kind": "event",
+      "sequence": 20617,
+      "event": {
+        "id": "runtime-8",
+        "threadId": "thread",
+        "runId": "runtime-2",
+        "nodeId": "runtime-9",
+        "driver": "codex",
+        "providerInstanceId": "runtime-4",
+        "occurredAt": "2026-11-01T03:57:05.305Z",
+        "type": "turn-item.updated",
+        "payload": {
+          "id": "runtime-10",
+          "threadId": "thread",
+          "runId": "runtime-2",
+          "nodeId": "runtime-9",
+          "providerThreadId": "runtime-5",
+          "providerTurnId": "runtime-11",
+          "nativeItemRef": {
+            "driver": "codex",
+            "nativeId": "runtime-12",
+            "strength": "strong"
+          },
+          "parentItemId": null,
+          "ordinal": 2000003,
+          "status": "running",
+          "title": null,
+          "startedAt": "2026-11-01T03:57:05.301Z",
+          "completedAt": null,
+          "updatedAt": "2026-11-01T03:57:05.302Z",
+          "type": "command_execution",
+          "input": "/bin/zsh -lc '/bin/sleep 15'"
+        }
+      }
+    },
+    {
+      "kind": "event",
+      "sequence": 20622,
+      "event": {
+        "id": "runtime-13",
+        "threadId": "thread",
+        "runId": "runtime-2",
+        "nodeId": "runtime-9",
+        "driver": "codex",
+        "providerInstanceId": "runtime-4",
+        "occurredAt": "2026-11-01T03:57:20.207Z",
+        "type": "turn-item.updated",
+        "payload": {
+          "id": "runtime-10",
+          "threadId": "thread",
+          "runId": "runtime-2",
+          "nodeId": "runtime-9",
+          "providerThreadId": "runtime-5",
+          "providerTurnId": "runtime-11",
+          "nativeItemRef": {
+            "driver": "codex",
+            "nativeId": "runtime-12",
+            "strength": "strong"
+          },
+          "parentItemId": null,
+          "ordinal": 2000003,
+          "status": "completed",
+          "title": null,
+          "startedAt": "2026-11-01T03:57:05.301Z",
+          "completedAt": "2026-11-01T03:57:20.200Z",
+          "updatedAt": "2026-11-01T03:57:20.200Z",
+          "type": "command_execution",
+          "input": "/bin/zsh -lc '/bin/sleep 15'",
+          "exitCode": 0
+        }
+      }
+    }
+  ],
+  "approval": [
+    {
+      "kind": "event",
+      "sequence": 20352,
+      "event": {
+        "id": "runtime-14",
+        "threadId": "thread",
+        "runId": "runtime-15",
+        "nodeId": "runtime-16",
+        "driver": "codex",
+        "providerInstanceId": "runtime-4",
+        "occurredAt": "2026-11-01T03:52:13.516Z",
+        "type": "turn-item.updated",
+        "payload": {
+          "id": "runtime-17",
+          "threadId": "thread",
+          "runId": "runtime-15",
+          "nodeId": "runtime-16",
+          "providerThreadId": "runtime-18",
+          "providerTurnId": "runtime-19",
+          "nativeItemRef": {
+            "driver": "codex",
+            "nativeId": "runtime-20",
+            "strength": "strong"
+          },
+          "parentItemId": null,
+          "ordinal": 2000004,
+          "status": "waiting",
+          "title": null,
+          "startedAt": "2026-11-01T03:52:13.509Z",
+          "completedAt": null,
+          "updatedAt": "2026-11-01T03:52:13.509Z",
+          "type": "approval_request",
+          "requestId": "runtime-21",
+          "requestKind": "command",
+          "prompt": "Approve running the harmless one-shot command /usr/bin/true for this approval probe?"
+        }
+      }
+    },
+    {
+      "kind": "event",
+      "sequence": 20353,
+      "event": {
+        "id": "runtime-22",
+        "threadId": "thread",
+        "runId": "runtime-15",
+        "nodeId": "runtime-16",
+        "driver": "codex",
+        "providerInstanceId": "runtime-4",
+        "occurredAt": "2026-11-01T03:52:13.517Z",
+        "type": "runtime-request.updated",
+        "payload": {
+          "id": "runtime-21",
+          "nodeId": "runtime-16",
+          "providerTurnId": "runtime-19",
+          "nativeRequestRef": {
+            "driver": "codex",
+            "nativeId": "runtime-20",
+            "strength": "strong"
+          },
+          "kind": "command",
+          "status": "pending",
+          "responseCapability": {
+            "type": "live",
+            "providerSessionId": "runtime-23"
+          },
+          "createdAt": "2026-11-01T03:52:13.509Z",
+          "resolvedAt": null
+        }
+      }
+    }
+  ]
+}

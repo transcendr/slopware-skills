@@ -87,16 +87,16 @@ test('settle restarts across chained runs and pauses only for the final run with
   r.tick(200,45,2700);assert.equal(eventKinds(r).filter(e=>e==='PAUSED').length,1);
 });
 
-test('COMPACTED, MAINTENANCE, APPROVAL, STALLED, and unknown events',()=>{
+test('COMPACTED, APPROVAL, STALLED, and unknown events',()=>{
   const r=initialized();
   r.accept(frame(1,'run.created',{id:'r',status:'running'}),0);
   r.accept(frame(2,'turn-item.updated',{id:'compact',type:'compaction',status:'completed'}),1);
-  r.accept(frame(3,'message.updated',{id:'maintenance',role:'user',maintenance:{kind:'pause'}}),2);
+  r.store('turnItems',{id:'approval-item',type:'approval_request',requestId:'approval',prompt:'Approve the probe command?'});
   r.accept(frame(4,'runtime-request.updated',{id:'approval',kind:'command',status:'pending'}),3);
   r.accept(frame(5,'future.event',{id:'future'}),4);
   r.accept(frame(6,'turn-item.updated',{id:'compact',type:'compaction',status:'completed'}),5);
   r.tick(2705,45,2700);
-  assert.deepEqual(eventKinds(r),['STARTED','COMPACTED','MAINTENANCE','APPROVAL','UNPARSED','STALLED']);
+  assert.deepEqual(eventKinds(r),['STARTED','COMPACTED','APPROVAL','UNPARSED','STALLED']);
 });
 
 test('answered formal requests remain answered when their turn item arrives',()=>{
@@ -224,9 +224,9 @@ test('01a first idle watch ignores historical events, never pages, and cannot se
 test('01a baseline emits only currently pending formal requests and uses public approval wording',async()=>{
   const initial=pastSnapshot();initial.projection.runtimeRequests=[{id:'answered',kind:'user_input',status:'resolved'},{id:'pending-question',kind:'user_input',status:'pending'},{id:'pending-approval',kind:'command',status:'pending'}];
   const {reducer}=await subscribeFixture({threads:{}},{watching:true,expect:'^RESULT '},initial);
-  assert.deepEqual(eventKinds(reducer),['APPROVAL']);
-  reducer.flushQuestions(reducer.state.deferredRequests['pending-question'].at+5000);
-  assert.deepEqual(eventKinds(reducer),['APPROVAL','QUESTION']);
+  assert.deepEqual(eventKinds(reducer),[]);
+  reducer.flushQuestions(Math.max(...Object.values(reducer.state.deferredRequests).map(q=>q.at))+5000);
+  assert.deepEqual(eventKinds(reducer),['QUESTION','APPROVAL']);
   assert.equal(reducer.state.pending.find(e=>e.event==='APPROVAL').message,'The user must review this approval in T3.');
 });
 
@@ -265,6 +265,7 @@ test('01a public rules route actions to native T3 tools and omit unsupported sta
 
 test('01a approval text addresses the user rather than a named person',()=>{
   const r=initialized();r.accept(frame(1,'runtime-request.updated',{id:'approval',kind:'command',status:'pending'}));
+  r.flushQuestions(r.state.deferredRequests.approval.at+5000);
   assert.equal(r.state.pending[0].message,'The user must review this approval in T3.');
 });
 

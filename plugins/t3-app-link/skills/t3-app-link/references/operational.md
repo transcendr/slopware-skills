@@ -37,6 +37,8 @@ RESULT lines are excluded from NOTE. Details are limited to 2,000 characters;
 JSON retains full fields. Questions use a stable handle on watch lines and full
 IDs plus `answers` shapes in `questions`. The polling flag controls
 timer checks, not network polling; data comes through one WebSocket.
+`--token-file FILE` selects a separate private read token; use a separate
+`T3CODE_HOME` at setup and the matching `--origin URL` for an isolated server.
 
 ## Dispatch, wait and verify
 
@@ -59,9 +61,13 @@ The wait follows the whole thread. Do not wait on one run ID or wrap status in a
 shell loop. Queued and chained runs keep it active; the settle clock starts again
 after the final run ends. On timeout, inspect the current state before retrying.
 On a stall, inspect native T3 activity: silence alone does not prove failure.
+The event identifies commands/tools reported running, pending requests and
+background work when T3 exposes them. JSON also includes provider states; a
+running command may itself be hung.
 
 On QUESTION, use `questions worker`, then native `t3_pending_request read` and
-`respond` with the request ID and its question IDs. These formal answers do not
+`respond` only if still pending, copying the request ID and printed answer keys
+(Claude question text, Codex question IDs). These formal answers do not
 approve permission requests. An APPROVAL event requires the user in T3.
 
 Read the complete final reply and RESULT. Verify each claim necessary to the
@@ -90,6 +96,10 @@ rows on the boundary page remain silent. Page positions are local to each page
 and are never used as offsets. If no held item is found, recovery continues to
 the start of available history and prints HISTORY_START. Keep the cursor records
 intact so their item identities remain available across re-arms.
+
+Questions answered during the gap are recovered from completed input items too.
+Their recovered compact line includes resolved status; replay can also preserve
+a historical pending event. Use `questions --all` to check current state.
 
 History failures leave the stream sequence unadvanced
 and fail the command rather than silently skipping history.

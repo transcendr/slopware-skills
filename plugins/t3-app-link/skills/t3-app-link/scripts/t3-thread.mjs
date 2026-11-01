@@ -159,7 +159,8 @@ export const RULES = {
   steer: "t3_thread_send mode steer is input for THIS turn's work only. Answer formal questions with t3_pending_request respond; queue new follow-up work with t3_thread_send mode queue.",
   queued: 'queued: delivered as a new turn when the running turn ends; t3_queue action list shows it and action cancel removes a queuedRunId.',
   active: 'active turn: queue new work with t3_thread_send mode queue; use mode steer only to correct this turn. Answer formal questions with t3_pending_request respond. Past its timebox: act on it now.',
-  questions: 'run questions <thread> for the full requestId and answer keys; answer with t3_pending_request respond.',
+  questions: 'run questions <thread> for the full requestId, state and answer keys; answer pending input with t3_pending_request respond.',
+  approvals: 'the user reviews this permission request in T3; a monitoring lead cannot approve it.',
   done: 'read the full reply and RESULT before acting, and check its claims against the evidence.',
   stalled: "stalled: inspect and act in this turn; don't just wait again.",
   created: 'new thread: track it with a name, and give it one handoff with its timebox.',
@@ -252,7 +253,7 @@ export class Reducer {
     if (s.reported[key]) return;
     s.reported[key] = true;
     if (this.baselining) return;
-    const rule = ({ QUESTION: RULES.questions, STALLED: RULES.stalled, PAUSED: RULES.done, DONE: RULES.done })[event];
+    const rule = ({ QUESTION: RULES.questions, APPROVAL: RULES.approvals, STALLED: RULES.stalled, PAUSED: RULES.done, DONE: RULES.done })[event];
     s.pending.push({ event, threadId: s.id, at: new Date().toISOString(), ...data, ...(rule ? { rule } : {}) });
   }
   store(collection, record) {
@@ -269,25 +270,33 @@ export class Reducer {
       if (record.status === 'pending') this.request(record);
       else delete s.deferredRequests[record.id];
     } else if (collection === 'turnItems') {
+      if (record.type === 'approval_request') {
+        const request = s.records.runtimeRequests?.[record.requestId];
+        if (request?.status === 'pending') this.request(request);
+      }
       if (record.type === 'compaction' && record.status === 'completed')
         this.emit('COMPACTED', `compaction:${record.id}`, { itemId: record.id });
       if (record.type === 'user_input_request') {
         const request = s.records.runtimeRequests?.[record.requestId];
-        if (request?.status === 'pending' || (!request && ['pending', 'running', 'waiting'].includes(record.status))) this.request({ ...record, id: record.requestId, kind: 'user_input' });
+        if (request || ['pending', 'running', 'waiting'].includes(record.status) || record.questionAnswer)
+          this.request({ ...record, ...request, id: record.requestId, kind: 'user_input',
+            status: request?.status ?? (record.questionAnswer ? 'resolved' : 'pending'),
+            resolvedAt: request?.resolvedAt ?? record.completedAt, questions: record.questions });
       }
     }
   }
   request(record, fallback = false) {
     const s = this.state, item = Object.values(s.records.turnItems ?? {}).find(i => i.requestId === record.id);
     const questions = record.questions ?? item?.questions ?? [];
-    if (record.kind === 'user_input' && !questions.length && !fallback && !this.baselining) {
+    const approvalText = item?.prompt ?? item?.reason ?? record.prompt;
+    if ((record.kind === 'user_input' ? !questions.length : !approvalText) && !fallback && !this.baselining) {
       s.deferredRequests[record.id] ??= { record, at: this.now ?? Date.now() };
       return;
     }
     delete s.deferredRequests[record.id];
     this.emit(record.kind === 'user_input' ? 'QUESTION' : 'APPROVAL', `request:${record.id}`,
-      { requestId: record.id, handle: requestHandle(record.id), kind: record.kind, questions,
-        message: record.kind === 'user_input' ? (questions.length ? '' : 'Question text unavailable; run questions for the full request.') : 'The user must review this approval in T3.' });
+      { requestId: record.id, handle: requestHandle(record.id), kind: record.kind, questions, status: record.status, answeredAt: record.resolvedAt ?? item?.completedAt ?? null,
+        message: record.kind === 'user_input' ? (questions.length ? '' : 'Question text unavailable; run questions for the full request.') : approvalText ?? 'The user must review this approval in T3.', ...(record.kind !== 'user_input' ? { approval: item ?? null } : {}) });
   }
   flushQuestions(now = Date.now()) {
     for (const deferred of Object.values(this.state.deferredRequests))
@@ -383,13 +392,31 @@ export class Reducer {
       pending: Object.values(s.records.runtimeRequests ?? {}).filter(r => r.status === 'pending').length,
       rule: this.active() ? RULES.active : null };
   }
+  liveness() {
+    const s = this.state;
+    const running = Object.values(s.records.turnItems ?? {}).filter(i => ['running', 'pending', 'waiting'].includes(i.status));
+    return { runningCommands: running.filter(i => i.type === 'command_execution').map(i => ({ id: i.id, status: i.status })),
+      runningTools: running.filter(i => i.type === 'dynamic_tool').map(i => ({ id: i.id, name: i.toolName, status: i.status })),
+      backgroundTasks: Object.values(s.records.providerThreads ?? {}).flatMap(p => p.pendingBackgroundTasks ?? []),
+      providerStates: Object.values(s.records.providerSessions ?? {}).map(p => ({ id: p.id, status: p.status })),
+      pendingRequests: Object.values(s.records.runtimeRequests ?? {}).filter(r => r.status === 'pending').map(r => ({ kind: r.kind, id: r.id })) };
+  }
+  quietMessage() {
+    if (!this.active()) return 'thread is idle; no active run';
+    const l = this.liveness();
+    if (l.runningCommands.length) return 'T3 reports a command as running; verify the command before treating the run as dead';
+    if (l.runningTools.length) return 'T3 reports a tool as running; verify it before treating the run as dead';
+    if (l.pendingRequests.length) return 'T3 is awaiting a question or permission response';
+    if (l.backgroundTasks.length) return 'T3 reports background work; verify it before treating the run as dead';
+    return 'active run has no observable progress; may be reasoning or hung; inspect T3';
+  }
   tick(now, settleMs, stallMs) {
     const s = this.state; this.flushQuestions(now);
     if (!s.initialized || s.missing) return;
     if (this.progress && now - s.lastEventAt >= this.silentMs)
-      this.emit('SILENT', `silent:${s.lastEventAt}`, { seconds: Math.floor((now - s.lastEventAt) / 1000), message: 'no provider or run activity; may be reasoning or blocked' });
+      this.emit('SILENT', `silent:${s.lastEventAt}`, { seconds: Math.floor((now - s.lastEventAt) / 1000), message: this.quietMessage() });
     if (this.active()) {
-      if (now - s.lastEventAt >= stallMs) this.emit('STALLED', `stall:${s.lastEventAt}`);
+      if (now - s.lastEventAt >= stallMs) this.emit('STALLED', `stall:${s.lastEventAt}`, { message: this.quietMessage(), liveness: this.liveness(), seconds: Math.floor((now - s.lastEventAt) / 1000) });
     } else if (s.settleArmed !== false && s.idleSince != null && now - s.idleSince >= settleMs) {
       const run = ordered(s.records.runs).at(-1), key = run?.id ?? 'idle';
       const messages = ordered(s.records.messages).filter(m => m.role === 'assistant' && (!run || m.runId === run.id));
@@ -553,7 +580,7 @@ export class Monitor {
   }
   async open() {
     const runtime = jsonFile(runtimePath());
-    this.rpc = new T3Rpc({ origin: this.options.origin ?? runtime.origin, token: privateToken() });
+    this.rpc = (this.options.rpcFactory ?? (options => new T3Rpc(options)))({ origin: this.options.origin ?? runtime.origin, token: privateToken(this.options['token-file'] ?? TOKEN_FILE) });
     const config = await this.rpc.request('server.getConfig', {});
     const environmentId = config.environment?.environmentId;
     const expected = this.options.environment ?? this.reg.environmentId;
@@ -631,6 +658,7 @@ export function eventText(event, reg) {
   let detail = '';
   switch (event.event) {
     case 'QUESTION': detail = (event.questions ?? []).map(q => `${q.question ?? q.title ?? ''}${optionLabels(q).length ? ` [options: ${optionLabels(q).join(' | ')}]` : ''}`).join(' ; ') || event.message;
+      if (event.status && !['pending','waiting'].includes(event.status)) detail += ` status=${event.status}`;
       detail += ` request=${event.handle ?? requestHandle(event.requestId)}`; break;
     case 'APPROVAL': detail = `${event.kind ?? 'permission'} ${event.message ?? 'The user must review this approval in T3.'} request=${event.handle ?? requestHandle(event.requestId)}`; break;
     case 'STARTED': case 'TURN_END': detail = event.status ? `status=${event.status}` : ''; break;
@@ -785,7 +813,7 @@ export async function main(args = process.argv.slice(2)) {
   if (['send', 'new', 'queue', 'interrupt', 'access'].includes(cmd)) {
     console.error(redirects(cmd, pos, opt, reg)); process.exitCode = 2; return;
   }
-  if (cmd === 'setup') { print(await setup()); return; }
+  if (cmd === 'setup') { print(await setup({tokenFile:opt['token-file'] ?? TOKEN_FILE,origin:opt.origin})); return; }
   if (cmd === 'version') {
     const script = fileURLToPath(import.meta.url), manifest = jsonFile(path.resolve(path.dirname(script), '../../../.claude-plugin/plugin.json'), {});
     print({ version: manifest.version ?? 'unknown', script, registry: file }); return;

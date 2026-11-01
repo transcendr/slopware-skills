@@ -63,8 +63,9 @@ reporting only newer rows. If no held item is found, it reaches the start and
 prints HISTORY_START. RESULT matching
 waits for non-streaming message text.
 This recovers observable state, not transient updates that T3 has already coalesced.
-`MAINTENANCE` requires T3's structured maintenance field; stock-app compatibility
-has not been verified.
+`MAINTENANCE` requires T3's structured maintenance field. An isolated unpatched
+0.1.5 server passed the Claude question/answer/RESULT check; its Codex provider
+could not open a session, so full stock compatibility remains unproven.
 
 Run the tests without installing dependencies:
 
@@ -106,5 +107,32 @@ request arrives before its text, emission waits for the item, with a fallback
 after one watch polling interval (five seconds by default). JSON is not truncated.
 
 A Claude lead must use Monitor for per-line wakes; the skill gives the verified
-call. Background Bash and Codex background-command exit notifications may wait
-until the current turn ends. Neither is a promise of immediate mid-turn delivery.
+call. Background Bash wakes only on exit. Codex background-command completion reached
+an idle lead in 2.855 seconds in the live probe; a busy lead still had no receipt
+at the next tool boundary or a later audit after 209 seconds. Do not rely on
+this route for immediate mid-turn delivery.
+
+The bundled `t3 thread send` queues a new turn; it has no steer flag. It creates
+and revokes a temporary full-access owner MCP session internally. No automatic
+`--notify-lead` option is provided: that CLI cannot supply the required own-lead
+steering route. An active authorised coordinator can use native
+`t3_thread_send mode:steer`; the live probe received that update within the same
+run at its next tool boundary (1.460 seconds observed).
+
+Use `--token-file FILE` with `setup` and read commands when monitoring a separate
+T3 instance. Select that instance's `T3CODE_HOME` for setup and its `--origin URL`
+for monitoring; keep a separate token and cursor per environment. The default
+token is never replaced when an alternate token file is supplied.
+
+STALLED and SILENT explain T3's observable liveness: a running command or tool,
+pending input, or background work. STALLED still means the configured interval
+without detailed events, not a proven dead process. JSON includes native
+command/tool IDs and provider states. A command reported as running may itself
+be hung; T3 does not provide an OS process heartbeat through this stream. Idle
+SILENT lines say the thread is idle.
+
+Gap recovery also reports formal questions answered while disconnected. Their
+compact lines include `status=resolved` when recovered from completed items.
+Always inspect current `questions --all` state before trying to respond. Native
+sequence replay can preserve a historical pending QUESTION even when the request
+is now resolved.
