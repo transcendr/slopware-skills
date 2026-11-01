@@ -39,6 +39,19 @@ answers or corrections for its current work. Formal questions use
 `t3_pending_request respond`, not an inferred shared reply. Approvals need the user
 in T3; the monitor cannot approve them.
 
+T3's tools may load late: load one by name before deciding it is missing. In
+`modelSelection`, the Claude provider instance is `claudeAgent`, not `claude`.
+`orchestrator_capabilities` lists instances and models.
+
+To answer, take the full request ID and answer keys from `questions <thread>`, then
+call `t3_pending_request` with `action: "respond"`, `threadId`, `requestId` and
+`answers` as `{ "<key>": "<answer>" }`. The key is the question's `id` for Codex
+and its question text for Claude; `questions` prints it either way.
+
+To check a worker's files, `status <thread>` prints its `workspace` when it has its own
+worktree or scratch folder; a thread on the project root has none. Stop the watcher
+before archiving threads it tracks; otherwise each archive prints `MISSING`.
+
 Give the worker its outcome, evidence, authority and any authorized timebox.
 Ask it to finish with `RESULT key=value …`. Mention it using the native tool's
 returned `link`.
@@ -71,15 +84,16 @@ the paths with the installed skill and private cursor paths:
 ```javascript
 Monitor({
   command: "node /installed/t3-app-link/scripts/t3-thread.mjs watch --tracked --expect '^RESULT ' --cursor /private/path/watch.json --progress",
-  description: "T3 worker events"
+  description: "T3 worker events",
+  timeout_ms: 1800000
 })
 ```
 
 Each event is one line. Act on the notification. If Monitor ends or times out,
 re-arm the same command with the same cursor; never start another watcher while
 the first still owns it. When the host provides it, `t3_background_wait` marks
-bounded Monitor work as awaited. Monitor's `timeout_ms` is optional; use an
-explicit duration only when the task or tool contract supplies it.
+bounded Monitor work as awaited. Pass `timeout_ms` where the host's Monitor tool
+requires it; its 30-minute cap means a re-arm on each expiry.
 
 Codex leads choose the exit-hold route for a wake after their turn, or a sentinel
 when they must receive events while working.

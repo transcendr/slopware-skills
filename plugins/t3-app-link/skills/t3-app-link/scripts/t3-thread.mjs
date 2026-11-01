@@ -397,7 +397,7 @@ export class Reducer {
   status() {
     const s = this.state, run = ordered(s.records.runs).at(-1);
     const messages = ordered(s.records.messages).filter(m => m.role === 'assistant');
-    return { threadId: s.id, status: this.active() ? 'active' : 'idle', turnId: run?.id ?? null,
+    return { threadId: s.id, status: this.active() ? 'active' : 'idle', workspace: s.thread?.worktreePath ?? s.shell?.worktreePath ?? null, turnId: run?.id ?? null,
       lastTurnStatus: run?.status ?? null, lastAgentMessage: messages.at(-1)?.text ?? '',
       pending: Object.values(s.records.runtimeRequests ?? {}).filter(r => requestStatus(s, r) === 'pending').length,
       rule: this.active() ? RULES.active : null };

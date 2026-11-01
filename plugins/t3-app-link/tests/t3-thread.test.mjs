@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import vm from 'node:vm';
 import { spawnSync } from 'node:child_process';
-import { extractResult, Reducer, freshState, recoverHistory, lockCursor, resolveRef, T3Rpc, setup, Monitor, completedReplies } from '../skills/t3-app-link/scripts/t3-thread.mjs';
+import { toText, extractResult, Reducer, freshState, recoverHistory, lockCursor, resolveRef, T3Rpc, setup, Monitor, completedReplies } from '../skills/t3-app-link/scripts/t3-thread.mjs';
 
 const source = fs.readFileSync(new URL('../../codex-app-link/skills/codex-app-link/scripts/codex-thread.mjs', import.meta.url), 'utf8');
 const upstream = vm.runInNewContext(source.slice(source.indexOf('const KEY_START'), source.indexOf('function latestResult')) + '\nextractResult;');
@@ -346,4 +346,9 @@ test('a symlinked script still runs',()=>{
   const link=path.join(dir,'t3-thread.mjs');
   fs.symlinkSync(new URL('../skills/t3-app-link/scripts/t3-thread.mjs',import.meta.url).pathname,link);
   assert.match(spawnSync(process.execPath,[link,'version'],{encoding:'utf8'}).stdout,/^version=/);
+});
+
+test('status prints the working directory a lead needs to check a worker',()=>{
+  const state=freshState('t');state.thread={worktreePath:'/w'};
+  assert.match(toText(new Reducer(state,{}).status()),/workspace=\/w/);
 });
