@@ -1,6 +1,6 @@
 {
   "name": "t3-app-link",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Monitor Codex and Claude threads in T3 with a read-only CLI; dispatch through native T3 tools.",
   "author": {
     "name": "Slopware Engineer",

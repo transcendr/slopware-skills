@@ -222,7 +222,7 @@ export function toText(out) {
 
 
 const ACTIVE = new Set(['queued', 'preparing', 'starting', 'running', 'waiting']);
-const ACTIONABLE = new Set(['QUESTION', 'APPROVAL', 'RESULT', 'PAUSED', 'STALLED']);
+const ACTIONABLE = new Set(['QUESTION', 'APPROVAL', 'RESULT', 'PAUSED', 'STALLED', 'OVERFLOW']);
 const COLLECTIONS = { 'run.created': 'runs', 'run.updated': 'runs', 'message.updated': 'messages',
   'runtime-request.updated': 'runtimeRequests', 'turn-item.updated': 'turnItems',
   'node.updated': 'nodes', 'provider-thread.updated': 'providerThreads', 'provider-turn.updated': 'providerTurns',
@@ -237,9 +237,71 @@ const fail = (code, message = code) => Object.assign(new Error(message), { code 
 const ordered = records => Object.values(records ?? {}).sort((a, b) =>
   (a.ordinal ?? Date.parse(a.createdAt ?? a.startedAt) ?? 0) - (b.ordinal ?? Date.parse(b.createdAt ?? b.startedAt) ?? 0));
 
+// Cursor bounds, per thread. Records hold only fields read later; text is limited by RECORD_TEXT_LIMIT.
+export const CURSOR_VERSION = 2;
+export const LIMITS = Object.freeze({ runs: 16, messages: 8, runtimeRequests: 16, turnItems: 32, nodes: 32,
+  providerThreads: 8, providerSessions: 8, reported: 256, anchors: 64, pending: 64, idleThreads: 16 });
+const RECORD_TEXT_LIMIT = 4096;
+const FIELDS = {
+  runs: ['id', 'ordinal', 'status', 'requestedAt', 'startedAt', 'completedAt'],
+  messages: ['id', 'runId', 'role', 'ordinal', 'text', 'streaming', 'matched', 'createdAt', 'startedAt', 'updatedAt'],
+  runtimeRequests: ['id', 'runId', 'nodeId', 'kind', 'status', 'answers', 'createdAt', 'resolvedAt'],
+  turnItems: ['id', 'runId', 'nodeId', 'ordinal', 'status', 'type', 'toolName', 'requestId', 'questions', 'prompt', 'reason', 'questionAnswer', 'startedAt', 'completedAt', 'updatedAt'],
+  nodes: ['id', 'runId'],
+  providerThreads: ['id', 'pendingBackgroundTasks', 'updatedAt'],
+  providerSessions: ['id', 'status', 'updatedAt'],
+};
+const THREAD_FIELDS = ['id', 'activeRunId', 'worktreePath'];
+const SHELL_FIELDS = [...THREAD_FIELDS, 'activityRunStatus', 'pendingBackgroundTasks', 'archivedAt', 'deletedAt'];
+const pick = (value, fields) => value && Object.fromEntries(fields.filter(key => value[key] !== undefined).map(key => [key, value[key]]));
+/** Shares one text budget across a value, so a record's size has a hard limit. */
+function clip(value, budget = { left: RECORD_TEXT_LIMIT }) {
+  if (typeof value === 'string') {
+    const text = value.slice(0, budget.left); budget.left -= text.length; return text;
+  }
+  if (Array.isArray(value)) return value.slice(0, 32).map(entry => clip(entry, budget));
+  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).slice(0, 32).map(([key, entry]) => [key, clip(entry, budget)]));
+  return value;
+}
+const recordTime = record => Math.max(0, ...[record?.updatedAt, record?.completedAt, record?.resolvedAt, record?.startedAt, record?.requestedAt, record?.createdAt]
+  .map(time => Date.parse(time) || 0));
+/** Evicts first-listed records first; pinned ones go only if the limit still requires it. */
+function evict(records, limit, list, pinned = () => false) {
+  const over = list.length - limit;
+  if (over > 0) for (const record of [...list.filter(r => !pinned(r)), ...list.filter(pinned)].slice(0, over)) delete records[record.id];
+}
+
 export function freshState(id) {
-  return { id, sequence: null, records: {}, reported: {}, pending: [], idleSince: null,
+  return { id, version: CURSOR_VERSION, sequence: null, records: {}, anchors: [], reported: {}, reportedFloor: 0, pending: [], overflow: 0, idleSince: null,
     lastEventAt: Date.now(), initialized: false, missing: false };
+}
+
+/** Version 1 cursors held every record. All were processed, so the newest one sets the floor. */
+export function migrateState(state, expect = null) {
+  if (state.version === CURSOR_VERSION) return false;
+  const old = state.records ?? {}, nodes = old.nodes ?? {};
+  const held = [...Object.values(old.turnItems ?? {}), ...Object.values(old.messages ?? {})].sort((a, b) => recordTime(a) - recordTime(b));
+  state.reportedFloor = Math.max(0, ...Object.values(old).flatMap(records => Object.values(records)).map(recordTime));
+  state.anchors = [...new Set(held.flatMap(item => [item.id, item.messageId]).filter(Boolean))].slice(-LIMITS.anchors);
+  state.records = {};
+  for (const [collection, fields] of Object.entries(FIELDS)) for (const record of Object.values(old[collection] ?? {})) {
+    if (collection === 'messages' && record.role !== 'assistant') continue;
+    const shaped = collection === 'runtimeRequests' ? { ...record, runId: record.runId ?? nodes[record.nodeId]?.runId }
+      : collection === 'messages' && expect ? { ...record, matched: expect.test(record.text ?? '') } : record;
+    (state.records[collection] ??= {})[record.id] = clip(pick(shaped, fields));
+  }
+  for (const key of Object.keys(state.reported ?? {})) state.reported[key] = 0;
+  state.reported ??= {}; state.pending ??= []; state.deferredRequests ??= {};
+  state.thread = pick(state.thread, THREAD_FIELDS); state.shell = clip(pick(state.shell, SHELL_FIELDS));
+  delete state.lastAgentMessage; state.version = CURSOR_VERSION;
+  return true;
+}
+
+/** Limits what a cursor keeps for threads the current watch does not follow. */
+export function compactCursor(saved, ids) {
+  const others = Object.values(saved.threads ?? {}).filter(state => !ids.includes(state.id));
+  evict(saved.threads, LIMITS.idleThreads, others.sort((a, b) => (a.lastEventAt ?? 0) - (b.lastEventAt ?? 0)));
+  for (const state of others) if (saved.threads[state.id]) new Reducer(state);
 }
 
 export function requestStatus(state, request) {
@@ -252,29 +314,82 @@ export function requestStatus(state, request) {
 }
 
 export class Reducer {
-  constructor(state, { expect, progress = false, silentMs = 240000, questionDelayMs = 5000 } = {}) {
+  constructor(state, { expect, progress = false, silentMs = 240000, questionDelayMs = 5000, complete = false } = {}) {
     delete state.position; // Discard the obsolete page-relative offset in older cursors.
-    this.state = state; this.expect = expect == null ? null : new RegExp(expect, 'm'); this.progress = progress; this.silentMs = silentMs; this.questionDelayMs = questionDelayMs;
+    this.complete = complete; this.state = state; this.expect = expect == null ? null : new RegExp(expect, 'm'); this.progress = progress; this.silentMs = silentMs; this.questionDelayMs = questionDelayMs;
     state.deferredRequests ??= {};
+    if (!complete && migrateState(state, this.expect)) this.prune();
   }
-  emit(event, key, data = {}) {
+  /** Runs after each frame or tick, never during recovery: history rows are not in time order. */
+  prune() {
+    const s = this.state, r = s.records;
+    if (this.complete) return;
+    for (const request of Object.values(r.runtimeRequests ?? {})) if (requestStatus(s, request) === 'stale') request.status = 'stale';
+    const settled = item => !['running', 'pending', 'waiting'].includes(item.status);
+    for (const item of Object.values(r.turnItems ?? {})) {
+      const run = r.runs?.[item.runId];
+      if (settled(item) ? !item.requestId : run && !ACTIVE.has(run.status)) delete r.turnItems[item.id];
+    }
+    const lists = { runs: ordered, messages: ordered };
+    const pins = { runs: run => ACTIVE.has(run.status), runtimeRequests: request => request.status === 'pending', turnItems: item => !settled(item) };
+    for (const collection of Object.keys(FIELDS)) {
+      if (r[collection]) evict(r[collection], LIMITS[collection], (lists[collection] ?? Object.values)(r[collection]), pins[collection]);
+    }
+    const keys = Object.keys(s.reported);
+    for (const key of keys.slice(0, Math.max(0, keys.length - LIMITS.reported))) {
+      s.reportedFloor = Math.max(s.reportedFloor, s.reported[key] || 0); delete s.reported[key];
+    }
+  }
+  /** Applies only to events that stay in the cursor; a running watch prints them first. */
+  capPending() {
+    const s = this.state, overflow = s.pending.find(event => event.event === 'OVERFLOW');
+    const held = s.pending.filter(event => event !== overflow), excess = held.length - LIMITS.pending;
+    if (excess <= 0) return;
+    const dropped = new Set([...held.filter(event => !ACTIONABLE.has(event.event)), ...held.filter(event => ACTIONABLE.has(event.event))].slice(0, excess));
+    const count = excess + (overflow?.dropped ?? 0);
+    s.pending = [{ event: 'OVERFLOW', threadId: s.id, at: new Date().toISOString(), dropped: count,
+      message: `${count} held events were dropped to keep the cursor bounded; read the thread for what they covered.` }, ...held.filter(event => !dropped.has(event))];
+  }
+  emit(event, key, data = {}, at = 0) {
     const s = this.state;
-    if (s.reported[key]) return;
-    s.reported[key] = true;
+    if (this.complete) return; // One-shot inspection reads state; it reports no events.
+    if (key in s.reported) { const held = s.reported[key]; delete s.reported[key]; s.reported[key] = Math.max(Number(held) || 0, at); return; }
+    if (at && at <= s.reportedFloor) return;
+    s.reported[key] = at;
     if (this.baselining) return;
     const rule = ({ QUESTION: RULES.questions, APPROVAL: RULES.approvals, STALLED: RULES.stalled, PAUSED: RULES.done, DONE: RULES.done })[event];
-    s.pending.push({ event, threadId: s.id, at: new Date().toISOString(), ...data, ...(rule ? { rule } : {}) });
+    s.pending.push({ event, threadId: s.id, at: new Date().toISOString(), ...clip(data), ...(rule ? { rule } : {}) });
+  }
+  hold(collection, record) {
+    if (this.complete) { (this.state.records[collection] ??= {})[record.id] = record; return; }
+    if (!FIELDS[collection] || (collection === 'messages' && record.role !== 'assistant')) return;
+    const records = this.state.records[collection] ??= {};
+    delete records[record.id]; // Reinsert, so key order is least recently updated first.
+    records[record.id] = clip(pick(record, FIELDS[collection]));
+    if (collection === 'turnItems' || collection === 'messages') this.anchor(record);
+  }
+  anchor(item) {
+    const s = this.state;
+    for (const id of [item.id, item.messageId]) {
+      if (!id) continue;
+      const known = s.anchors.indexOf(id);
+      if (known >= 0) s.anchors.splice(known, 1);
+      s.anchors.push(id);
+    }
+    if (s.anchors.length > LIMITS.anchors) s.anchors.splice(0, s.anchors.length - LIMITS.anchors);
   }
   store(collection, record) {
     if (!record?.id) throw fail('t3-invalid-record');
-    const s = this.state;
-    (s.records[collection] ??= {})[record.id] = record;
+    const s = this.state, at = recordTime(record);
+    if (collection === 'runtimeRequests') record = { ...record, runId: record.runId ?? s.records.nodes?.[record.nodeId]?.runId };
+    if (collection === 'messages' && this.expect) record = { ...record, matched: new RegExp(this.expect.source, 'm').test(record.text ?? '') };
+    this.hold(collection, record);
     if (collection === 'runs') {
-      this.emit('STARTED', `run:${record.id}`, { turnId: record.id, status: record.status });
-      if (this.progress && !ACTIVE.has(record.status)) this.emit('TURN_END', `end:${record.id}`, { turnId: record.id, status: record.status });
+      this.emit('STARTED', `run:${record.id}`, { turnId: record.id, status: record.status }, at);
+      if (this.progress && !ACTIVE.has(record.status)) this.emit('TURN_END', `end:${record.id}`, { turnId: record.id, status: record.status }, at);
     } else if (collection === 'messages') {
-      if (record.maintenance) this.emit('MAINTENANCE', `maintenance:${record.id}`, { maintenance: record.maintenance });
-      if (record.role === 'assistant') this.message(record);
+      if (record.maintenance) this.emit('MAINTENANCE', `maintenance:${record.id}`, { maintenance: record.maintenance }, at);
+      if (record.role === 'assistant') this.message(record, at);
     } else if (collection === 'runtimeRequests') {
       if (record.status === 'pending') this.request(record);
       else delete s.deferredRequests[record.id];
@@ -284,7 +399,7 @@ export class Reducer {
         if (request?.status === 'pending') this.request(request);
       }
       if (record.type === 'compaction' && record.status === 'completed')
-        this.emit('COMPACTED', `compaction:${record.id}`, { itemId: record.id });
+        this.emit('COMPACTED', `compaction:${record.id}`, { itemId: record.id }, at);
       if (record.type === 'user_input_request') {
         const request = s.records.runtimeRequests?.[record.requestId];
         if (request || ['pending', 'running', 'waiting'].includes(record.status) || record.questionAnswer)
@@ -294,34 +409,34 @@ export class Reducer {
       }
     }
   }
-  request(record, fallback = false) {
+  request(record, fallback = false, unreported = false) {
     if (requestStatus(this.state, record) === 'stale') { delete this.state.deferredRequests[record.id]; return; }
     const s = this.state, item = Object.values(s.records.turnItems ?? {}).find(i => i.requestId === record.id);
     const questions = record.questions ?? item?.questions ?? [];
     const approvalText = item?.prompt ?? item?.reason ?? record.prompt;
     if ((record.kind === 'user_input' ? !questions.length : !approvalText) && !fallback && !this.baselining) {
-      s.deferredRequests[record.id] ??= { record, at: this.now ?? Date.now() };
+      s.deferredRequests[record.id] ??= { record: this.complete ? record : clip(record), at: this.now ?? Date.now() };
       return;
     }
+    unreported ||= record.id in s.deferredRequests; // Never reported, so the floor must not hide it.
     delete s.deferredRequests[record.id];
     this.emit(record.kind === 'user_input' ? 'QUESTION' : 'APPROVAL', `request:${record.id}`,
       { requestId: record.id, handle: requestHandle(record.id), kind: record.kind, questions, status: record.status, answeredAt: record.resolvedAt ?? item?.completedAt ?? null,
-        message: record.kind === 'user_input' ? (questions.length ? '' : 'Question text unavailable; run questions for the full request.') : approvalText ?? 'The user must review this approval in T3.', ...(record.kind !== 'user_input' ? { approval: item ?? null } : {}) });
+        message: record.kind === 'user_input' ? (questions.length ? '' : 'Question text unavailable; run questions for the full request.') : approvalText ?? 'The user must review this approval in T3.', ...(record.kind !== 'user_input' ? { approval: item ?? null } : {}) }, unreported ? 0 : recordTime(record));
   }
   flushQuestions(now = Date.now()) {
     for (const deferred of Object.values(this.state.deferredRequests))
       if (now - deferred.at >= this.questionDelayMs) this.request(deferred.record, true);
   }
-  message(record) {
-    const s = this.state, text = record.text ?? '';
+  message(record, at = 0) {
+    const text = record.text ?? '';
     if (this.expect && !record.streaming) {
       for (const line of text.split('\n')) if (new RegExp(this.expect.source, this.expect.flags).test(line))
-        this.emit('RESULT', `result:${record.id}:${hash(line)}`, { messageId: record.id, turnId: record.runId, message: line });
+        this.emit('RESULT', `result:${record.id}:${hash(line)}`, { messageId: record.id, turnId: record.runId, message: line }, at);
     }
     const note = text.split('\n').filter(line => !this.expect?.test(line)).join('\n').trim();
     if (this.progress && !record.streaming && note)
-      this.emit('NOTE', `note:${record.id}:${hash(note)}`, { messageId: record.id, message: note });
-    s.lastAgentMessage = text;
+      this.emit('NOTE', `note:${record.id}:${hash(note)}`, { messageId: record.id, message: note }, at);
   }
   baseline(frame, now = Date.now()) {
     this.baselining = true;
@@ -330,7 +445,7 @@ export class Reducer {
     for (const request of Object.values(this.state.records.runtimeRequests ?? {})) {
       if (request.status !== 'pending') continue;
       delete this.state.reported[`request:${request.id}`];
-      this.request(request);
+      this.request(request, false, true);
     }
   }
   accept(frame, now = Date.now()) {
@@ -339,7 +454,7 @@ export class Reducer {
     if (frame.kind === 'snapshot') {
       if (frame.projection?.thread?.id !== s.id) throw fail('t3-thread-identity-mismatch');
       s.lastEventAt ??= now;
-      s.thread = frame.projection.thread;
+      s.thread = pick(frame.projection.thread, THREAD_FIELDS);
       // A bounded snapshot supersedes liveness; evicted runs must not stay active.
       s.records.runs = {};
       const currentRequests = new Set((frame.projection.runtimeRequests ?? []).map(r => r.id));
@@ -358,7 +473,7 @@ export class Reducer {
       if (type === 'thread.visited') {
         const id = payload?.id ?? payload?.threadId;
         if (id !== s.id) throw fail('t3-thread-identity-mismatch');
-        if (payload.id) s.thread = payload;
+        if (payload.id) s.thread = pick(payload, THREAD_FIELDS);
         s.sequence = frame.sequence;
         return;
       }
@@ -371,7 +486,7 @@ export class Reducer {
         if (!previous || ACTIVE.has(previous.status) || ACTIVE.has(payload?.status)) s.settleArmed = true;
       }
       if (COLLECTIONS[type]) this.store(COLLECTIONS[type], payload);
-      else if (type.startsWith('thread.') && payload?.id === s.id) s.thread = payload;
+      else if (type.startsWith('thread.') && payload?.id === s.id) s.thread = pick(payload, THREAD_FIELDS);
       else if (!['thread.pull-request-link-updated', 'provider-session.detached', 'run.background-work-cancelled', 'checkpoint.rollback-requested'].includes(type)) this.emit('UNPARSED', `unknown:${frame.sequence}`, { type });
       s.sequence = frame.sequence;
     } else this.emit('UNPARSED', `unknown:${frame.sequence ?? hash(JSON.stringify(frame))}`, { type: frame.eventType ?? frame.kind });
@@ -381,6 +496,7 @@ export class Reducer {
       const completedAt = Math.max(0, ...Object.values(s.records.runs ?? {}).map(r => Date.parse(r.completedAt) || 0));
       s.idleSince = Math.max(s.idleSince, completedAt);
     }
+    this.prune();
   }
   historyItem(row) {
     const item = row.item ?? row;
@@ -430,7 +546,7 @@ export class Reducer {
     } else if (s.settleArmed !== false && s.idleSince != null && now - s.idleSince >= settleMs) {
       const run = ordered(s.records.runs).at(-1), key = run?.id ?? 'idle';
       const messages = ordered(s.records.messages).filter(m => m.role === 'assistant' && (!run || m.runId === run.id));
-      const matched = this.expect && new RegExp(this.expect.source, 'm').test(messages.at(-1)?.text ?? '');
+      const matched = this.expect && (messages.at(-1)?.matched || new RegExp(this.expect.source, 'm').test(messages.at(-1)?.text ?? ''));
       const event = this.expect && !matched ? 'PAUSED' : 'DONE';
       this.emit(event, `settled:${key}`, { turnId: run?.id ?? null, lastAgentMessage: this.status().lastAgentMessage });
       s.classified = event;
@@ -438,29 +554,34 @@ export class Reducer {
   }
 }
 
+const EVENT_ROWS = new Set(['assistant_message', 'compaction', 'user_input_request', 'approval_request']);
 // History pages are chronological windows with page-relative positions. Only item identities resume them.
-export async function recoverHistory(rpc, reducer, frame) {
-  let cursor = frame.historyCursor, found = false;
-  const newer = [], visited = new Set();
-  const held = new Set([...Object.keys(reducer.state.records.turnItems ?? {}), ...Object.keys(reducer.state.records.messages ?? {})]);
+export async function recoverHistory(rpc, reducer, frame, { replies = Infinity, since = 0 } = {}) {
+  let cursor = frame.historyCursor, found = false, limited = false;
+  const newer = [], visited = new Set(), runs = new Set(), replyRuns = new Set();
+  const held = new Set(reducer.state.anchors ?? []);
   const scan = rows => {
     for (let i = rows.length - 1; i >= 0; i--) {
       const item = rows[i].item ?? rows[i];
       if (held.has(item.id) || held.has(item.messageId)) return i;
-      newer.push(rows[i]);
+      // A row with no event and an already-counted run changes nothing when replayed.
+      if (EVENT_ROWS.has(item.type) || !runs.has(item.runId)) newer.push(rows[i]);
+      runs.add(item.runId);
+      if (item.type === 'assistant_message' && !item.streaming) replyRuns.add(item.runId);
+      if (replyRuns.size > replies || (since && recordTime(item) && recordTime(item) < since)) { limited = true; return -1; }
     }
     return -1;
   };
   const snapshotRows = frame.projection?.visibleTurnItems ?? [];
   const snapshotBoundary = scan(snapshotRows);
   found = snapshotBoundary >= 0;
-  while (!found && cursor && frame.hasMoreHistory !== false) {
+  while (!found && !limited && cursor && frame.hasMoreHistory !== false) {
     if (visited.has(cursor)) throw fail('t3-history-cursor-loop');
     visited.add(cursor);
     const page = await rpc.history(reducer.state.id, cursor);
     if (!Array.isArray(page.items)) throw fail('t3-invalid-history');
     found = scan(page.items) >= 0;
-    if (found || !page.hasMoreHistory) break;
+    if (found || limited || !page.hasMoreHistory) break;
     if (!page.nextCursor) throw fail('t3-history-incomplete');
     cursor = page.nextCursor;
   }
@@ -476,7 +597,7 @@ export async function recoverHistory(rpc, reducer, frame) {
       }
     } finally { reducer.baselining = false; }
   }
-  if (!found) reducer.emit('HISTORY_START', `history-start:${frame.snapshotSequence ?? reducer.state.sequence}`,
+  if (!found && !limited) reducer.emit('HISTORY_START', `history-start:${frame.snapshotSequence ?? reducer.state.sequence}`,
     { message: 'No held history item found; recovered to the start of available history.' });
   for (const row of newer.reverse()) reducer.historyItem(row);
 }
@@ -499,7 +620,8 @@ const jsonFile = (file, fallback) => {
 function atomicJson(file, value) {
   fs.mkdirSync(path.dirname(file), { recursive: true });
   const temp = `${file}.${process.pid}.tmp`;
-  fs.writeFileSync(temp, JSON.stringify(value, null, 2) + '\n', { mode: 0o600 }); fs.renameSync(temp, file);
+  try { fs.writeFileSync(temp, JSON.stringify(value, null, 2) + '\n', { mode: 0o600 }); fs.renameSync(temp, file); }
+  catch (error) { fs.rmSync(temp, { force: true }); throw error; }
 }
 function registryPath(opt) {
   if (opt.registry || process.env.T3_APP_LINK_REGISTRY) return path.resolve(opt.registry ?? process.env.T3_APP_LINK_REGISTRY);
@@ -552,7 +674,8 @@ export async function setup({ tokenFile = TOKEN_FILE, app = process.env.T3_APP_L
   if (typeof issued.token !== 'string' || !issued.token || !issued.sessionId || !Number.isFinite(Date.parse(issued.expiresAt)) || JSON.stringify(issued.scopes) !== JSON.stringify(['orchestration:read'])) throw fail('token-issue-invalid');
   fs.mkdirSync(path.dirname(tokenFile), { recursive: true, mode: 0o700 });
   const temporary = `${tokenFile}.${process.pid}.tmp`;
-  fs.writeFileSync(temporary, issued.token + '\n', { mode: 0o600, flag: 'wx' }); fs.renameSync(temporary, tokenFile);
+  try { fs.writeFileSync(temporary, issued.token + '\n', { mode: 0o600, flag: 'wx' }); fs.renameSync(temporary, tokenFile); }
+  catch (error) { fs.rmSync(temporary, { force: true }); throw error; }
   atomicJson(`${tokenFile}.json`, { expiresAt: issued.expiresAt, sessionId: issued.sessionId });
   return { setup: 'ready', scope: 'orchestration:read', reused: false };
 }
@@ -580,6 +703,7 @@ export class Monitor {
     saved.threads ??= {}; this.reducers = new Map(ids.map(id => {
       saved.threads[id] ??= freshState(id); return [id, new Reducer(saved.threads[id], options)];
     }));
+    this.shellIds = new Set([...ids, process.env.T3CODE_THREAD_ID, process.env.T3_APP_LINK_SELF]);
     this.shells = new Map(); this.work = Promise.resolve(); this.subscriptions = new Set(); this.connected = false;
   }
   enqueue(fn) { this.work = this.work.then(fn).then(() => { this.scheduleQuestions(); this.changed?.(); }).catch(e => { this.error = e; this.changed?.(); }); }
@@ -605,14 +729,15 @@ export class Monitor {
     for (const id of this.ids) if (this.options.inspecting || (this.shells.has(id) && !this.reducers.get(id).state.missing)) await this.subscribe(id);
     await this.work; this.connected = true;
   }
+  shellKept(id) { return this.options.allShells || this.shellIds.has(id); }
   shell(frame) {
     if (frame.resolvedRepositoryIdentityRoots !== undefined) return;
     if (frame.kind === 'snapshot' && frame.snapshot?.threads) {
       this.shellReady = true;
-      this.shells = new Map([...frame.snapshot.threads, ...(frame.snapshot.archivedThreads ?? [])].map(t => [t.id, t]));
+      this.shells = new Map([...frame.snapshot.threads, ...(frame.snapshot.archivedThreads ?? [])].filter(t => this.shellKept(t.id)).map(t => [t.id, t]));
       for (const [id, reducer] of this.reducers) this.updateShell(reducer, this.shells.get(id));
     } else if (frame.kind === 'thread.updated') {
-      this.shells.set(frame.thread.id, frame.thread);
+      if (this.shellKept(frame.thread.id)) this.shells.set(frame.thread.id, frame.thread);
       const reducer = this.reducers.get(frame.thread.id);
       if (reducer) {
         this.updateShell(reducer, frame.thread);
@@ -623,7 +748,7 @@ export class Monitor {
     }
   }
   updateShell(reducer, shell) {
-    const s = reducer.state; s.shell = shell ?? null;
+    const s = reducer.state; s.shell = shell ? clip(pick(shell, SHELL_FIELDS)) : null;
     const missing = !shell || !!shell.deletedAt || !!shell.archivedAt;
     if (missing && !s.missing) { reducer.emit('MISSING', `missing:${Date.now()}`); s.missing = true; }
     else if (!missing && s.missing) { reducer.emit('FOUND', `found:${Date.now()}`); s.missing = false; }
@@ -640,7 +765,7 @@ export class Monitor {
         if (frame.kind === 'snapshot' && this.options.watching && s.sequence == null) {
           reducer.baseline(frame);
         } else {
-          if (frame.kind === 'snapshot' && this.options.history !== false) await recoverHistory(this.rpc, reducer, frame);
+          if (frame.kind === 'snapshot' && this.options.history !== false) await recoverHistory(this.rpc, reducer, frame, this.options.historyLimit);
           reducer.accept(frame);
         }
       }), onDisconnect: error => this.disconnect(error),
@@ -717,7 +842,9 @@ export async function runMonitor(ids, opt, reg, waiting = false) {
   const settle = seconds(opt, 'settle', 45), stall = seconds(opt, 'stall', 2700), timeout = seconds(opt, 'timeout', 10800);
   const options = { ...opt, inspecting: waiting || opt.inspecting, progress: !!opt.progress, watching: !waiting, history: !waiting, silentMs: seconds(opt, 'silent', 240), questionDelayMs: seconds(opt, 'poll', 5) };
   const release = lockCursor(cursorFile);
-  const save = () => { if (cursorFile) atomicJson(cursorFile, saved); };
+  compactCursor(saved, ids);
+  const write = () => { if (cursorFile) atomicJson(cursorFile, saved); };
+  const save = () => { for (const reducer of monitor?.reducers.values() ?? []) reducer.capPending(); write(); };
   let done = false, holdInitialized = false, startingLeadRun = null, holding = false;
   const self = !waiting && opt['until-event'] && (process.env.T3CODE_THREAD_ID || process.env.T3_APP_LINK_SELF);
   if (!waiting && opt['until-event'] && !self)
@@ -751,15 +878,15 @@ export async function runMonitor(ids, opt, reg, waiting = false) {
           output({ ...reducer.status(), result, rule: event.rule }); save(); stop(exitFor(event.event)); return;
         }
         if (event.event === 'DONE' && opt.expect) continue;
-        output(event); save();
-        if (opt['until-event'] && ACTIONABLE.has(event.event)) { stop(exitFor(event.event)); return; }
+        output(event); write();
+        if (opt['until-event'] && ACTIONABLE.has(event.event)) { save(); stop(exitFor(event.event)); return; }
       }
     }
     save();
   };
   const tick = () => {
     if (done || !monitor.connected) return;
-    for (const reducer of monitor.reducers.values()) reducer.tick(Date.now(), settle, stall);
+    for (const reducer of monitor.reducers.values()) { reducer.tick(Date.now(), settle, stall); reducer.prune(); }
     drain();
   };
   const signal = () => { save(); stop(0); };
@@ -809,8 +936,15 @@ export function completedReplies(state) {
   return [...replies.values()];
 }
 
-async function inspect(ids, opt, reg) {
-  const monitor = new Monitor(ids, { threads: {} }, { ...opt, inspecting: true }, reg);
+// One-shot commands fetch only the history their answer needs, then exit.
+function historyNeeds(cmd, opt) {
+  if (cmd === 'status') return { history: false };
+  if (cmd === 'read') return { historyLimit: { replies: Number(opt.last ?? 1) + 1 } };
+  if (cmd === 'result') return { historyLimit: { replies: Number(opt.turns ?? 10) + 1 } };
+  return { historyLimit: { since: opt.since ? Date.parse(opt.since) : 0 } };
+}
+async function inspect(ids, opt, reg, cmd) {
+  const monitor = new Monitor(ids, { threads: {} }, { ...opt, inspecting: true, complete: true, ...historyNeeds(cmd, opt) }, reg);
   try { await monitor.open(); if (monitor.error) throw monitor.error; return monitor; }
   finally { monitor.close(); }
 }
@@ -832,7 +966,7 @@ status|read|wait|questions|result <thread ID or tracked name> [--json]
 read --last N=1; result --marker RESULT --turns N=10; questions --all --since ISO
 wait --settle SEC=45 --stall SEC=2700 --timeout SEC=10800 --until-question --expect REGEX
 watch (<id>... | --tracked) --expect REGEX --cursor FILE --progress [--silent SEC=240] --until-event
-track add <id> --name NAME [--role ROLE] [--note TEXT] [--environment ID] | rm <name> | list
+track add <id> --name NAME [--role ROLE] [--note TEXT] [--environment ID] | rm <name> | prune | list
 list --limit N=10 --cwd DIR; --registry FILE selects .t3-app-link.json
 send|new|queue|interrupt|access redirect to native T3 tools and exit 2.`;
 
@@ -860,12 +994,16 @@ export async function main(args = process.argv.slice(2)) {
     } else if (pos[0] === 'rm') {
       const id = resolveRef(pos[1], reg); const before = reg.threads.length; reg.threads = reg.threads.filter(t => t.id !== id);
       if (reg.threads.length === before) throw fail('unknown-thread-name');
+    } else if (pos[0] === 'prune') {
+      const monitor = new Monitor([], { threads: {} }, { ...opt, allShells: true }, reg);
+      try { await monitor.open(); } finally { monitor.close(); }
+      reg.threads = reg.threads.filter(t => { const shell = monitor.shells.get(t.id); return shell && !shell.archivedAt && !shell.deletedAt; });
     } else if (pos[0] !== 'list') throw fail('invalid-track-action');
     if (pos[0] !== 'list') atomicJson(file, reg);
     print(reg.threads); return;
   }
   if (cmd === 'list') {
-    const monitor = new Monitor([], { threads: {} }, opt, reg);
+    const monitor = new Monitor([], { threads: {} }, { ...opt, allShells: true }, reg);
     try {
       await monitor.open();
       const limit = Number(opt.limit ?? 10);
@@ -885,7 +1023,7 @@ export async function main(args = process.argv.slice(2)) {
     else if (environment && environment !== opt.environment) throw fail('mixed-environments');
   }
   if (cmd === 'watch' || cmd === 'wait') { await runMonitor(ids, opt, reg, cmd === 'wait'); return; }
-  const monitor = await inspect(ids, opt, reg), reducer = monitor.reducers.get(ids[0]), s = reducer.state;
+  const monitor = await inspect(ids, opt, reg, cmd), reducer = monitor.reducers.get(ids[0]), s = reducer.state;
   if (cmd === 'status') print(reducer.status());
   const replies = completedReplies(s);
   if (cmd === 'read') {

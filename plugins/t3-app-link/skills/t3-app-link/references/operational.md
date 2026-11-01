@@ -19,7 +19,7 @@ stderr with exit 1. Dispatch redirects and usage errors exit 2.
 | `result <thread> --marker RESULT --turns N` | Parse the latest matching block from recent replies, default 10. Exit 6 when absent. |
 | `watch (<thread>… or --tracked)` | One multi-thread stream. Accepts `--expect REGEX`, `--cursor FILE`, `--progress`, `--until-event` and the same timing flags as wait. |
 | `track add <id> --name NAME --role ROLE --note TEXT --environment ID` | Store a project roster entry. Role, note and environment are optional. |
-| `track rm <name or id>` / `track list` | Remove or list roster entries. |
+| `track rm <name or id>` / `track prune` / `track list` | Remove an entry, remove entries whose threads are archived or gone, or list entries. |
 | `rules` / `version` | Print the T3 rule text, or plugin version and script/registry paths. |
 | `send`, `new`, `queue`, `interrupt`, `access` | Exit 2 and print the native T3 tool call. Never dispatch. |
 
@@ -99,11 +99,11 @@ The cursor contains reported identities and queued events as well as sequences.
 An until-event exit retains later events for the next invocation. Resume with
 the same roster, options and expectation. Small gaps use sequence replay; a
 snapshot fallback walks rows from newest to oldest, paging until it reaches the
-first item already held in the saved records. Only newer rows are reported; older
+first item held in the cursor's recovery anchors, the 64 most recent item IDs. Only newer rows are reported; older
 rows on the boundary page remain silent. Page positions are local to each page
 and are never used as offsets. If no held item is found, recovery continues to
-the start of available history and prints HISTORY_START. Keep the cursor records
-intact so their item identities remain available across re-arms.
+the start of available history and prints HISTORY_START. Keep the cursor intact
+so its anchors remain available across re-arms.
 
 Questions answered during the gap are recovered from completed input items too.
 Their recovered compact line includes resolved status; replay can also preserve

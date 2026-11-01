@@ -52,8 +52,8 @@ Output is compact text unless `--json` is given. Exit codes are 0 for success,
 result. `watch --until-event` exits on QUESTION, APPROVAL, RESULT, PAUSED or STALLED;
 APPROVAL and RESULT exit 0.
 
-A cursor stores thread state, sequence numbers, reported identities and queued
-events. It contains thread content: keep it private and out of Git. One watcher
+A cursor stores bounded thread state, sequence numbers, recent reported identities
+and queued events; SKILL.md states the limits. It contains thread content: keep it private and out of Git. One watcher
 may hold a cursor at a time. Re-arm with the same cursor, roster and expectation.
 A fresh watch baselines the current snapshot without reading older history or
 reporting old events, except for currently pending questions and approvals.

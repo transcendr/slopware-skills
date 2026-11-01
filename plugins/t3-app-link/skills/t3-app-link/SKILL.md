@@ -163,9 +163,19 @@ results or compactions. An idle baseline does not produce DONE or PAUSED; only a
 run ending after watching begins can settle into one. `wait` still settles an
 already-idle thread. RESULT detection waits for non-streaming message text.
 
-Keep one watcher per cursor. The cursor retains unprinted events and reported
-identities, so a re-arm continues without repeating reported events. Do not delete
-or replace it during an assignment. Keep it private and out of Git.
+Keep one watcher per cursor. The cursor retains unprinted events and recent
+reported identities, so a re-arm continues without repeating reported events. Do
+not delete or replace it during an assignment. Keep it private and out of Git.
+
+A cursor has a fixed limit for each thread, whatever the thread's age: 16 runs,
+8 assistant messages, 16 requests, 32 items, 32 nodes, 8 provider threads, 8
+provider sessions, 64 held events, 64 recovery anchors and 256 reported keys, with
+4 KiB of text per record. Expect about 30 KB per thread. It also keeps 16 threads
+the current watch does not follow. A reported key that ages out raises a time
+floor, so older records stay silent. A version 1 cursor migrates on load. Held
+events beyond 64 are dropped oldest-first, non-actionable first, and OVERFLOW
+reports the count. Event text and `wait` replies stop at 4 KiB; use `read` for a
+full reply.
 
 | Event | Required response |
 | --- | --- |
@@ -177,6 +187,7 @@ or replace it during an assignment. Keep it private and out of Git.
 | MISSING / FOUND | The thread disappeared, disconnected or returned. Confirm current T3 state before dispatching. |
 | HISTORY_START | No held item was found while recovering a gap; recovery reached the start of available history. |
 | UNPARSED | The stream contains an unknown event. Read the thread; monitoring may be incomplete. |
+| OVERFLOW | Held events were dropped to keep the cursor bounded. Read the thread for what they covered. |
 | STARTED / COMPACTED / MAINTENANCE / DONE | Context about a run, compaction, structured maintenance or settled idle thread. |
 
 `wait <name>` returns only after the thread stays idle for 45 seconds by default;
@@ -185,7 +196,8 @@ question. With `--expect`, a final reply that does not match is `paused`, exit 6
 `watch --progress` also emits TURN_END and SILENT. `--silent SEC` defaults to
 240 seconds, matching codex-progress.py; it warns once per quiet interval.
 RESULT lines are excluded from NOTE. Compact details are limited to the same
-2,000 characters as codex-app-link; `--json` retains all event fields.
+2,000 characters as codex-app-link; `--json` retains all event fields, with text
+limited to 4 KiB per event.
 
 Defaults match codex-app-link: settle 45 seconds, stall 2700 seconds, timeout
 10800 seconds. A stall means no detailed thread event, not proof of a dead worker. The line
