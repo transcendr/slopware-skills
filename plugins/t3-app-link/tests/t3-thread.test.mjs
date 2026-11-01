@@ -335,3 +335,10 @@ test('01b snapshot hydration still reports a held streaming message that finaliz
   const {reducer,historyCalls}=await subscribeFixture({threads:{thread:old.state}},{watching:true,expect:'^RESULT '},next);
   assert.equal(historyCalls,0);assert.deepEqual(reducer.state.pending.filter(e=>e.event==='RESULT').map(e=>e.message),['RESULT status=done']);
 });
+
+test('a symlinked script still runs',()=>{
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'t3-link-'));
+  const link=path.join(dir,'t3-thread.mjs');
+  fs.symlinkSync(new URL('../skills/t3-app-link/scripts/t3-thread.mjs',import.meta.url).pathname,link);
+  assert.match(spawnSync(process.execPath,[link,'version'],{encoding:'utf8'}).stdout,/^version=/);
+});

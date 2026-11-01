@@ -785,6 +785,7 @@ export async function main(args = process.argv.slice(2)) {
     process.exitCode = pending ? 5 : 0;
   }
 }
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+// Compare real paths: a symlinked install or macOS /tmp would otherwise exit 0 having done nothing.
+if (process.argv[1] && fs.realpathSync(process.argv[1]) === fs.realpathSync(fileURLToPath(import.meta.url))) {
   main().catch(error => { console.error(JSON.stringify({ error: error.code ?? 'error', message: error.code ? error.message : 'T3 App Link failed; inspect local configuration and protocol compatibility.' })); process.exitCode = 1; });
 }
