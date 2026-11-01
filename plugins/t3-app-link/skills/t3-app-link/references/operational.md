@@ -47,8 +47,16 @@ on a busy thread and `steer` for a correction to its current task. Start one
 background watch over the roster. Codex managers use `--until-event` and re-arm
 with the same cursor after acting. Claude managers use Monitor for per-line notifications, with the exact call in
 SKILL.md. Background Bash wakes only on exit. Re-arm Monitor after it ends, using
-the same cursor. Codex exit notifications can be held until the lead ends its
-current turn.
+the same cursor. For Codex, set the lead's own `T3_APP_LINK_SELF` if `T3CODE_THREAD_ID` is absent.
+`watch --until-event` retains its actionable event until the launching Codex run
+ends, then prints and exits. If armed in a previous turn, its exit wake queues
+behind a later busy turn. No self ID means one stderr warning and immediate exit;
+a completion during its launching turn can be lost. This is a wake-after-turn
+route, not an interruption. A selected event waits beyond the search timeout if
+necessary. See SKILL.md for the Haiku sentinel recipe: continuous Monitor,
+worker-only roster, exact lines through native `t3_thread_send mode:auto`, no
+CLI write token. Busy leads receive those updates at their next tool boundary.
+
 
 For a single bounded wait:
 
@@ -107,3 +115,8 @@ and fail the command rather than silently skipping history.
 Unknown stream events print UNPARSED. Protocol, authorization and history errors
 fail visibly. MISSING and FOUND report thread disappearance or connection loss
 and return. They do not authorize restarting a worker.
+
+Still-pending requests tied to terminal runs are stale, including command approvals left raw
+pending after interruption. They never count as pending or trigger a question
+exit. `questions --all` labels them STALE. Explicit inspection and wait read
+retained archived detail; an archived terminal run can settle normally.

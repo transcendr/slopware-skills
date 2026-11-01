@@ -1,0 +1,18 @@
+{
+  "active": {
+    "id": "lead",
+    "providerInstanceId": "codex",
+    "activeRunId": "run:thread:mcp%3A8e8c91be-78b0-485f-b2cb-d2bb7291bd3f:ordinal:2",
+    "status": "running",
+    "latestRunId": "run:thread:mcp%3A8e8c91be-78b0-485f-b2cb-d2bb7291bd3f:ordinal:2",
+    "latestRunCompletedAt": null
+  },
+  "idle": {
+    "id": "lead",
+    "providerInstanceId": "codex",
+    "activeRunId": null,
+    "status": "completed",
+    "latestRunId": "run:thread:mcp%3A8e8c91be-78b0-485f-b2cb-d2bb7291bd3f:ordinal:2",
+    "latestRunCompletedAt": "2026-11-01T04:37:55.001Z"
+  }
+}

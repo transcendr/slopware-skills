@@ -106,18 +106,30 @@ question and its options first, followed by the request handle and rule. If a
 request arrives before its text, emission waits for the item, with a fallback
 after one watch polling interval (five seconds by default). JSON is not truncated.
 
-A Claude lead must use Monitor for per-line wakes; the skill gives the verified
-call. Background Bash wakes only on exit. Codex background-command completion reached
-an idle lead in 2.855 seconds in the live probe; a busy lead still had no receipt
-at the next tool boundary or a later audit after 209 seconds. Do not rely on
-this route for immediate mid-turn delivery.
+A Claude lead uses Monitor for per-line wakes. A Codex lead uses the verified
+exit hold for a wake after its turn, or a Haiku sentinel for updates while busy;
+the skill supplies both recipes. Set `T3_APP_LINK_SELF` from the lead's T3 ID if
+`T3CODE_THREAD_ID` is absent. With neither set, `--until-event` warns once and
+exits immediately; T3 can discard that completion if its launching turn is
+still active. With a self ID, the watcher retains its actionable event until
+that Codex run ends, then exits to trigger a new-run wake. Events after an earlier
+arming turn still queue their wake behind a later busy turn.
 
-The bundled `t3 thread send` queues a new turn; it has no steer flag. It creates
-and revokes a temporary full-access owner MCP session internally. No automatic
-`--notify-lead` option is provided: that CLI cannot supply the required own-lead
-steering route. An active authorised coordinator can use native
-`t3_thread_send mode:steer`; the live probe received that update within the same
-run at its next tool boundary (1.460 seconds observed).
+The sentinel uses native `t3_thread_send mode:auto`, never a CLI write token.
+Observed delivery to a busy Codex lead was 5.204 seconds for a question and 5.113
+seconds for the RESULT, within one run; idle delivery was 3.869 seconds. A long
+foreground step delays model receipt until a tool boundary. The bundled
+`t3 thread send` only queues and cannot implement this steering recipe.
+
+## Provider verification
+
+| Behaviour | Codex | Claude |
+| --- | --- | --- |
+| Formal question, answer and RESULT | Live proven | Live proven |
+| Command approval | Live event proven; stale request filtered after interrupted run | No approval produced in the three authorised attempts |
+| COMPACTED | Live proven | Live proven, including two in the lead's real Jevpact replay |
+| MAINTENANCE | Live proven | Lead verified `action:resume` in its real Jevpact replay |
+| Stock unpatched 0.1.5 | Provider session failed to open | Question/answer/RESULT proven |
 
 Use `--token-file FILE` with `setup` and read commands when monitoring a separate
 T3 instance. Select that instance's `T3CODE_HOME` for setup and its `--origin URL`
@@ -136,3 +148,8 @@ compact lines include `status=resolved` when recovered from completed items.
 Always inspect current `questions --all` state before trying to respond. Native
 sequence replay can preserve a historical pending QUESTION even when the request
 is now resolved.
+
+Pending requests whose owning run has ended are stale even if T3 retains their
+raw pending status. They are excluded from watch events and pending counts, do
+not block wait, and appear as STALE in `questions --all`. Explicit reads and
+waits can inspect retained detail on an archived thread.

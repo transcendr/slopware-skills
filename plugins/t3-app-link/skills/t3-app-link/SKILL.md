@@ -55,7 +55,8 @@ can bind the registry or individual entries to the expected T3 environment.
 Watch lines use a stable hashed request handle; `questions` prints its full ID.
 Question text normally arrives with the next stream item. If absent, it is held
 for one watch polling interval (five seconds by default), then emitted with a
-pointer to `questions`. Text arriving sooner is emitted immediately.
+pointer to `questions`. Continuous watches emit text as soon as it arrives; the Codex exit hold below
+controls when an until-event process prints and exits.
 
 The CLI refuses self-tracking when `T3CODE_THREAD_ID`, `T3_THREAD_ID` or
 `T3_APP_LINK_SELF` identifies the lead; set `T3_APP_LINK_SELF` if the host does not
@@ -80,19 +81,68 @@ the first still owns it. When the host provides it, `t3_background_wait` marks
 bounded Monitor work as awaited. Monitor's `timeout_ms` is optional; use an
 explicit duration only when the task or tool contract supplies it.
 
-Codex leads run this as a background shell command:
+Codex leads choose the exit-hold route for a wake after their turn, or a sentinel
+when they must receive events while working.
+
+For the exit-hold route, identify the lead before starting the watcher. T3 may
+supply `T3CODE_THREAD_ID`; the live Codex probe had neither self-ID variable.
+If it is absent, copy the lead's ID from its T3 link or launch result and set:
 
 ```bash
+export T3_APP_LINK_SELF='your-lead-thread-id'
 node "$TT" watch --tracked --expect '^RESULT ' --cursor /private/path/watch.json --until-event
 ```
 
-Codex background command exits can wake an idle lead. `--until-event` prints the first QUESTION, APPROVAL,
-RESULT, PAUSED or STALLED and exits. A busy Codex lead may receive the exit
-notification late or fail to receive it at subsequent tool boundaries; this route
-does not guarantee mid-turn delivery. Read it, act, then run the same command
-again. For an authorised update to a busy lead, an active coordinator can use
-native `t3_thread_send mode:steer`. The bundled `t3 thread send` only queues a new
-turn, so the monitor does not offer an automatic CLI notification flag.
+Run this as a background shell command, then end the lead turn when its current
+work is complete. An actionable event is kept in the cursor, with no further
+output, while the Codex run active at watch startup is still active. The watcher
+prints the event and exits after that run ends. This makes its command completion
+eligible for T3's new-run notification instead of losing a same-turn completion.
+If the watcher was armed in an earlier turn, it exits immediately on the event;
+T3 queues its wake until the currently busy turn ends. Both cases were proven.
+The exit hold does not wake or end a working lead's current turn.
+
+When the wake arrives, read the event, check current question state, act through
+native tools, and re-arm with the same cursor. `--until-event` exits 5 on QUESTION,
+0 on RESULT or APPROVAL, 6 on PAUSED, and 3 on STALLED. If neither self-ID variable
+is set, stderr warns once and the watcher retains immediate-exit behaviour; a
+same-turn completion can then be lost. Continuous Claude Monitor watches have
+no exit hold. A selected event can keep an exit-hold process alive past its
+search timeout until the launching lead run ends.
+
+### Sentinel for a busy Codex lead
+
+Create an authorised `claude-haiku-5-5` thread with native `t3_thread_launch`,
+using its own scratch workspace. Give it the lead's thread ID, installed script
+path, worker-only registry, expectation and a private cursor. Do not track the
+lead or sentinel. Give it this recipe, substituting those values:
+
+```text
+Call Monitor({command:"node /installed/t3-app-link/scripts/t3-thread.mjs watch --tracked --registry /private/workers.json --expect '^RESULT ' --cursor /private/sentinel.json",description:"T3 worker events"}).
+Do not use --until-event. On each QUESTION, APPROVAL, RESULT, PAUSED or STALLED
+line, call t3_thread_send with threadId=<lead ID>, mode="auto", and message equal
+to the original complete stdout line, unchanged. Monitor's XML wrapper may
+escape <, > and &; decode that transport layer once to restore the original
+line. Forward every actionable line in a burst, one call per line. Decide
+nothing, read no files or threads, answer nothing, and send nowhere else.
+Ignore other event kinds. End the current turn after arming or forwarding.
+Re-arm the identical Monitor only when it ends, retaining the cursor.
+```
+
+`auto` steers the active lead run or starts an idle lead. The sentinel carries no
+CLI write token: its native T3 tools send the authorised update. A busy lead
+acts at its next model/tool boundary, using `questions` to obtain full IDs and
+answer keys before `t3_pending_request respond`. One long foreground command
+can delay that boundary until it returns; steering does not interrupt it.
+
+The live Codex lead received a question in 5.204 seconds and its worker RESULT
+in 5.113 seconds, answered formally, and stayed in one run. Idle receipt took
+3.869 seconds. A five-line burst arrived intact within one lead run. These are
+observations, not delivery deadlines. Cost: one small sentinel turn per event
+notification, plus one per Monitor expiry. Non-actionable STARTED lines can also
+wake the sentinel; coalesced bursts can share a turn. Each actionable line still
+needs one native send. Archive the authorised sentinel when its assignment ends.
+
 A thread with no saved cursor state starts at its first snapshot, without paging
 older history. It reports currently pending questions and approvals, but no old
 results or compactions. An idle baseline does not produce DONE or PAUSED; only a
@@ -141,7 +191,9 @@ prints HISTORY_START. T3 coalesces updates, so
 monitoring reports changes in recoverable state rather than promising every
 transient transition. Questions answered during the gap can be recovered as
 `status=resolved`; replay can also report their earlier pending state. Check
-`questions --all` before responding. `MAINTENANCE` uses the structured message field and requires
+`questions --all` before responding. Still-pending requests tied to terminal runs are stale:
+they do not count as pending or wake the lead, and appear as STALE only in
+`questions --all`, including old approvals. `MAINTENANCE` uses the structured message field and requires
 a patched T3 server. Never infer maintenance from configurable prose patterns.
 
 For project-level management, read the adapted references as needed:

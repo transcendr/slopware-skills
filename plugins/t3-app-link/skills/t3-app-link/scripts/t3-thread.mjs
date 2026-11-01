@@ -242,6 +242,15 @@ export function freshState(id) {
     lastEventAt: Date.now(), initialized: false, missing: false };
 }
 
+export function requestStatus(state, request) {
+  if (request.status !== 'pending') return request.status;
+  const item = Object.values(state.records.turnItems ?? {}).find(i => i.requestId === request.id);
+  const node = state.records.nodes?.[request.nodeId];
+  const runId = request.runId ?? item?.runId ?? node?.runId;
+  const run = state.records.runs?.[runId];
+  return run && !ACTIVE.has(run.status) ? 'stale' : request.status;
+}
+
 export class Reducer {
   constructor(state, { expect, progress = false, silentMs = 240000, questionDelayMs = 5000 } = {}) {
     delete state.position; // Discard the obsolete page-relative offset in older cursors.
@@ -286,6 +295,7 @@ export class Reducer {
     }
   }
   request(record, fallback = false) {
+    if (requestStatus(this.state, record) === 'stale') { delete this.state.deferredRequests[record.id]; return; }
     const s = this.state, item = Object.values(s.records.turnItems ?? {}).find(i => i.requestId === record.id);
     const questions = record.questions ?? item?.questions ?? [];
     const approvalText = item?.prompt ?? item?.reason ?? record.prompt;
@@ -389,7 +399,7 @@ export class Reducer {
     const messages = ordered(s.records.messages).filter(m => m.role === 'assistant');
     return { threadId: s.id, status: this.active() ? 'active' : 'idle', turnId: run?.id ?? null,
       lastTurnStatus: run?.status ?? null, lastAgentMessage: messages.at(-1)?.text ?? '',
-      pending: Object.values(s.records.runtimeRequests ?? {}).filter(r => r.status === 'pending').length,
+      pending: Object.values(s.records.runtimeRequests ?? {}).filter(r => requestStatus(s, r) === 'pending').length,
       rule: this.active() ? RULES.active : null };
   }
   liveness() {
@@ -399,7 +409,7 @@ export class Reducer {
       runningTools: running.filter(i => i.type === 'dynamic_tool').map(i => ({ id: i.id, name: i.toolName, status: i.status })),
       backgroundTasks: Object.values(s.records.providerThreads ?? {}).flatMap(p => p.pendingBackgroundTasks ?? []),
       providerStates: Object.values(s.records.providerSessions ?? {}).map(p => ({ id: p.id, status: p.status })),
-      pendingRequests: Object.values(s.records.runtimeRequests ?? {}).filter(r => r.status === 'pending').map(r => ({ kind: r.kind, id: r.id })) };
+      pendingRequests: Object.values(s.records.runtimeRequests ?? {}).filter(r => requestStatus(s, r) === 'pending').map(r => ({ kind: r.kind, id: r.id })) };
   }
   quietMessage() {
     if (!this.active()) return 'thread is idle; no active run';
@@ -582,6 +592,7 @@ export class Monitor {
     const runtime = jsonFile(runtimePath());
     this.rpc = (this.options.rpcFactory ?? (options => new T3Rpc(options)))({ origin: this.options.origin ?? runtime.origin, token: privateToken(this.options['token-file'] ?? TOKEN_FILE) });
     const config = await this.rpc.request('server.getConfig', {});
+    this.codexInstances = new Set((config.providers ?? []).filter(p => p.driver === 'codex').map(p => p.instanceId));
     const environmentId = config.environment?.environmentId;
     const expected = this.options.environment ?? this.reg.environmentId;
     if (expected && expected !== environmentId) throw fail('t3-environment-mismatch');
@@ -591,12 +602,13 @@ export class Monitor {
       onFrame: frame => this.enqueue(() => this.shell(frame)), onDisconnect: error => this.disconnect(error),
     });
     await this.work;
-    for (const id of this.ids) if (this.shells.has(id) && !this.reducers.get(id).state.missing) await this.subscribe(id);
+    for (const id of this.ids) if (this.options.inspecting || (this.shells.has(id) && !this.reducers.get(id).state.missing)) await this.subscribe(id);
     await this.work; this.connected = true;
   }
   shell(frame) {
     if (frame.resolvedRepositoryIdentityRoots !== undefined) return;
     if (frame.kind === 'snapshot' && frame.snapshot?.threads) {
+      this.shellReady = true;
       this.shells = new Map([...frame.snapshot.threads, ...(frame.snapshot.archivedThreads ?? [])].map(t => [t.id, t]));
       for (const [id, reducer] of this.reducers) this.updateShell(reducer, this.shells.get(id));
     } else if (frame.kind === 'thread.updated') {
@@ -624,6 +636,7 @@ export class Monitor {
     await this.rpc.subscribe('orchestration.subscribeThread', { threadId: id, acceptBoundedSnapshot: true, requestCompletionMarker: true,
       ...(s.sequence != null ? { afterSequence: s.sequence } : {}) }, {
       onFrame: frame => this.enqueue(async () => {
+        if (frame.kind === 'snapshot' && this.options.inspecting) s.missing = false;
         if (frame.kind === 'snapshot' && this.options.watching && s.sequence == null) {
           reducer.baseline(frame);
         } else {
@@ -677,12 +690,12 @@ export function eventText(event, reg) {
 }
 
 export function questionRecords(state) {
-  return Object.values(state.records.runtimeRequests ?? {}).filter(r => r.kind === 'user_input').map(r => {
+  return Object.values(state.records.runtimeRequests ?? {}).filter(r => r.kind === 'user_input' || requestStatus(state, r) === 'stale').map(r => {
     const item = Object.values(state.records.turnItems ?? {}).find(i => i.requestId === r.id);
     const asyncAnswer = Object.values(state.records.messages ?? {}).find(m => m.id === `async-answer:${r.id}`);
     const answers = r.answers ?? item?.questionAnswer?.answers;
-    return { ...r, handle: requestHandle(r.id), askedAt: r.createdAt ?? item?.startedAt,
-      answeredAt: r.resolvedAt ?? item?.completedAt ?? null, questions: item?.questions ?? [],
+    return { ...r, status: requestStatus(state, r), handle: requestHandle(r.id), askedAt: r.createdAt ?? item?.startedAt,
+      answeredAt: r.resolvedAt ?? item?.completedAt ?? null, questions: item?.questions ?? (item?.prompt ? [{ question: item.prompt }] : []),
       answers: answers ?? null, answer: answers ? JSON.stringify(answers) : asyncAnswer?.text ?? null,
       answerSource: answers ? (r.answers ? 'runtime-request' : 'question-item') : asyncAnswer ? 'async-answer-message' : null,
       answerUnavailable: r.status === 'resolved' && !answers && !asyncAnswer ? 'T3 retained no answer in the request, question item, or async-answer message.' : null };
@@ -690,10 +703,10 @@ export function questionRecords(state) {
 }
 export function formatQuestions(list) {
   return list.map(q => {
-    const head = `[${q.askedAt}${q.answeredAt ? ` answered ${q.answeredAt}` : ' PENDING'}]`;
+    const head = `[${q.askedAt}${q.status === 'stale' ? ' STALE' : q.answeredAt ? ` answered ${q.answeredAt}` : ' PENDING'}]`;
     const body = q.questions.map(x => `Q: ${x.question ?? x.title ?? ''}${optionLabels(x).length ? `\n  options: ${optionLabels(x).join(' | ')}` : ''}\n  answer key: ${JSON.stringify(x.id ?? x.question)}`).join('\n');
     const shape = Object.fromEntries(q.questions.map(x => [x.id ?? x.question, { answers: ['<selected option>'] }]));
-    return `${head}\nrequestId: ${q.id}\nhandle: ${q.handle}\n${body || 'Q: text not retained by T3'}${q.answer ? `\n  answer: ${oneLine(q.answer).slice(0,MESSAGE_LIMIT)}` : q.answerUnavailable ? `\n  answer unavailable: ${q.answerUnavailable}` : ''}\nanswers: ${JSON.stringify(shape)}`;
+    return `${head}\nrequestId: ${q.id}\nhandle: ${q.handle}\n${body || 'Q: text not retained by T3'}${q.answer ? `\n  answer: ${oneLine(q.answer).slice(0,MESSAGE_LIMIT)}` : q.answerUnavailable ? `\n  answer unavailable: ${q.answerUnavailable}` : ''}${q.kind === 'user_input' ? `\nanswers: ${JSON.stringify(shape)}` : '\nThis approval belongs to a terminal run; it is not open input.'}`;
   }).join('\n---\n');
 }
 
@@ -702,19 +715,35 @@ export async function runMonitor(ids, opt, reg, waiting = false) {
   let monitor, timer, deadline, retry, finish;
   const saved = cursorFile ? jsonFile(cursorFile, { threads: {} }) : { threads: {} };
   const settle = seconds(opt, 'settle', 45), stall = seconds(opt, 'stall', 2700), timeout = seconds(opt, 'timeout', 10800);
-  const options = { ...opt, progress: !!opt.progress, watching: !waiting, history: !waiting, silentMs: seconds(opt, 'silent', 240), questionDelayMs: seconds(opt, 'poll', 5) };
+  const options = { ...opt, inspecting: waiting || opt.inspecting, progress: !!opt.progress, watching: !waiting, history: !waiting, silentMs: seconds(opt, 'silent', 240), questionDelayMs: seconds(opt, 'poll', 5) };
   const release = lockCursor(cursorFile);
   const save = () => { if (cursorFile) atomicJson(cursorFile, saved); };
-  let done = false;
+  let done = false, holdInitialized = false, startingLeadRun = null, holding = false;
+  const self = !waiting && opt['until-event'] && (process.env.T3CODE_THREAD_ID || process.env.T3_APP_LINK_SELF);
+  if (!waiting && opt['until-event'] && !self)
+    console.error('T3 App Link: no T3CODE_THREAD_ID or T3_APP_LINK_SELF; until-event exits immediately without a lead-run exit hold.');
+  const holdingLeadRun = () => {
+    if (!self || !monitor?.shellReady) return false;
+    const lead = monitor.shells.get(self);
+    if (!holdInitialized) {
+      holdInitialized = true;
+      if (lead && (lead.providerInstanceId === 'codex' || monitor.codexInstances.has(lead.providerInstanceId))) startingLeadRun = lead.activeRunId;
+    }
+    return !!startingLeadRun && lead?.activeRunId === startingLeadRun;
+  };
   const output = value => console.log(opt.json ? JSON.stringify(value) : waiting ? toText(value) : eventText(value, reg));
   const stop = code => { if (done) return; done = true; process.exitCode = code; finish?.(); };
   const drain = () => {
     if (done) return;
     if (monitor?.error) { stop(1); return; }
+    holding = false; holdingLeadRun();
     for (const id of ids) {
       const reducer = monitor.reducers.get(id), s = reducer.state;
       while (s.pending.length) {
-        const event = s.pending.shift();
+        const event = s.pending[0];
+        if (event.requestId && requestStatus(s, s.records.runtimeRequests?.[event.requestId] ?? event) === 'stale') { s.pending.shift(); continue; }
+        if (!waiting && opt['until-event'] && ACTIONABLE.has(event.event) && holdingLeadRun()) { holding = true; save(); return; }
+        holding = false; s.pending.shift();
         if (waiting) {
           const terminal = ['DONE', 'PAUSED', 'STALLED'].includes(event.event) || (opt['until-question'] && event.event === 'QUESTION');
           if (!terminal) continue;
@@ -759,6 +788,7 @@ export async function runMonitor(ids, opt, reg, waiting = false) {
       // Timer cadence is the manager kit's existing five-second watch default.
       timer = setInterval(tick, seconds(opt, 'poll', waiting ? 15 : 5));
       deadline = setTimeout(() => {
+        if (holding) return; // A selected event waits for its launching lead run, even past the search timeout.
         output(waiting ? { ...monitor.reducers.get(ids[0]).status(), result: 'timeout' } : { event: 'TIMEOUT' });
         save(); stop(4);
       }, timeout);
@@ -780,7 +810,7 @@ export function completedReplies(state) {
 }
 
 async function inspect(ids, opt, reg) {
-  const monitor = new Monitor(ids, { threads: {} }, opt, reg);
+  const monitor = new Monitor(ids, { threads: {} }, { ...opt, inspecting: true }, reg);
   try { await monitor.open(); if (monitor.error) throw monitor.error; return monitor; }
   finally { monitor.close(); }
 }
@@ -870,7 +900,7 @@ export async function main(args = process.argv.slice(2)) {
     const since = opt.since ? Date.parse(opt.since) : 0;
     if (Number.isNaN(since)) throw fail('invalid-since');
     const questions = questionRecords(s).filter(q => Date.parse(q.askedAt) >= since);
-    const pending = questions.filter(r => r.status === 'pending').length;
+    const pending = questions.filter(r => requestStatus(s, r) === 'pending').length;
     const shown = opt.all ? questions : questions.filter(r => r.status === 'pending');
     print(opt.json ? { threadId: ids[0], pending, asked: questions.length, questions: shown } :
       { pending, asked: questions.length, message: shown.length ? formatQuestions(shown) : null, rule: pending ? RULES.questions : null });

@@ -1,0 +1,169 @@
+{
+  "kind": "snapshot",
+  "snapshotSequence": 22600,
+  "projection": {
+    "thread": {
+      "createdBy": "agent",
+      "creationSource": "mcp",
+      "id": "thread",
+      "projectId": "stale-0",
+      "providerInstanceId": "stale-1",
+      "modelSelection": {
+        "instanceId": "stale-1",
+        "model": "gpt-6.1-sol"
+      },
+      "runtimeMode": "approval-required",
+      "interactionMode": "default",
+      "branch": null,
+      "pullRequests": [],
+      "activeProviderThreadId": "stale-2",
+      "lineage": {
+        "parentThreadId": null,
+        "relationshipToParent": null,
+        "rootThreadId": "stale-3"
+      },
+      "forkedFrom": null,
+      "createdAt": "2026-11-01T03:44:41.100Z",
+      "updatedAt": "2026-11-01T04:30:25.783Z",
+      "archivedAt": "2026-11-01T04:30:25.783Z",
+      "settledOverride": null,
+      "settledAt": null,
+      "snoozedUntil": null,
+      "snoozedAt": null,
+      "guestShare": null,
+      "titleRegeneration": null,
+      "deletedAt": null
+    },
+    "runs": [
+      {
+        "id": "stale-4",
+        "threadId": "thread",
+        "ordinal": 2,
+        "providerInstanceId": "stale-1",
+        "modelSelection": {
+          "instanceId": "stale-1",
+          "model": "gpt-6.1-sol"
+        },
+        "providerThreadId": "stale-2",
+        "userMessageId": "stale-5",
+        "rootNodeId": "stale-6",
+        "activeAttemptId": "stale-7",
+        "status": "interrupted",
+        "queuePosition": null,
+        "requestedAt": "2026-11-01T03:52:10.792Z",
+        "startedAt": "2026-11-01T03:52:10.820Z",
+        "completedAt": "2026-11-01T04:10:52.890Z",
+        "checkpointId": "stale-8",
+        "contextHandoffId": null
+      }
+    ],
+    "turnItems": [
+      {
+        "id": "stale-9",
+        "threadId": "thread",
+        "runId": "stale-4",
+        "nodeId": "stale-10",
+        "providerThreadId": "stale-2",
+        "providerTurnId": "stale-11",
+        "nativeItemRef": {
+          "driver": "codex",
+          "nativeId": "stale-12",
+          "strength": "strong"
+        },
+        "parentItemId": null,
+        "ordinal": 2000004,
+        "status": "waiting",
+        "startedAt": "2026-11-01T03:52:13.509Z",
+        "completedAt": null,
+        "updatedAt": "2026-11-01T03:52:13.509Z",
+        "type": "approval_request",
+        "requestId": "stale-13",
+        "requestKind": "command",
+        "prompt": "Approve running the harmless one-shot command /usr/bin/true for this approval probe?"
+      }
+    ],
+    "runtimeRequests": [
+      {
+        "id": "stale-13",
+        "nodeId": "stale-10",
+        "providerTurnId": "stale-11",
+        "nativeRequestRef": {
+          "driver": "codex",
+          "nativeId": "stale-12",
+          "strength": "strong"
+        },
+        "kind": "command",
+        "status": "pending",
+        "responseCapability": {
+          "type": "live",
+          "providerSessionId": "stale-14"
+        },
+        "createdAt": "2026-11-01T03:52:13.509Z",
+        "resolvedAt": null
+      }
+    ],
+    "nodes": [
+      {
+        "id": "stale-10",
+        "threadId": "thread",
+        "runId": "stale-4",
+        "parentNodeId": "stale-15",
+        "rootNodeId": "stale-6",
+        "kind": "approval_request",
+        "status": "waiting",
+        "countsForRun": false,
+        "providerThreadId": "stale-2",
+        "providerTurnId": "stale-11",
+        "nativeItemRef": {
+          "driver": "codex",
+          "nativeId": "stale-12",
+          "strength": "strong"
+        },
+        "runtimeRequestId": "stale-13",
+        "checkpointScopeId": null,
+        "startedAt": "2026-11-01T03:52:13.509Z",
+        "completedAt": null
+      }
+    ],
+    "providerTurns": [
+      {
+        "id": "stale-11",
+        "providerThreadId": "stale-2",
+        "nodeId": "stale-6",
+        "runAttemptId": "stale-7",
+        "nativeTurnRef": {
+          "driver": "codex",
+          "nativeId": "stale-16",
+          "strength": "strong"
+        },
+        "ordinal": 2,
+        "status": "interrupted",
+        "startedAt": "2026-11-01T03:52:10.893Z",
+        "completedAt": "2026-11-01T04:10:52.000Z",
+        "tokenUsage": {
+          "modelRequestId": "stale-17",
+          "usedTokens": 33406,
+          "maxTokens": 570000,
+          "inputTokens": 33326,
+          "cachedInputTokens": 31744,
+          "outputTokens": 80,
+          "reasoningOutputTokens": 0,
+          "updatedAt": "2026-11-01T03:52:13.579Z"
+        },
+        "turnTokenUsage": {
+          "usageScope": "main_agent",
+          "cachedInputTokens": 31744,
+          "cacheCreationTokens": 0,
+          "reasoningTokens": 0,
+          "hasSubagents": false,
+          "usageStatus": "partial",
+          "inputTokens": 33326,
+          "outputTokens": 80
+        }
+      }
+    ]
+  },
+  "historyCursor": null,
+  "hasMoreHistory": false,
+  "latestLocalTurnOrdinal": 3000006
+}
