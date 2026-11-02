@@ -2,13 +2,13 @@
 """Stop hook: ask Jev whether each sentence of the final reply says its meaning explicitly.
 
 A sentence fails when Jev judges it more likely than not to be a shortcut. The judgement reads the sentence in the
-context of the user's message and the whole reply, so no word list is involved. A refused reply gets one rewrite: the
+context of the whole reply, so no word list is involved. A refused reply gets one rewrite: the
 next stop passes (stop_hook_active). With no key, or when Jev can't answer, the reply passes and stderr says why."""
 import json, os, re, sys, urllib.request
 
 ENDPOINT = "https://api.typesafe.ai/v1/systemone"
 QUESTION = (
-    "Judge only the sentence in `sentence`, read in the context of `user_message` and `reply`. The writer is an AI "
+    "Judge only the sentence in `sentence`, read in the context of `reply`. The writer is an AI "
     "assistant reporting to a developer. Answer yes if the sentence uses a shortcut in place of an explicit "
     "statement: a figure of speech, a coined label, or a catchy compressed phrase, chosen because it sounds good, "
     "so that the reader has to work out what actually happens, who does it, or to what. Examples: 'the remaining "
@@ -38,8 +38,8 @@ def text_of(message):
     return "".join(p.get("text", "") for p in content or [] if isinstance(p, dict) and p.get("type") == "text")
 
 
-def last_turn(path):
-    user, reply = "", ""
+def last_reply(path):
+    reply = ""
     with open(path) as f:
         for line in f:
             try:
@@ -47,17 +47,15 @@ def last_turn(path):
             except ValueError:
                 continue
             kind, message = entry.get("type"), entry.get("message") or {}
-            if kind == "user" and not entry.get("isMeta") and text_of(message).strip():
-                user, reply = text_of(message), ""
-            elif kind == "assistant" and text_of(message).strip():
+            if kind == "assistant" and text_of(message).strip():
                 reply = text_of(message)
-    return user, reply
+    return reply
 
 
-def judge(key, user, reply, sentences):
+def judge(key, reply, sentences):
     questions = {"s%d" % i: {"type": "noul", "instructions": QUESTION + " The `sentence` for this question is `sentences.s%d`." % i}
                  for i in range(len(sentences))}
-    state = {"user_message": user, "reply": reply, "sentences": {"s%d" % i: s for i, s in enumerate(sentences)}}
+    state = {"reply": reply, "sentences": {"s%d" % i: s for i, s in enumerate(sentences)}}
     body = json.dumps({"model": "jev-latest", "state": state, "questions": questions}).encode()
     request = urllib.request.Request(ENDPOINT, data=body, headers={
         "Authorization": "Bearer " + key, "Content-Type": "application/json"})
@@ -74,13 +72,12 @@ def main():
     if not key:
         print("explicit-language: JEV_API_KEY is not set; reply not judged", file=sys.stderr)
         return
-    user, reply = last_turn(data["transcript_path"]) if data.get("transcript_path") else ("", "")
-    reply = data.get("last_assistant_message") or reply
+    reply = data.get("last_assistant_message") or last_reply(data.get("transcript_path", ""))
     sentences = prose(reply)
     if not sentences:
         return
     try:
-        scored = judge(key, user, reply, sentences)
+        scored = judge(key, reply, sentences)
     except Exception as error:
         print("explicit-language: Jev gave no answer (%s); reply not judged" % type(error).__name__, file=sys.stderr)
         return
