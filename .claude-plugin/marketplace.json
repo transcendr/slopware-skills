@@ -42,6 +42,12 @@
       "description": "Read-only monitoring of Codex and Claude threads in T3.",
       "source": "./plugins/t3-app-link",
       "category": "productivity"
+    },
+    {
+      "name": "explicit-language",
+      "description": "Block an assistant reply when Jev judges a sentence, in context, to be a shortcut instead of an explicit statement.",
+      "source": "./plugins/explicit-language",
+      "category": "productivity"
     }
   ]
 }

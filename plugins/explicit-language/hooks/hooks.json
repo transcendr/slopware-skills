@@ -1,0 +1,16 @@
+{
+  "description": "Judge each sentence of the final assistant reply in context, and refuse a reply with shortcut language.",
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -I \"${CLAUDE_PLUGIN_ROOT}/scripts/judge.py\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "explicit-language",
+  "version": "0.1.0",
+  "description": "Block an assistant reply when Jev judges a sentence, in context, to be a shortcut instead of an explicit statement.",
+  "author": {
+    "name": "Slopware Engineer",
+    "url": "https://x.com/aienginerd"
+  },
+  "homepage": "https://github.com/transcendr/slopware-skills",
+  "repository": "https://github.com/transcendr/slopware-skills",
+  "license": "CC-BY-4.0",
+  "keywords": ["language", "hooks", "jev", "ai-agents"]
+}
