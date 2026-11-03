@@ -172,6 +172,7 @@ The socket protocol is private and undocumented. It was verified on 2026-10-06 a
 | A thread's commands fail with `EPERM`, no network, or no Simulator after the app restarted | The app reloaded it under a restricted profile. Run `access <id> full`, then check the next turn: the rollout's `turn_context` shows `sandbox_policy` `danger-full-access` |
 | `not-loaded-in-instance` | No running app owns the `CODEX_HOME` instance's socket. Start that instance (or open the thread in it) and retry |
 | `thread-not-indexed` | Wrong ID, or the thread was created on another machine |
+| `ENOENT` on `rollout-….jsonl` (before 0.2.18), or `zstd-unsupported` | Codex zstd-compresses idle rollouts to `.jsonl.zst` and restores them when the thread resumes. 0.2.18+ reads the compressed copy through a private cache in the temp directory; it needs Node with `zlib.zstdDecompressSync` (22.15+) |
 | `thread-busy` | A turn is running. New work: `send --queue`. Answer or correction for this turn: `send --steer` |
 | `thread-follower-start-turn-timeout`, or `not-loaded-in-app` on a thread that loads late | The turn often **did** start anyway. Run `status <id>` before retrying; resending would deliver the message twice |
 | `request-version-mismatch` / `no-handler-for-request` | The app's private protocol changed. See "How it works" |

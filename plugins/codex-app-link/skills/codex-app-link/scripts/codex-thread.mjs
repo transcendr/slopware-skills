@@ -271,7 +271,32 @@ function locate(threadId) {
   try { rows = query('SELECT id, rollout_path, cwd, model, title, archived FROM threads WHERE id = ?', threadId); }
   catch (e) { throw new Fail('thread-index-unavailable', e.message.split('\n')[0]); }
   if (!rows.length) throw new Fail('thread-not-indexed', threadId);
-  return rows[0];
+  const row = rows[0];
+  row.rollout_path = readableRollout(row.rollout_path);
+  return row;
+}
+
+// Codex zstd-compresses idle rollouts in place (`<path>.zst`) and restores the
+// plain file when the thread resumes. When only the compressed copy exists,
+// decompress it once into a private cache file that carries the compressed
+// file's mtime, so reads and stall checks behave as they do on the original.
+function readableRollout(rolloutPath) {
+  if (!rolloutPath || fs.existsSync(rolloutPath)) return rolloutPath;
+  const zst = `${rolloutPath}.zst`;
+  if (!fs.existsSync(zst)) return rolloutPath;
+  const zlib = process.getBuiltinModule('node:zlib');
+  if (typeof zlib.zstdDecompressSync !== 'function') throw new Fail('zstd-unsupported', `Node ${process.version} cannot read ${zst}`);
+  const dir = path.join(os.tmpdir(), 'codex-app-link-rollouts');
+  const cached = path.join(dir, path.basename(rolloutPath));
+  const src = fs.statSync(zst);
+  if (!fs.existsSync(cached) || fs.statSync(cached).mtimeMs !== src.mtimeMs) {
+    fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
+    const tmp = `${cached}.${process.pid}.tmp`;
+    fs.writeFileSync(tmp, zlib.zstdDecompressSync(fs.readFileSync(zst)), { mode: 0o600 });
+    fs.utimesSync(tmp, src.atime, src.mtime);
+    fs.renameSync(tmp, cached);
+  }
+  return cached;
 }
 
 // Rollout files grow without bound (long threads pass hundreds of MB), and every
