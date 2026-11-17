@@ -642,7 +642,7 @@ async function sendViaDaemon(threadId, text, { steer, wait, timeoutMs }) {
   return result;
 }
 
-async function send(threadId, text, { steer = false, wait = false, timeoutMs, open = true } = {}) {
+async function send(threadId, text, { steer = false, wait = false, timeoutMs, open = true, startIfEnded = false } = {}) {
   if (!text || !text.trim()) throw new Fail('empty-message');
   const t = locate(threadId);
   // Route first: an app-owned thread uses the app's IPC; a thread the shared daemon holds
@@ -658,15 +658,28 @@ async function send(threadId, text, { steer = false, wait = false, timeoutMs, op
   const s = fs.existsSync(t.rollout_path) ? turnState(t.rollout_path) : { status: steer ? 'active' : 'idle', turnId: '(session file missing)' };
   return withIpc(async ipc => {
     let result;
+    // The session file can show a turn as running that the app has already ended, for
+    // example after the machine crashed mid-turn: the file never got the turn's end. With
+    // --start-if-ended, the app's own answer decides: if it says the turn ended, start one.
+    let ended = false;
     if (s.status === 'active') {
-      if (!steer) throw new Fail('thread-busy', busyHint(s.turnId));
+      if (!steer && !startIfEnded) throw new Fail('thread-busy', busyHint(s.turnId));
       const id = randomUUID();
-      const res = await ipc.request('thread-follower-steer-turn', {
-        conversationId: threadId, clientUserMessageId: id,
-        input: [{ type: 'text', text, text_elements: [] }],
-        restoreMessage: { id, text, context: {} },
-      }, ownerId);
-      result = { mode: 'steer', turnId: res.result?.result?.turnId ?? null };
+      try {
+        const res = await ipc.request('thread-follower-steer-turn', {
+          conversationId: threadId, clientUserMessageId: id,
+          input: [{ type: 'text', text, text_elements: [] }],
+          restoreMessage: { id, text, context: {} },
+        }, ownerId);
+        if (!steer) throw new Fail('thread-busy', busyHint(s.turnId));
+        result = { mode: 'steer', turnId: res.result?.result?.turnId ?? null };
+      } catch (e) {
+        if (!(startIfEnded && /already ended/.test(String(e?.message ?? e)))) throw e;
+        ended = true;
+      }
+    }
+    if (s.status === 'active' && !ended) {
+      // steered above
     } else {
       const res = await ipc.request('thread-follower-start-turn', {
         conversationId: threadId,
@@ -1152,6 +1165,8 @@ const USAGE = `codex-thread <command>     (<thread> = a thread ID or a name from
   track   add <id> --name NAME [--role ROLE] [--note TEXT] | rm <name> | list   [--registry FILE]
                                            the project's thread registry (<git root>/.codex-app-link.json)
   send    <thread> (--text T | --file F | --stdin) [--queue | --steer] [--wait] [--timeout SEC] [--no-open]
+                                           [--start-if-ended]: the session file shows a running turn the app
+                                           already ended (a crash mid-turn): start a new turn
   new     --cwd DIR (--text T | --file F) [--no-open] [--timeout SEC] [-- <extra codex exec args>]
   open    <thread>                         make the app load the thread (background deep link)
   access  <thread> full [--no-open]        set the thread's access like the composer's selector (Full access);
@@ -1231,7 +1246,7 @@ async function main() {
     case 'send': {
       if (opt.queue && opt.steer) throw new Fail('queue-or-steer', 'pass --queue (new work) or --steer (input for this turn), not both');
       const text = textArg(opt);
-      try { out = await send(pos[0], text, { steer: !!opt.steer, wait: !!opt.wait, timeoutMs, open: !opt['no-open'] }); }
+      try { out = await send(pos[0], text, { steer: !!opt.steer, wait: !!opt.wait, timeoutMs, open: !opt['no-open'], startIfEnded: !!opt['start-if-ended'] }); }
       catch (e) {
         if (!(opt.queue && e.code === 'thread-busy')) throw e;
         out = enqueue(pos[0], text, turnState(locate(pos[0]).rollout_path).turnId);
